@@ -2,6 +2,7 @@
 #include "MapTile.h"
 #include "Map.h"
 #include "TileInfo.h"
+#include "GameManager.h"
 
 MapTile::MapTile(const TileInfo ti, int rowCount, int colCount) :
     id{static_cast<int>(ti.tileID)},
@@ -119,9 +120,10 @@ void MapTile::setVoisins(Map m) {
                 voisinsAccessibles.push_back(indice);
             }
         }
-
-        int a = 3;
-
+    }
+    GameManager::Log("Voisins accessibles de la tile " + to_string(id));
+    for (auto v : voisinsAccessibles) {
+        GameManager::Log(to_string(v));
     }
 }
 

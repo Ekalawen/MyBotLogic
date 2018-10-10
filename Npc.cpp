@@ -6,7 +6,7 @@ Npc::Npc(const NPCInfo info) :
     id{ static_cast<int>(info.npcID) },
     tileId{static_cast<int>(info.tileID)},
     tileObjectif{ -1 },
-    chemin{ vector<int>() }
+    chemin{}
 {
 }
 
@@ -30,7 +30,8 @@ Chemin Npc::getCheminMinNonPris(vector<int> objectifsPris, int tailleCheminMax) 
     for (int i = 0; i < cheminsPossibles.size(); i++) {
         Chemin chemin = cheminsPossibles[i];
         // Si le chemin n'est pas déjà pris et qu'il est plus court !
-        if (chemin.distance() < distMin
+        if (chemin.isAccessible()
+        && chemin.distance() < distMin
         && (objectifsPris.empty() || find(objectifsPris.begin(), objectifsPris.end(), chemin.destination()) == objectifsPris.end())) {
             cheminMin = chemin;
             distMin = chemin.distance();

@@ -11,29 +11,17 @@ Map::Map(const LevelInfo levelInfo) :
     rowCount{ levelInfo.rowCount },
     colCount{ levelInfo.colCount },
     nbTiles{ static_cast<int>(levelInfo.tiles.size()) },
-    tiles{ map<unsigned int, MapTile>() },
-    murs{ map<unsigned int, ObjectInfo>() },
-    fenetres{ map<unsigned int, ObjectInfo>() },
-    portes{ map<unsigned int, ObjectInfo>() },
-    activateurs{ map<unsigned int, ObjectInfo>() }
+    tiles{},
+    murs{},
+    fenetres{},
+    portes{},
+    activateurs{}
 {
     // Créer toutes les tiles !
     for (auto pair_t : levelInfo.tiles) {
         TileInfo t = pair_t.second;
         MapTile mt = MapTile(t, rowCount, colCount);
         tiles[t.tileID] = mt;
-    }
-
-    // Leur associer tous leurs voisins !
-    for (auto pair_t : tiles) {
-        MapTile t = pair_t.second;
-        t.setVoisins(*this);
-        tiles[t.id] = t;
-
-        // On enregistre tous les objectifs !
-        if (t.type == Tile::TileAttribute_Goal) {
-            objectifs[t.id] = t;
-        }
     }
 
     // Enregistrer les objets
@@ -50,6 +38,18 @@ Map::Map(const LevelInfo levelInfo) :
         }
         if (object.second.objectTypes.find(Object::ObjectType_PressurePlate) != object.second.objectTypes.end()) {
             activateurs[object.second.objectID] = object.second;
+        }
+    }
+
+    // Associer tous les voisins de toutes les tiles
+    for (auto pair_t : tiles) {
+        MapTile t = pair_t.second;
+        t.setVoisins(*this);
+        tiles[t.id] = t;
+
+        // On enregistre tous les objectifs !
+        if (t.type == Tile::TileAttribute_Goal) {
+            objectifs[t.id] = t;
         }
     }
 }
@@ -151,6 +151,7 @@ Chemin Map::chemin(int depart, int arrivee) {
     }
     else {
         GameManager::Log("On ne peut pas accéder à cette tile ! (chemin = " + to_string(depart) + ", " + to_string(arrivee) + ")");
+        path.setInaccessible();
     }
 
     return path;

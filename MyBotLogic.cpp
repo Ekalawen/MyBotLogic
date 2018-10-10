@@ -39,10 +39,10 @@ MyBotLogic::MyBotLogic() :
 
 /*virtual*/ void MyBotLogic::Init(LevelInfo& _levelInfo)
 {
-    // On crée notre modèle du jeu en cours !
-    gm = GameManager(_levelInfo);
     // Le logger
 	GameManager::SetLog(logpath, "MyLog.log");
+    // On crée notre modèle du jeu en cours !
+    gm = GameManager(_levelInfo);
 
     // On associe à chaque npc son objectif !
     gm.associateNpcsWithObjectiv();

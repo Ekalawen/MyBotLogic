@@ -29,7 +29,7 @@ public:
     map<unsigned int, MapTile> getObjectifs();
     Chemin chemin(int depart, int arrivee); // Renvoie le chemin à parcourir pour aller du départ à l'arrivée
     float distanceL2(int depart, int arrivee); // Renvoie la distance L2 à vol d'oiseau !
-    bool areAccessible(int tile1, int tile2); // Permet de savoir si deux tiles sont accessibles l'une par rapport à l'autre !
+    bool areAccessible(int tile1, int tile2); // Permet de savoir si deux tiles sont accessibles l'une par rapport à l'autre ! pour 2 tiles adjacentes
     Tile::ETilePosition getDirection(int tile1, int tile2); // Permet de savoir dans quel sens se déplacer pour aller d'une tile à l'autre si celles-ci sont adjacentes ! =)
     int Map::getAdjacentTileAt(int tileSource, Tile::ETilePosition direction); // Permet de récupérer l'indice d'une tuile adjacente à une autre
     int tailleCheminMax(); // Permet de savoir la taille maximum d'un chemin

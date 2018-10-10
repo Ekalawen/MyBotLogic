@@ -163,7 +163,7 @@ void GameManager::ordonnerMouvements(vector<tuple<int, Tile::ETilePosition>>& mo
     // Si deux npcs veulent aller sur la même case, alors celui qui a le plus de chemin à faire passe, et tous les autres restent sur place !
     // OK !
     // Si deux npcs adjacents veulent aller à peu près dans la même direction, le plus en avant doit bouger en premier !
-    // En cours !
+    // OK !
     // Si deux npcs adjacents veulent aller dans des directions opposées ... XD TODO !!!
     // TODO !
 
