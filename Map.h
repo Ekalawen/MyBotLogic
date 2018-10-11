@@ -28,7 +28,7 @@ public:
     Map(const LevelInfo);
     bool isInMap(int idTile) const;
     map<unsigned int, MapTile> getObjectifs();
-    Chemin chemin(int depart, int arrivee); // Renvoie le chemin à parcourir pour aller du départ à l'arrivée
+    Chemin aStar(int depart, int arrivee); // Renvoie le chemin à parcourir pour aller du départ à l'arrivée
     float distanceL2(int depart, int arrivee); // Renvoie la distance L2 à vol d'oiseau !
     int distanceHex(int depart, int arrivee);
     bool areAccessible(int tile1, int tile2); // Permet de savoir si deux tiles sont accessibles l'une par rapport à l'autre ! pour 2 tiles adjacentes

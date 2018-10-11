@@ -63,7 +63,7 @@ map<unsigned int, MapTile> Map::getObjectifs() {
     return objectifs;
 }
 
-Chemin Map::chemin(int depart, int arrivee) {
+Chemin Map::aStar(int depart, int arrivee) {
     Chemin path; // le chemin final
     MapTile currentTile = tiles[depart];
     vector<int> visitees; // Les cases que l'on a déjà découvertes
