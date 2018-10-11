@@ -4,6 +4,7 @@
 #include "Map.h"
 #include "Npc.h"
 #include "Logger.h"
+#include "Mouvement.h"
 #include <map>
 
 class GameManager {
@@ -16,7 +17,7 @@ public:
     GameManager(LevelInfo);
     void associateNpcsWithObjectiv();
     void moveNpcs(vector<Action*>& actionList); // Remplie l'action liste !
-    void ordonnerMouvements(vector<tuple<int, Tile::ETilePosition>>& mouvements); // Permet d'ordonner les mouvements pour éviter les collisions et gérer les politesses de priorités =)
+    void ordonnerMouvements(vector<Mouvement*>& mouvements); // Permet d'ordonner les mouvements pour éviter les collisions et gérer les politesses de priorités =)
 
     static void Log(string str) { // Permet de débugger ! :D
         logger.Log(str);
