@@ -102,26 +102,12 @@ Chemin Map::chemin(int depart, int arrivee) {
         // On récupère tous ses voisins, et on les ajoutes à la liste de lecture s'ils ne sont pas encore marqués ! =)
         // Ou qu'ils ne sont pas déjà prévu d'être visités !!!
         for (auto voisin : currentTile.voisinsAccessibles) {
-            bool estMarque = false;
-            for (auto visitee : visitees) {
-                if (visitee == voisin) {
-                    estMarque = true;
-                    break;
-                }
-            }
-            for (auto visitee : toVisit) {
-                if (visitee == voisin) {
-                    estMarque = true;
-                    break;
-                }
-            }
-            // Du coup si on est pas déjà marqué
-            if (!estMarque) {
-                // On l'ajoute à la liste !
-                toVisit.push_back(voisin);
-                toVisitAntecedants.push_back(currentTile.id);
-                toVisitDistance.push_back(distanceL2(voisin, arrivee));
-            }
+           // Si notre voisin n'appartient pas aux cases visitées ou à visiter, alors on l'ajoute à cette dernière
+           if (!(find(visitees.begin(), visitees.end(), voisin) != visitees.end()) && !(find(toVisit.begin(), toVisit.end(), voisin) != toVisit.end())) {
+              toVisit.push_back(voisin);
+              toVisitAntecedants.push_back(currentTile.id);
+              toVisitDistance.push_back(distanceL2(voisin, arrivee));
+           }
         }
 
         // On trie, pour a*
