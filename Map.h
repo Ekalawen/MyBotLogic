@@ -16,6 +16,7 @@ public:
     int rowCount;
     int colCount;
     int nbTiles;
+    int nbtilesDecouvertes;
     map<unsigned int, MapTile> tiles;
     map<unsigned int, MapTile> objectifs;
     map<unsigned int, ObjectInfo> murs;
@@ -33,6 +34,9 @@ public:
     Tile::ETilePosition getDirection(int tile1, int tile2); // Permet de savoir dans quel sens se déplacer pour aller d'une tile à l'autre si celles-ci sont adjacentes ! =)
     int Map::getAdjacentTileAt(int tileSource, Tile::ETilePosition direction); // Permet de récupérer l'indice d'une tuile adjacente à une autre
     int tailleCheminMax(); // Permet de savoir la taille maximum d'un chemin
+
+    void addTile(TileInfo); // Permet de rajouter une tile à la map
+    void addObject(ObjectInfo); // Permet de rajouter un object à la map
 };
 
 

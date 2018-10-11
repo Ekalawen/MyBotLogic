@@ -10,7 +10,8 @@ using namespace std;
 Map::Map(const LevelInfo levelInfo) :
     rowCount{ levelInfo.rowCount },
     colCount{ levelInfo.colCount },
-    nbTiles{ static_cast<int>(levelInfo.tiles.size()) },
+    nbTiles{ rowCount * colCount },
+    nbtilesDecouvertes{ static_cast<int>(levelInfo.tiles.size()) },
     tiles{},
     murs{},
     fenetres{},
@@ -356,3 +357,51 @@ void Map::sortByDistance(vector<float>& base, vector<int>& autre1, vector<int>& 
 int Map::tailleCheminMax() {
     return colCount * rowCount + 1;
 }
+
+// Il ne faut pas ajouter une tile qui est déjà dans la map !
+void Map::addTile(TileInfo tile) {
+    // On met à jour le nombre de tiles
+    nbtilesDecouvertes++;
+
+    // On la rajoute aux tiles
+    tiles[tile.tileID] = MapTile(tile, rowCount, colCount);
+
+    // On met à jour ses voisins
+    tiles[tile.tileID].setVoisins(*this);
+
+    // Puis on met à jour les voisins de ses voisins ! :D
+    for (auto voisin : tiles[tile.tileID].voisins) {
+        tiles[voisin].setVoisins(*this);
+    }
+
+    // Si c'est un objectif, on le retient !
+    if (tiles[tile.tileID].type == Tile::TileAttribute_Goal) {
+        objectifs[tile.tileID] = tiles[tile.tileID];
+    }
+}
+
+// Il ne faut pas ajouter un objet qui est déjà dans la map !
+void Map::addObject(ObjectInfo object) {
+    // On ajoute notre objet à l'ensemble de nos objets
+    if (object.objectTypes.find(Object::ObjectType_Wall) != object.objectTypes.end()) {
+        murs[object.objectID] = object;
+    }
+    if (object.objectTypes.find(Object::ObjectType_Door) != object.objectTypes.end()) {
+        portes[object.objectID] = object;
+    }
+    if (object.objectTypes.find(Object::ObjectType_Window) != object.objectTypes.end()) {
+        fenetres[object.objectID] = object;
+    }
+    if (object.objectTypes.find(Object::ObjectType_PressurePlate) != object.objectTypes.end()) {
+        activateurs[object.objectID] = object;
+    }
+    
+    // Puis on met à jour les voisins de la case de notre objet
+    tiles[object.tileID].setVoisins(*this);
+
+    // Puis on met à jour les voisins des voisins de la case de notre objet
+    for (auto voisin : tiles[object.tileID].voisins) {
+        tiles[voisin].setVoisins(*this);
+    }
+}
+
