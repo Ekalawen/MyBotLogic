@@ -1,2 +1,0 @@
-
-#include "Exploitation.h"
