@@ -18,7 +18,6 @@ public:
       } else {
          return ETAT_ELEMENT::ECHEC;
       }
-     // return ETAT_ELEMENT(gm.m.objectifs.size() >= gm.npcs.size()); // Mieux mais moche ? => organiser Etat_Element
    }
 };
 
