@@ -6,28 +6,15 @@ using namespace std;
 class BT_Composite : public BT_Noeud
 {
 public:
-   vector<BT_Noeud> elements;
+   BT_Composite(vector<BT_Noeud*> noeuds) : noeuds{ noeuds } {
+   }
+   virtual ETAT_ELEMENT execute() override = 0;
+protected:
+   vector<BT_Noeud*> noeuds;
+
+   
+
+
+
 };
 #endif
-
-//class Selectionneur : public BT_Composite {
-//   BT_Noeud::ETAT_ELEMENT execute() {
-//      int ind = 0;
-//      BT_Noeud::ETAT_ELEMENT res = elements[ind].execute();
-//      while (ind < elements.size() && res == BT_Noeud::ETAT_ELEMENT::ECHEC) {
-//         res = elements[++ind].execute();
-//      }
-//      return res;
-//   }
-//};
-//
-//class Sequenceur : public BT_Composite {
-//   BT_Noeud::ETAT_ELEMENT execute() {
-//      int ind = 0;
-//      BT_Noeud::ETAT_ELEMENT res = elements[ind].execute();
-//      while (ind < elements.size() &&  res == BT_Noeud::ETAT_ELEMENT::REUSSI) {
-//         res = elements[++ind].execute();
-//      }
-//      return res;
-//   }
-//};

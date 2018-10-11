@@ -320,7 +320,7 @@ float Map::distanceL2(int depart, int arrivee) {
     int yd = depart / colCount;
     int xa = arrivee % colCount;
     int ya = arrivee / colCount;
-    return sqrt(pow(xd - xa, 2) + pow(yd - ya, 2));
+    return (float)sqrt(pow(xd - xa, 2) + pow(yd - ya, 2));
 }
 
 void Map::sortByDistance(vector<float>& base, vector<int>& autre1, vector<int>& autre2) {

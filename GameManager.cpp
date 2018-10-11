@@ -1,5 +1,6 @@
 
 #include "GameManager.h"
+#include "Mouvement.h"
 #include <algorithm>
 #include <tuple>
 using namespace std;
@@ -122,7 +123,7 @@ void GameManager::associateNpcsWithObjectiv() {
 
 void GameManager::moveNpcs(vector<Action*>& actionList) {
     // On va récupérer la liste des mouvements
-    vector<tuple<int, Tile::ETilePosition>> mouvements;
+    vector<Mouvement*> mouvements;
 
     // Pour tous les NPCs, s'il n'y a aucun autre Npc devant eux
     for (auto& npc : npcs) {
@@ -139,7 +140,7 @@ void GameManager::moveNpcs(vector<Action*>& actionList) {
             GameManager::Log("direction = " + to_string(direction));
 
             // On enregistre le mouvement
-            mouvements.push_back(tuple<int, Tile::ETilePosition>{npc.second.id, direction});
+            mouvements.push_back(new Mouvement(npc.second.id, npc.second.tileId, caseCible, direction));
 
             //}
         } else {
@@ -148,18 +149,18 @@ void GameManager::moveNpcs(vector<Action*>& actionList) {
     }
 
     // Puis on va l'ordonner pour laisser la priorité à celui qui va le plus loin !
-    ordonnerMouvements(mouvements);
+	ordonnerMouvements(mouvements);
 
     // Puis pour chaque mouvement
     for (auto mouvement : mouvements) {
         // ET ENFIN ON FAIT BOUGER NOTRE NPC !!!!! <3
-        actionList.push_back(new Move(get<0>(mouvement), get<1>(mouvement)));
+        actionList.push_back(new Move(mouvement->npcID, mouvement->direction));
         // ET ON LE FAIT AUSSI BOUGER DANS NOTRE MODELE !!!
-        npcs[get<0>(mouvement)].move(get<1>(mouvement), m);
+        npcs[mouvement->npcID].move(mouvement->direction, m);
     }
 }
 
-void GameManager::ordonnerMouvements(vector<tuple<int, Tile::ETilePosition>>& mouvements) {
+void GameManager::ordonnerMouvements(vector<Mouvement*>& mouvements) {
     // Quels sont les cas particuliers ?
     // Si deux npcs veulent aller sur la même case, alors celui qui a le plus de chemin à faire passe, et tous les autres restent sur place !
     // OK !
@@ -170,28 +171,28 @@ void GameManager::ordonnerMouvements(vector<tuple<int, Tile::ETilePosition>>& mo
 
     // Pour toutes les tiles auxquelles on pourrait accéder ...
     for (auto& mouvement : mouvements) {
-        int tileCible = m.getAdjacentTileAt(npcs[get<0>(mouvement)].tileId, get<1>(mouvement));
+        int tileCible = m.getAdjacentTileAt(npcs[mouvement->npcID].tileId, mouvement->direction);
         // On cherche celui qui est le plus long
         int distMax = -1;
         int npcMax = -1;
         for (auto& mvt : mouvements) {
-            int t = m.getAdjacentTileAt(npcs[get<0>(mvt)].tileId, get<1>(mvt));
+            int t = m.getAdjacentTileAt(npcs[mvt->npcID].tileId, mvt->direction);
             if (t == tileCible) {
-                int dist = npcs[get<0>(mvt)].chemin.distance();
+                int dist = npcs[mvt->npcID].chemin.distance();
                 if (dist > distMax) {
                     distMax = dist;
-                    npcMax = npcs[get<0>(mvt)].id;
+                    npcMax = npcs[mvt->npcID].id;
                 }
             }
         }
         // Puis pour tous ceux qui ne sont pas le plus long, on les passe en center !
         for (auto& mvt : mouvements) {
-            int t = m.getAdjacentTileAt(npcs[get<0>(mvt)].tileId, get<1>(mvt));
-            if (t == tileCible && npcs[get<0>(mvt)].id != npcMax) {
+            int t = m.getAdjacentTileAt(npcs[mvt->npcID].tileId, mvt->direction);
+            if (t == tileCible && npcs[mvt->npcID].id != npcMax) {
                 // Et il faut aussi lui rendre son mouvement pour le prochain tour !
-                npcs[get<0>(mvt)].chemin.chemin.push_back(m.getAdjacentTileAt(npcs[get<0>(mvt)].tileId, get<1>(mvt)));
-                get<1>(mvt) = Tile::CENTER;
-                GameManager::Log("Npc " + to_string(get<0>(mvt)) + " est poli et laisse passer.");
+                npcs[mvt->direction].chemin.chemin.push_back(m.getAdjacentTileAt(npcs[mvt->direction].tileId, mvt->direction));
+                mvt->direction = Tile::CENTER;
+                GameManager::Log("Npc " + to_string(mvt->npcID) + " est poli et laisse passer.");
             }
         }
     }
@@ -203,8 +204,8 @@ void GameManager::ordonnerMouvements(vector<tuple<int, Tile::ETilePosition>>& mo
     vector<tuple<int, int>> mouvementsSources; // idem
     for (int i = 0; i < mouvements.size(); i++) {
         auto mouvement = mouvements[i];
-        int tileCible = m.getAdjacentTileAt(npcs[get<0>(mouvement)].tileId, get<1>(mouvement));
-        int tileSource = npcs[get<0>(mouvement)].tileId;
+        int tileCible = m.getAdjacentTileAt(npcs[mouvement->npcID].tileId, mouvement->direction);
+        int tileSource = npcs[mouvement->npcID].tileId;
         mouvementsCibles.push_back(tuple<int, int>(tileCible, i));
         mouvementsCibles.push_back(tuple<int, int>(tileSource, i));
     }
