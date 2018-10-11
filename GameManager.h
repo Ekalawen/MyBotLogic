@@ -4,6 +4,7 @@
 #include "Map.h"
 #include "Npc.h"
 #include "Logger.h"
+#include "TurnInfo.h"
 #include <map>
 
 class GameManager {
@@ -17,6 +18,7 @@ public:
     void associateNpcsWithObjectiv();
     void moveNpcs(vector<Action*>& actionList); // Remplie l'action liste !
     void ordonnerMouvements(vector<tuple<int, Tile::ETilePosition>>& mouvements); // Permet d'ordonner les mouvements pour éviter les collisions et gérer les politesses de priorités =)
+    void updateModel(TurnInfo); // Met à jour le modèle avec les informations que découvrent les NPCS
 
     static void Log(string str) { // Permet de débugger ! :D
         logger.Log(str);
@@ -24,6 +26,10 @@ public:
     static void SetLog(string path, string fileName) { // Permet d'initialiser le logger =)
         logger.Init(path, fileName);
     }
+
+private:
+    void addNewTiles(TurnInfo ti);
+    void addNewObjects(TurnInfo ti);
 };
 
 #endif

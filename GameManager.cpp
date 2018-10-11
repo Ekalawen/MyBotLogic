@@ -10,6 +10,7 @@ Logger GameManager::logger{};
 GameManager::GameManager(LevelInfo info) :
     m{Map(info)}
 {
+    // On récupère l'ensemble des npcs !
     for (auto pair_npc : info.npcs) {
         NPCInfo npc = pair_npc.second;
         npcs[npc.npcID] = Npc(npc);
@@ -237,4 +238,36 @@ void GameManager::ordonnerMouvements(vector<tuple<int, Tile::ETilePosition>>& mo
             }
         }
     }
+}
+
+void GameManager::addNewTiles(TurnInfo ti) {
+    // On vérifie si on a pas déjà la connaissance totale sur les tiles de la map
+    if (m.nbtilesDecouvertes < m.nbTiles) {
+        // On va regarder si on a découvert des tiles
+        for (auto tile : ti.tiles) {
+            // Si on ne connaît pas cette tile, on l'ajoute
+            if (m.tiles.find(tile.second.tileID) != m.tiles.end()) {
+                m.addTile(tile.second);
+            }
+        }
+    }
+}
+
+void GameManager::addNewObjects(TurnInfo ti) {
+    // Tous les objets
+    for (auto objet : ti.objects) {
+        // Si on ne connaît pas cet objet on l'ajoute
+        if (m.murs.find(objet.second.objectID) != m.murs.end()
+         && m.portes.find(objet.second.objectID) != m.portes.end()
+         && m.fenetres.find(objet.second.objectID) != m.fenetres.end()
+         && m.activateurs.find(objet.second.objectID) != m.activateurs.end()) {
+            m.addObject(objet.second);
+        }
+    }
+}
+
+void GameManager::updateModel(TurnInfo ti) {
+    // On essaye de rajouter les nouveaux objectifs et les nouvelles tiles !
+    addNewTiles(ti);
+    addNewObjects(ti);
 }
