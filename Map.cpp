@@ -323,6 +323,20 @@ float Map::distanceL2(int depart, int arrivee) {
     return (float)sqrt(pow(xd - xa, 2) + pow(yd - ya, 2));
 }
 
+int Map::distanceHex(int tile1ID, int tile2ID) {
+   int ligne1 = tiles[tile1ID].y;
+   int colonne1 = tiles[tile1ID].x;
+   int ligne2 = tiles[tile2ID].y;
+   int colonne2 = tiles[tile2ID].x;
+   int x1 = colonne1 - (ligne1 - ligne1 % 2) / 2;
+   int z1 = ligne1;
+   int y1 = -x1 - z1;
+   int x2 = colonne2 - (ligne2 - ligne2 % 2) / 2;
+   int z2 = ligne2;
+   int y2 = -x2 - z2;
+   return max(max(abs(x1 - x2), abs(y1 - y2)), abs(z1 - z2));
+}
+
 void Map::sortByDistance(vector<float>& base, vector<int>& autre1, vector<int>& autre2) {
     // On va vouloir trier base dans l'ordre décroissant (la plus petite valeur en dernière)
     // Puis retenir la permutation
