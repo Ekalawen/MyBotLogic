@@ -1,9 +1,9 @@
-#ifndef TEST_H
-#define TEST_H
+#ifndef BT_ACTION_H
+#define BT_ACTION_H
 
-#include "Noeud.h"
+#include "BT_Noeud.h"
 
-class BT_Action : public Noeud
+class BT_Action : public BT_Noeud
 {
 public:
 
