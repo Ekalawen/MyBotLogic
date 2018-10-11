@@ -1,6 +1,12 @@
 
 #include "GameManager.h"
 #include "Mouvement.h"
+
+#include "BehaviorTree/BT_Noeud.h"
+#include "BehaviorTree/BT_Composite.h"
+#include "BehaviorTree/Composite/Sequenceur.h"
+#include "BT_Tests/ObjectifsForAllNpcs.h"
+
 #include <algorithm>
 #include <tuple>
 using namespace std;
