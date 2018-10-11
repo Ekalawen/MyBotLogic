@@ -57,6 +57,7 @@ SET( AIBOT_HEADERS
 	MyBotLogic/Strategies/Expedition.h
 	MyBotLogic/Strategies/Exploitation.h
 	MyBotLogic/Strategies/Exploration.h
+	MyBotLogic/BT_Tests/ObjectifsForAllNpcs.h
 )
 
 SET( AIBOT_SRC 
@@ -78,6 +79,7 @@ SET( AIBOT_SRC
 	MyBotLogic/Strategies/Expedition.cpp
 	MyBotLogic/Strategies/Exploitation.cpp
 	MyBotLogic/Strategies/Exploration.cpp
+	MyBotLogic/BT_Tests/ObjectifsForAllNpcs.cpp
 	
 	#Main
 	Main.cpp
