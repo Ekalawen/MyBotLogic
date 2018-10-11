@@ -8,11 +8,12 @@ class Selecteur : public BT_Composite {
    Selecteur() = default;
 
    BT_Noeud::ETAT_ELEMENT execute() override {
-      int ind = 0;
-      BT_Noeud::ETAT_ELEMENT res = noeuds[ind]->execute();
-      while (++ind < noeuds.size() && res == BT_Noeud::ETAT_ELEMENT::ECHEC) {
-         res = noeuds[ind]->execute();
-      }
+	   int ind = 0;
+	   BT_Noeud::ETAT_ELEMENT res;
+	   do {
+		   res = noeuds[ind]->execute();
+	   } while (++ind < noeuds.size() && res == BT_Noeud::ETAT_ELEMENT::ECHEC);
+
       return res;
    }
 };

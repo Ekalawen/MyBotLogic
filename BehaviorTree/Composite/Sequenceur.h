@@ -9,10 +9,11 @@ class Sequenceur : public BT_Composite {
 
    BT_Noeud::ETAT_ELEMENT execute() override {
       int ind = 0;
-      BT_Noeud::ETAT_ELEMENT res = noeuds[ind]->execute();
-      while (++ind < noeuds.size() &&  res == BT_Noeud::ETAT_ELEMENT::REUSSI) {
-         res = noeuds[ind]->execute();
-      }
+      BT_Noeud::ETAT_ELEMENT res;
+	  do {
+		  res = noeuds[ind]->execute();
+	  } while (++ind < noeuds.size() && res == BT_Noeud::ETAT_ELEMENT::REUSSI);
+      
       return res;
    }
 };
