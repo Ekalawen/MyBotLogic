@@ -378,6 +378,9 @@ void Map::addTile(TileInfo tile) {
     if (tiles[tile.tileID].type == Tile::TileAttribute_Goal) {
         objectifs[tile.tileID] = tiles[tile.tileID];
     }
+
+    // On le note !
+    GameManager::Log("Decouverte de la tile " + to_string(tile.tileID));
 }
 
 // Il ne faut pas ajouter un objet qui est déjà dans la map !
@@ -403,5 +406,8 @@ void Map::addObject(ObjectInfo object) {
     for (auto voisin : tiles[object.tileID].voisins) {
         tiles[voisin].setVoisins(*this);
     }
+
+    // On le note !
+    GameManager::Log("Decouverte de l'objet " + to_string(object.objectID));
 }
 
