@@ -48,11 +48,15 @@ SET( AIBOT_HEADERS
 	MyBotLogic/MapTile.h
 	MyBotLogic/Npc.h
 	MyBotLogic/Chemin.h
+	MyBotLogic/Mouvement.h
 	MyBotLogic/BehaviorTree/BT_Noeud.h
 	MyBotLogic/BehaviorTree/BT_Composite.h
 	MyBotLogic/BehaviorTree/Composite/Selecteur.h
 	MyBotLogic/BehaviorTree/Composite/Sequenceur.h
 	MyBotLogic/BehaviorTree/BT_Feuille.h
+	MyBotLogic/Strategies/Expedition.h
+	MyBotLogic/Strategies/Exploitation.h
+	MyBotLogic/Strategies/Exploration.h
 )
 
 SET( AIBOT_SRC 
@@ -70,6 +74,11 @@ SET( AIBOT_SRC
 	MyBotLogic/MapTile.cpp
 	MyBotLogic/Npc.cpp
 	MyBotLogic/Chemin.cpp
+	MyBotLogic/Mouvement.cpp
+	MyBotLogic/Strategies/Expedition.cpp
+	MyBotLogic/Strategies/Exploitation.cpp
+	MyBotLogic/Strategies/Exploration.cpp
+	
 	#Main
 	Main.cpp
 )
