@@ -10,12 +10,20 @@ MapTile::MapTile(const TileInfo ti, int rowCount, int colCount) :
     y{id / colCount},
     voisins{vector<int>()},
     voisinsAccessibles{vector<int>()},
-    type{ti.tileType}
+    type{ti.tileType},
+    NE{ -1 },
+    E{ -1 },
+    SE{ -1 },
+    NW{ -1 },
+    W{ -1 },
+    SW{ -1 }
 {
 }
 
 void MapTile::setVoisins(Map m) {
+    // On réinitialise nos voisins
     voisins = vector<int>();
+    voisinsAccessibles = vector<int>();
 
     // Si quelqu'un peut me dire comment faire ça mieux, je suis preneur ! x)
 
@@ -24,6 +32,7 @@ void MapTile::setVoisins(Map m) {
     if (y % 2 == 0) { // Ligne paire
         // NE
         indice = id - m.colCount;
+        NE = indice;
         if (m.isInMap(indice) && y > 0) {
             voisins.push_back(indice);
             if (m.areAccessible(id, indice)) {
@@ -32,6 +41,7 @@ void MapTile::setVoisins(Map m) {
         }
         // E
         indice = id + 1;
+        E = indice;
         if (m.isInMap(indice) && x < m.colCount-1) {
             voisins.push_back(indice);
             if (m.areAccessible(id, indice)) {
@@ -40,6 +50,7 @@ void MapTile::setVoisins(Map m) {
         }
         // SE
         indice = id + m.colCount;
+        SE = indice;
         if (m.isInMap(indice) && y < m.rowCount-1) {
             voisins.push_back(indice);
             if (m.areAccessible(id, indice)) {
@@ -48,6 +59,7 @@ void MapTile::setVoisins(Map m) {
         }
         // SW
         indice = id + m.colCount - 1;
+        SW = indice;
         if (m.isInMap(indice) && y < m.rowCount-1 && x > 0) {
             voisins.push_back(indice);
             if (m.areAccessible(id, indice)) {
@@ -56,6 +68,7 @@ void MapTile::setVoisins(Map m) {
         }
         // W
         indice = id - 1;
+        W = indice;
         if (m.isInMap(indice) && x > 0) {
             voisins.push_back(indice);
             if (m.areAccessible(id, indice)) {
@@ -64,6 +77,7 @@ void MapTile::setVoisins(Map m) {
         }
         // NW
         indice = id - m.colCount - 1;
+        NW = indice;
         if (m.isInMap(indice) && y > 0 && x > 0) {
             voisins.push_back(indice);
             if (m.areAccessible(id, indice)) {
@@ -74,6 +88,7 @@ void MapTile::setVoisins(Map m) {
     } else { // Ligne impaire !
         // NE
         indice = id - m.colCount + 1;
+        NE = indice;
         if (m.isInMap(indice) && x < m.colCount-1) {
             voisins.push_back(indice);
             if (m.areAccessible(id, indice)) {
@@ -82,6 +97,7 @@ void MapTile::setVoisins(Map m) {
         }
         // E
         indice = id + 1;
+        E = indice;
         if (m.isInMap(indice) && x < m.colCount-1) {
             voisins.push_back(indice);
             if (m.areAccessible(id, indice)) {
@@ -90,6 +106,7 @@ void MapTile::setVoisins(Map m) {
         }
         // SE
         indice = id + m.colCount + 1;
+        SE = indice;
         if (m.isInMap(indice) && x < m.colCount-1 && y < m.rowCount-1) {
             voisins.push_back(indice);
             if (m.areAccessible(id, indice)) {
@@ -98,6 +115,7 @@ void MapTile::setVoisins(Map m) {
         }
         // SW
         indice = id + m.colCount;
+        SW = indice;
         if (m.isInMap(indice) && y < m.rowCount-1) {
             voisins.push_back(indice);
             if (m.areAccessible(id, indice)) {
@@ -106,6 +124,7 @@ void MapTile::setVoisins(Map m) {
         }
         // W
         indice = id - 1;
+        W = indice;
         if (m.isInMap(indice) && x > 0) {
             voisins.push_back(indice);
             if (m.areAccessible(id, indice)) {
@@ -114,6 +133,7 @@ void MapTile::setVoisins(Map m) {
         }
         // NW
         indice = id - m.colCount;
+        NW = indice;
         if (m.isInMap(indice)) { // Pas de conditions, c'est marrant ! =)
             voisins.push_back(indice);
             if (m.areAccessible(id, indice)) {
@@ -127,3 +147,30 @@ void MapTile::setVoisins(Map m) {
     }
 }
 
+int MapTile::getVoisinByDirection(Tile::ETilePosition direction) {
+    switch (direction)
+    {
+    case Tile::NE:
+        return NE;
+        break;
+    case Tile::E:
+        return E;
+        break;
+    case Tile::SE:
+        return SE;
+        break;
+    case Tile::SW:
+        return SW;
+        break;
+    case Tile::W:
+        return W;
+        break;
+    case Tile::NW:
+        return NW;
+        break;
+    default:
+        GameManager::Log("Tentative d'obtenir un voisin n'existant pas ! id = " + to_string(id) + " direction = " + to_string(direction));
+        return -1;
+        break;
+    }
+}

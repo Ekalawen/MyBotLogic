@@ -4,7 +4,11 @@
 #include "Map.h"
 #include "Npc.h"
 #include "Logger.h"
+<<<<<<< HEAD
 #include "Mouvement.h"
+=======
+#include "TurnInfo.h"
+>>>>>>> cd663c462ad2249adf525ba74dfe1a1b89a746a9
 #include <map>
 
 class GameManager {
@@ -17,7 +21,12 @@ public:
     GameManager(LevelInfo);
     void associateNpcsWithObjectiv();
     void moveNpcs(vector<Action*>& actionList); // Remplie l'action liste !
+<<<<<<< HEAD
     void ordonnerMouvements(vector<Mouvement*>& mouvements); // Permet d'ordonner les mouvements pour éviter les collisions et gérer les politesses de priorités =)
+=======
+    void ordonnerMouvements(vector<tuple<int, Tile::ETilePosition>>& mouvements); // Permet d'ordonner les mouvements pour éviter les collisions et gérer les politesses de priorités =)
+    void updateModel(TurnInfo); // Met à jour le modèle avec les informations que découvrent les NPCS
+>>>>>>> cd663c462ad2249adf525ba74dfe1a1b89a746a9
 
     static void Log(string str) { // Permet de débugger ! :D
         logger.Log(str);
@@ -25,6 +34,10 @@ public:
     static void SetLog(string path, string fileName) { // Permet d'initialiser le logger =)
         logger.Init(path, fileName);
     }
+
+private:
+    void addNewTiles(TurnInfo ti);
+    void addNewObjects(TurnInfo ti);
 };
 
 #endif

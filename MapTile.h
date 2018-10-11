@@ -14,12 +14,13 @@ public:
     Tile::ETileType type;
     vector<int> voisins;
     vector<int> voisinsAccessibles;
+    int NE, E, SE, SW, W, NW;
 
     MapTile() = default; // Constructeur par défaut obligatoire pour pouvoir utiliser tuple ...
     MapTile(const TileInfo, int rowCount, int colCount);
     void setVoisins(Map m);
-    // TODO :
-    // get des directions
+    int getVoisinByDirection(Tile::ETilePosition direction); // Permet de récupérer le voisin dans une certaine direction d'une tile
+
 };
 
 

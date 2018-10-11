@@ -1,6 +1,6 @@
-#ifndef NOEUD_H
-#define NOEUD_H
-class Noeud
+#ifndef BT_NOEUD_H
+#define BT_NOEUD_H
+class BT_Noeud
 {
 public:
    enum ETAT_ELEMENT{ECHEC,EN_COURS,REUSSI};
