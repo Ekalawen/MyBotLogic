@@ -6,6 +6,8 @@
 class Selecteur : public BT_Composite {
 
    Selecteur() = default;
+   Selecteur(vector<BT_Noeud*> noeuds) : BT_Composite(noeuds) {
+   }
 
    BT_Noeud::ETAT_ELEMENT execute() override {
 	   int ind = 0;
