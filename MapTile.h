@@ -14,7 +14,7 @@ public:
     Tile::ETileType type;
 	int NE, E, SE, SW, W, NW;
     vector<int> voisins; // les identifiants des voisins de la tuile
-	vector<int> voisinsAccessibles; // les voisins connus et accessible (pas de murs ni de fenêtres)
+	vector<int> voisinsAccessibles; // les voisins connus et accessible (pas de murs ni de fenêtres) y compris les voisinsMysterious
 	vector<int> voisinsVisibles; // les voisins visibles (contient les voisins accessibles et les voisins fenetres)
 	vector<int> voisinsMysterious; // les voisins sur lequel on a pas encore d'information
 
@@ -27,6 +27,7 @@ public:
 	bool isVoisinVisible(int id);
 	bool isVoisinMysterious(int id);
 	vector<int> getVoisinFenetres();
+	void putTileInVectors(Map m, int indice);
 };
 
 #endif
