@@ -6,6 +6,9 @@
 #include "Logger.h"
 #include "Mouvement.h"
 #include "TurnInfo.h"
+
+#include "BehaviorTree/Composite/Selecteur.h"
+
 #include <map>
 
 class GameManager {
@@ -13,6 +16,7 @@ class GameManager {
 public:
     Map m;
     map<int, Npc> npcs; // Les npcs sont stockés par leurs ids
+    Selecteur behaviorTreeManager;
 
     GameManager() = default;
     GameManager(LevelInfo);

@@ -8,6 +8,7 @@
 #include "BehaviorTree/Composite/Selecteur.h"
 #include "BT_Tests/CheminsForAllNpcs.h"
 #include "BT_Tests/ObjectifsForAllNpcs.h"
+#include "Strategies/Expedition.h"
 
 #include <algorithm>
 #include <tuple>
@@ -24,6 +25,21 @@ GameManager::GameManager(LevelInfo info) :
         NPCInfo npc = pair_npc.second;
         npcs[npc.npcID] = Npc(npc);
     }
+
+    //  Création du behaviorTree Manager
+    //ObjectifsForAllNpcs obj = ObjectifsForAllNpcs(*this);
+    //CheminsForAllNpcs chem = CheminsForAllNpcs(*this);
+    //Expedition expedition = Expedition();
+
+
+    //std::vector<BT_Noeud*> vec;
+    //vec.push_back(&obj);
+    //vec.push_back(&chem);
+    //Sequenceur seq = Sequenceur(vec);
+
+    //behaviorTreeManager = Selecteur(vec);
+
+
 }
 
 
