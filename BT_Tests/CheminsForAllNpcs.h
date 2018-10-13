@@ -6,12 +6,16 @@
 
 class CheminsForAllNpcs : public BT_Feuille {
    GameManager gm;
+   bool aDejaReussi;
 public:
-   CheminsForAllNpcs(GameManager& gm) : gm{ gm } {}
+    CheminsForAllNpcs(GameManager& gm) : gm{ gm }, aDejaReussi{ false } {}
 
    ETAT_ELEMENT execute() override {
        // Précondition vérifié : il y a au moins autant d'objectifs que de npcs
        // Calculer si il existe un chemin pour un objectif unique pour chacun des npcs
+
+       // Si on a déjà réussi cette méthode 1 fois, alors ça suffit et on a plus besoin de l'appeler à toutes les frames ! =)
+       if (aDejaReussi) return ETAT_ELEMENT::REUSSI;
 
        // Pour cela on va calculer tous les chemins allant de tous les npcs à tous les objectifs
        // Et on va stocker cet ensemble de chemins, pour chaque npc, dans sa liste de cheminsPossibles
@@ -65,6 +69,7 @@ public:
        }
 
        // Si on a réussi à affecter un objectif à tous les Npcs, alors on renvoie un succès
+       aDejaReussi = true;
        return ETAT_ELEMENT::REUSSI;
    }
 };
