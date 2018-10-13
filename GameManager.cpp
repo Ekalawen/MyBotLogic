@@ -17,7 +17,8 @@ using namespace std;
 Logger GameManager::logger{};
 
 GameManager::GameManager(LevelInfo info) :
-    m{Map(info)}
+    m{Map(info)},
+    objectifPris{}
 {
     // On récupère l'ensemble des npcs !
     for (auto pair_npc : info.npcs) {

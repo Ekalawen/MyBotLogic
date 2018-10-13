@@ -13,6 +13,7 @@ class GameManager {
 public:
     Map m;
     map<int, Npc> npcs; // Les npcs sont stockés par leurs ids
+    vector<int> objectifPris; // Permet de savoir quels sont les objectifs actuellement assignés à des npcs
 
     GameManager() = default;
     GameManager(LevelInfo);
