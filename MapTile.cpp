@@ -20,11 +20,30 @@ MapTile::MapTile(const TileInfo ti, int rowCount, int colCount) :
 {
 }
 
+void MapTile::putTileInVectors(Map m, int indice)
+{
+	if (m.areAccessible(id, indice)) {
+		voisinsAccessibles.push_back(indice);
+		voisinsVisibles.push_back(indice);
+	}
+	else if (m.areVisible(id, indice)) {
+		voisinsVisibles.push_back(indice);
+	}
+	else if (m.areMysteriousAccessible(id, indice)) {
+		voisinsMysterious.push_back(indice);
+		voisinsAccessibles.push_back(indice);
+	}
+	else if (m.areMysterious(id, indice)) {
+		voisinsMysterious.push_back(indice);
+	}
+}
+
 void MapTile::setVoisins(Map m) {
     // On réinitialise nos voisins
     voisins = vector<int>();
     voisinsAccessibles = vector<int>();
-    voisinsObscurs = vector<int>();
+    voisinsVisibles = vector<int>();
+    voisinsMysterious = vector<int>();
 
     // Si quelqu'un peut me dire comment faire ça mieux, je suis preneur ! x)
 
@@ -36,54 +55,42 @@ void MapTile::setVoisins(Map m) {
         NE = indice;
         if (m.isInMap(indice) && y > 0) {
             voisins.push_back(indice);
-            if (m.areAccessible(id, indice)) {
-                voisinsAccessibles.push_back(indice);
-            }
+			putTileInVectors(m, indice);
         }
         // E
         indice = id + 1;
         E = indice;
         if (m.isInMap(indice) && x < m.colCount-1) {
             voisins.push_back(indice);
-            if (m.areAccessible(id, indice)) {
-                voisinsAccessibles.push_back(indice);
-            }
+			putTileInVectors(m, indice);
         }
         // SE
         indice = id + m.colCount;
         SE = indice;
         if (m.isInMap(indice) && y < m.rowCount-1) {
             voisins.push_back(indice);
-            if (m.areAccessible(id, indice)) {
-                voisinsAccessibles.push_back(indice);
-            }
+			putTileInVectors(m, indice);
         }
         // SW
         indice = id + m.colCount - 1;
         SW = indice;
         if (m.isInMap(indice) && y < m.rowCount-1 && x > 0) {
             voisins.push_back(indice);
-            if (m.areAccessible(id, indice)) {
-                voisinsAccessibles.push_back(indice);
-            }
+			putTileInVectors(m, indice);
         }
         // W
         indice = id - 1;
         W = indice;
         if (m.isInMap(indice) && x > 0) {
             voisins.push_back(indice);
-            if (m.areAccessible(id, indice)) {
-                voisinsAccessibles.push_back(indice);
-            }
+			putTileInVectors(m, indice);
         }
         // NW
         indice = id - m.colCount - 1;
         NW = indice;
         if (m.isInMap(indice) && y > 0 && x > 0) {
             voisins.push_back(indice);
-            if (m.areAccessible(id, indice)) {
-                voisinsAccessibles.push_back(indice);
-            }
+			putTileInVectors(m, indice);
         }
 
     } else { // Ligne impaire !
@@ -92,54 +99,42 @@ void MapTile::setVoisins(Map m) {
         NE = indice;
         if (m.isInMap(indice) && x < m.colCount-1) {
             voisins.push_back(indice);
-            if (m.areAccessible(id, indice)) {
-                voisinsAccessibles.push_back(indice);
-            }
+			putTileInVectors(m, indice);
         }
         // E
         indice = id + 1;
         E = indice;
         if (m.isInMap(indice) && x < m.colCount-1) {
             voisins.push_back(indice);
-            if (m.areAccessible(id, indice)) {
-                voisinsAccessibles.push_back(indice);
-            }
+			putTileInVectors(m, indice);
         }
         // SE
         indice = id + m.colCount + 1;
         SE = indice;
         if (m.isInMap(indice) && x < m.colCount-1 && y < m.rowCount-1) {
             voisins.push_back(indice);
-            if (m.areAccessible(id, indice)) {
-                voisinsAccessibles.push_back(indice);
-            }
+			putTileInVectors(m, indice);
         }
         // SW
         indice = id + m.colCount;
         SW = indice;
         if (m.isInMap(indice) && y < m.rowCount-1) {
             voisins.push_back(indice);
-            if (m.areAccessible(id, indice)) {
-                voisinsAccessibles.push_back(indice);
-            }
+			putTileInVectors(m, indice);
         }
         // W
         indice = id - 1;
         W = indice;
         if (m.isInMap(indice) && x > 0) {
             voisins.push_back(indice);
-            if (m.areAccessible(id, indice)) {
-                voisinsAccessibles.push_back(indice);
-            }
+			putTileInVectors(m, indice);
         }
         // NW
         indice = id - m.colCount;
         NW = indice;
         if (m.isInMap(indice)) { // Pas de conditions, c'est marrant ! =)
             voisins.push_back(indice);
-            if (m.areAccessible(id, indice)) {
-                voisinsAccessibles.push_back(indice);
-            }
+			putTileInVectors(m, indice);
         }
     }
     GameManager::Log("Voisins accessibles de la tile " + to_string(id));
@@ -190,9 +185,9 @@ bool MapTile::isVoisinVisible(int id)
 	return std::find(voisinsVisibles.begin(), voisinsVisibles.end(), id) != voisinsVisibles.end();
 }
 
-bool MapTile::isVoisinObscur(int id)
+bool MapTile::isVoisinMysterious(int id)
 {
-	return std::find(voisinsObscurs.begin(), voisinsObscurs.end(), id) != voisinsObscurs.end();
+	return std::find(voisinsMysterious.begin(), voisinsMysterious.end(), id) != voisinsMysterious.end();
 }
 
 vector<int> MapTile::getVoisinFenetres()

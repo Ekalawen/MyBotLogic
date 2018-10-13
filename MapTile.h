@@ -14,9 +14,9 @@ public:
     Tile::ETileType type;
 	int NE, E, SE, SW, W, NW;
     vector<int> voisins; // les identifiants des voisins de la tuile
-	vector<int> voisinsAccessibles; // les voisins connus et accessible (pas de murs ni de fenêtres)
-	vector<int> voisinsVisibles; // les voisins visibles
-	vector<int> voisinsObscurs; // les voisins sur lequel on a pas encore d'information
+	vector<int> voisinsAccessibles; // les voisins connus et accessible (pas de murs ni de fenêtres) y compris les voisinsMysterious
+	vector<int> voisinsVisibles; // les voisins visibles (contient les voisins accessibles et les voisins fenetres)
+	vector<int> voisinsMysterious; // les voisins sur lequel on a pas encore d'information
 
     MapTile() = default; // Constructeur par défaut obligatoire pour pouvoir utiliser tuple ...
     MapTile(const TileInfo, int rowCount, int colCount);
@@ -25,8 +25,9 @@ public:
 	bool isVoisinAccessible(Tile::ETilePosition direction);
 	bool isVoisinAccessible(int id);
 	bool isVoisinVisible(int id);
-	bool isVoisinObscur(int id);
+	bool isVoisinMysterious(int id);
 	vector<int> getVoisinFenetres();
+	void putTileInVectors(Map m, int indice);
 };
 
 #endif

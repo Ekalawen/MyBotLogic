@@ -207,6 +207,163 @@ bool Map::areAccessible(int ind1, int ind2) {
     return true;
 }
 
+bool Map::areVisible(int ind1, int ind2) {
+	// On vérifie que les indices sont à coté l'un de l'autre !
+	MapTile mt1 = tiles[ind1];
+	bool pair = (mt1.y % 2 == 0);
+	if (pair) {
+		if (!(ind2 == ind1 - colCount // NE
+			|| ind2 == ind1 + 1 // E
+			|| ind2 == ind1 + colCount // SE
+			|| ind2 == ind1 + colCount - 1 // SW
+			|| ind2 == ind1 - 1 // W
+			|| ind2 == ind1 - colCount - 1)) { // NW
+			return false;
+		}
+	}
+	else { // impair
+		if (!(ind2 == ind1 - colCount + 1 // NE
+			|| ind2 == ind1 + 1 // E
+			|| ind2 == ind1 + colCount + 1 // SE
+			|| ind2 == ind1 + colCount // SW
+			|| ind2 == ind1 - 1 // W
+			|| ind2 == ind1 - colCount)) { // NW
+			return false;
+		}
+	}
+
+	// Puis on vérifie qu'il n'y a pas de murs, de porte fermée entre eux !
+	// Il faut vérifier la présence des objets sur les 2 tiles !
+	// Fenetres
+	for (auto fenetre : fenetres) {
+		if (fenetre.second.tileID == ind1 && fenetre.second.position == getDirection(ind1, ind2)) {
+			if (fenetre.second.tileID == ind2 && fenetre.second.position == getDirection(ind2, ind1)) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+bool Map::areMysterious(int ind1, int ind2) {
+	// On vérifie que les indices sont à coté l'un de l'autre !
+	MapTile mt1 = tiles[ind1];
+	bool pair = (mt1.y % 2 == 0);
+	if (pair) {
+		if (!(ind2 == ind1 - colCount // NE
+			|| ind2 == ind1 + 1 // E
+			|| ind2 == ind1 + colCount // SE
+			|| ind2 == ind1 + colCount - 1 // SW
+			|| ind2 == ind1 - 1 // W
+			|| ind2 == ind1 - colCount - 1)) { // NW
+			return false;
+		}
+	}
+	else { // impair
+		if (!(ind2 == ind1 - colCount + 1 // NE
+			|| ind2 == ind1 + 1 // E
+			|| ind2 == ind1 + colCount + 1 // SE
+			|| ind2 == ind1 + colCount // SW
+			|| ind2 == ind1 - 1 // W
+			|| ind2 == ind1 - colCount)) { // NW
+			return false;
+		}
+	}
+
+	// Puis on vérifie qu'il n'y a pas de murs, de porte fermée entre eux !
+	// Il faut vérifier la présence des objets sur les 2 tiles !
+	// Mur
+	for (auto mur : murs) {
+		if (mur.second.tileID == ind1 && mur.second.position == getDirection(ind1, ind2)) {
+			return false;
+		}
+		if (mur.second.tileID == ind2 && mur.second.position == getDirection(ind2, ind1)) {
+			return false;
+		}
+	}
+	// Porte fermée
+	for (auto porte : portes) {
+		if (porte.second.tileID == ind1 && porte.second.position == getDirection(ind1, ind2)
+			&& porte.second.objectStates.find(Object::ObjectState_Closed) != porte.second.objectStates.end()) {
+			return false;
+		}
+		if (porte.second.tileID == ind2 && porte.second.position == getDirection(ind2, ind1)
+			&& porte.second.objectStates.find(Object::ObjectState_Closed) != porte.second.objectStates.end()) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool Map::areMysteriousAccessible(int ind1, int ind2)
+{
+	// On vérifie que les indices sont à coté l'un de l'autre !
+	MapTile mt1 = tiles[ind1];
+	bool pair = (mt1.y % 2 == 0);
+	if (pair) {
+		if (!(ind2 == ind1 - colCount // NE
+			|| ind2 == ind1 + 1 // E
+			|| ind2 == ind1 + colCount // SE
+			|| ind2 == ind1 + colCount - 1 // SW
+			|| ind2 == ind1 - 1 // W
+			|| ind2 == ind1 - colCount - 1)) { // NW
+			return false;
+		}
+	}
+	else { // impair
+		if (!(ind2 == ind1 - colCount + 1 // NE
+			|| ind2 == ind1 + 1 // E
+			|| ind2 == ind1 + colCount + 1 // SE
+			|| ind2 == ind1 + colCount // SW
+			|| ind2 == ind1 - 1 // W
+			|| ind2 == ind1 - colCount)) { // NW
+			return false;
+		}
+	}
+
+	// On vérifie également que la case d'indice 2 n'est pas une case bloqué !
+	if (tiles[ind2].type == Tile::TileAttribute_Forbidden) {
+		return false;
+	}
+
+	// Puis on vérifie qu'il n'y a pas de murs, de porte fermée entre eux !
+	// Il faut vérifier la présence des objets sur les 2 tiles !
+	// Mur
+	for (auto mur : murs) {
+		if (mur.second.tileID == ind1 && mur.second.position == getDirection(ind1, ind2)) {
+			return false;
+		}
+		if (mur.second.tileID == ind2 && mur.second.position == getDirection(ind2, ind1)) {
+			return false;
+		}
+	}
+	// Porte fermée
+	for (auto porte : portes) {
+		if (porte.second.tileID == ind1 && porte.second.position == getDirection(ind1, ind2)
+			&& porte.second.objectStates.find(Object::ObjectState_Closed) != porte.second.objectStates.end()) {
+			return false;
+		}
+		if (porte.second.tileID == ind2 && porte.second.position == getDirection(ind2, ind1)
+			&& porte.second.objectStates.find(Object::ObjectState_Closed) != porte.second.objectStates.end()) {
+			return false;
+		}
+	}
+	// Fenetres
+	for (auto fenetre : fenetres) {
+		if (fenetre.second.tileID == ind1 && fenetre.second.position == getDirection(ind1, ind2)) {
+			return false;
+		}
+		if (fenetre.second.tileID == ind2 && fenetre.second.position == getDirection(ind2, ind1)) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+
 Tile::ETilePosition Map::getDirection(int ind1, int ind2) {
     MapTile mt1 = tiles[ind1];
     bool pair = (mt1.y % 2 == 0);
