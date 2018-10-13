@@ -15,7 +15,7 @@ public:
 	int NE, E, SE, SW, W, NW;
     vector<int> voisins; // les identifiants des voisins de la tuile
 	vector<int> voisinsAccessibles; // les voisins connus et accessible (pas de murs ni de fenêtres)
-	vector<int> voisinsVisibles; // les voisins visibles
+	vector<int> voisinsVisibles; // les voisins visibles (contient les voisins accessibles et les voisins fenetres)
 	vector<int> voisinsObscurs; // les voisins sur lequel on a pas encore d'information
 
     MapTile() = default; // Constructeur par défaut obligatoire pour pouvoir utiliser tuple ...

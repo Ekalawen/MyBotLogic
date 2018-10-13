@@ -24,7 +24,7 @@ void MapTile::setVoisins(Map m) {
     // On réinitialise nos voisins
     voisins = vector<int>();
     voisinsAccessibles = vector<int>();
-    voisinsObscurs = vector<int>();
+    voisinsVisibles = vector<int>();
 
     // Si quelqu'un peut me dire comment faire ça mieux, je suis preneur ! x)
 
@@ -38,7 +38,14 @@ void MapTile::setVoisins(Map m) {
             voisins.push_back(indice);
             if (m.areAccessible(id, indice)) {
                 voisinsAccessibles.push_back(indice);
+				voisinsVisibles.push_back(indice);
             }
+			else if (m.areVisible(id, indice)) {
+				voisinsVisibles.push_back(indice);
+			}
+			else if (m.areMysterious(id, indice)) {
+				voisinsObscurs.push_back(indice);
+			}
         }
         // E
         indice = id + 1;
@@ -47,7 +54,14 @@ void MapTile::setVoisins(Map m) {
             voisins.push_back(indice);
             if (m.areAccessible(id, indice)) {
                 voisinsAccessibles.push_back(indice);
-            }
+				voisinsVisibles.push_back(indice);
+			}
+			else if (m.areVisible(id, indice)) {
+				voisinsVisibles.push_back(indice);
+			}
+			else if (m.areMysterious(id, indice)) {
+				voisinsObscurs.push_back(indice);
+			}
         }
         // SE
         indice = id + m.colCount;
@@ -56,7 +70,14 @@ void MapTile::setVoisins(Map m) {
             voisins.push_back(indice);
             if (m.areAccessible(id, indice)) {
                 voisinsAccessibles.push_back(indice);
-            }
+				voisinsVisibles.push_back(indice);
+			}
+			else if (m.areVisible(id, indice)) {
+				voisinsVisibles.push_back(indice);
+			}
+			else if (m.areMysterious(id, indice)) {
+				voisinsObscurs.push_back(indice);
+			}
         }
         // SW
         indice = id + m.colCount - 1;
@@ -65,7 +86,14 @@ void MapTile::setVoisins(Map m) {
             voisins.push_back(indice);
             if (m.areAccessible(id, indice)) {
                 voisinsAccessibles.push_back(indice);
-            }
+				voisinsVisibles.push_back(indice);
+			}
+			else if (m.areVisible(id, indice)) {
+				voisinsVisibles.push_back(indice);
+			}
+			else if (m.areMysterious(id, indice)) {
+				voisinsObscurs.push_back(indice);
+			}
         }
         // W
         indice = id - 1;
@@ -74,7 +102,14 @@ void MapTile::setVoisins(Map m) {
             voisins.push_back(indice);
             if (m.areAccessible(id, indice)) {
                 voisinsAccessibles.push_back(indice);
-            }
+				voisinsVisibles.push_back(indice);
+			}
+			else if (m.areVisible(id, indice)) {
+				voisinsVisibles.push_back(indice);
+			}
+			else if (m.areMysterious(id, indice)) {
+				voisinsObscurs.push_back(indice);
+			}
         }
         // NW
         indice = id - m.colCount - 1;
@@ -83,7 +118,14 @@ void MapTile::setVoisins(Map m) {
             voisins.push_back(indice);
             if (m.areAccessible(id, indice)) {
                 voisinsAccessibles.push_back(indice);
-            }
+				voisinsVisibles.push_back(indice);
+			}
+			else if (m.areVisible(id, indice)) {
+				voisinsVisibles.push_back(indice);
+			}
+			else if (m.areMysterious(id, indice)) {
+				voisinsObscurs.push_back(indice);
+			}
         }
 
     } else { // Ligne impaire !
@@ -94,7 +136,14 @@ void MapTile::setVoisins(Map m) {
             voisins.push_back(indice);
             if (m.areAccessible(id, indice)) {
                 voisinsAccessibles.push_back(indice);
-            }
+				voisinsVisibles.push_back(indice);
+			}
+			else if (m.areVisible(id, indice)) {
+				voisinsVisibles.push_back(indice);
+			}
+			else if (m.areMysterious(id, indice)) {
+				voisinsObscurs.push_back(indice);
+			}
         }
         // E
         indice = id + 1;
@@ -103,7 +152,14 @@ void MapTile::setVoisins(Map m) {
             voisins.push_back(indice);
             if (m.areAccessible(id, indice)) {
                 voisinsAccessibles.push_back(indice);
-            }
+				voisinsVisibles.push_back(indice);
+			}
+			else if (m.areVisible(id, indice)) {
+				voisinsVisibles.push_back(indice);
+			}
+			else if (m.areMysterious(id, indice)) {
+				voisinsObscurs.push_back(indice);
+			}
         }
         // SE
         indice = id + m.colCount + 1;
@@ -112,7 +168,14 @@ void MapTile::setVoisins(Map m) {
             voisins.push_back(indice);
             if (m.areAccessible(id, indice)) {
                 voisinsAccessibles.push_back(indice);
-            }
+				voisinsVisibles.push_back(indice);
+			}
+			else if (m.areVisible(id, indice)) {
+				voisinsVisibles.push_back(indice);
+			}
+			else if (m.areMysterious(id, indice)) {
+				voisinsObscurs.push_back(indice);
+			}
         }
         // SW
         indice = id + m.colCount;
@@ -121,7 +184,14 @@ void MapTile::setVoisins(Map m) {
             voisins.push_back(indice);
             if (m.areAccessible(id, indice)) {
                 voisinsAccessibles.push_back(indice);
-            }
+				voisinsVisibles.push_back(indice);
+			}
+			else if (m.areVisible(id, indice)) {
+				voisinsVisibles.push_back(indice);
+			}
+			else if (m.areMysterious(id, indice)) {
+				voisinsObscurs.push_back(indice);
+			}
         }
         // W
         indice = id - 1;
@@ -130,7 +200,14 @@ void MapTile::setVoisins(Map m) {
             voisins.push_back(indice);
             if (m.areAccessible(id, indice)) {
                 voisinsAccessibles.push_back(indice);
-            }
+				voisinsVisibles.push_back(indice);
+			}
+			else if (m.areVisible(id, indice)) {
+				voisinsVisibles.push_back(indice);
+			}
+			else if (m.areMysterious(id, indice)) {
+				voisinsObscurs.push_back(indice);
+			}
         }
         // NW
         indice = id - m.colCount;
@@ -139,7 +216,14 @@ void MapTile::setVoisins(Map m) {
             voisins.push_back(indice);
             if (m.areAccessible(id, indice)) {
                 voisinsAccessibles.push_back(indice);
-            }
+				voisinsVisibles.push_back(indice);
+			}
+			else if (m.areVisible(id, indice)) {
+				voisinsVisibles.push_back(indice);
+			}
+			else if (m.areMysterious(id, indice)) {
+				voisinsObscurs.push_back(indice);
+			}
         }
     }
     GameManager::Log("Voisins accessibles de la tile " + to_string(id));
