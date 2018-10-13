@@ -10,7 +10,13 @@ MapTile::MapTile(const TileInfo ti, int rowCount, int colCount) :
 	y{ id / colCount },
 	voisins{ vector<int>() },
 	voisinsAccessibles{ vector<int>() },
-	type{ ti.tileType }
+	type{ ti.tileType },
+	NE{ -1 },
+	E{ -1 },
+	SE{ -1 },
+	NW{ -1 },
+	W{ -1 },
+	SW{ -1 }
 {
 }
 
