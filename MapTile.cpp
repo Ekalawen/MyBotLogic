@@ -25,6 +25,7 @@ void MapTile::setVoisins(Map m) {
     voisins = vector<int>();
     voisinsAccessibles = vector<int>();
     voisinsVisibles = vector<int>();
+    voisinsMysterious = vector<int>();
 
     // Si quelqu'un peut me dire comment faire ça mieux, je suis preneur ! x)
 
@@ -44,7 +45,7 @@ void MapTile::setVoisins(Map m) {
 				voisinsVisibles.push_back(indice);
 			}
 			else if (m.areMysterious(id, indice)) {
-				voisinsObscurs.push_back(indice);
+				voisinsMysterious.push_back(indice);
 			}
         }
         // E
@@ -60,7 +61,7 @@ void MapTile::setVoisins(Map m) {
 				voisinsVisibles.push_back(indice);
 			}
 			else if (m.areMysterious(id, indice)) {
-				voisinsObscurs.push_back(indice);
+				voisinsMysterious.push_back(indice);
 			}
         }
         // SE
@@ -76,7 +77,7 @@ void MapTile::setVoisins(Map m) {
 				voisinsVisibles.push_back(indice);
 			}
 			else if (m.areMysterious(id, indice)) {
-				voisinsObscurs.push_back(indice);
+				voisinsMysterious.push_back(indice);
 			}
         }
         // SW
@@ -92,7 +93,7 @@ void MapTile::setVoisins(Map m) {
 				voisinsVisibles.push_back(indice);
 			}
 			else if (m.areMysterious(id, indice)) {
-				voisinsObscurs.push_back(indice);
+				voisinsMysterious.push_back(indice);
 			}
         }
         // W
@@ -108,7 +109,7 @@ void MapTile::setVoisins(Map m) {
 				voisinsVisibles.push_back(indice);
 			}
 			else if (m.areMysterious(id, indice)) {
-				voisinsObscurs.push_back(indice);
+				voisinsMysterious.push_back(indice);
 			}
         }
         // NW
@@ -124,7 +125,7 @@ void MapTile::setVoisins(Map m) {
 				voisinsVisibles.push_back(indice);
 			}
 			else if (m.areMysterious(id, indice)) {
-				voisinsObscurs.push_back(indice);
+				voisinsMysterious.push_back(indice);
 			}
         }
 
@@ -142,7 +143,7 @@ void MapTile::setVoisins(Map m) {
 				voisinsVisibles.push_back(indice);
 			}
 			else if (m.areMysterious(id, indice)) {
-				voisinsObscurs.push_back(indice);
+				voisinsMysterious.push_back(indice);
 			}
         }
         // E
@@ -158,7 +159,7 @@ void MapTile::setVoisins(Map m) {
 				voisinsVisibles.push_back(indice);
 			}
 			else if (m.areMysterious(id, indice)) {
-				voisinsObscurs.push_back(indice);
+				voisinsMysterious.push_back(indice);
 			}
         }
         // SE
@@ -174,7 +175,7 @@ void MapTile::setVoisins(Map m) {
 				voisinsVisibles.push_back(indice);
 			}
 			else if (m.areMysterious(id, indice)) {
-				voisinsObscurs.push_back(indice);
+				voisinsMysterious.push_back(indice);
 			}
         }
         // SW
@@ -190,7 +191,7 @@ void MapTile::setVoisins(Map m) {
 				voisinsVisibles.push_back(indice);
 			}
 			else if (m.areMysterious(id, indice)) {
-				voisinsObscurs.push_back(indice);
+				voisinsMysterious.push_back(indice);
 			}
         }
         // W
@@ -206,7 +207,7 @@ void MapTile::setVoisins(Map m) {
 				voisinsVisibles.push_back(indice);
 			}
 			else if (m.areMysterious(id, indice)) {
-				voisinsObscurs.push_back(indice);
+				voisinsMysterious.push_back(indice);
 			}
         }
         // NW
@@ -222,7 +223,7 @@ void MapTile::setVoisins(Map m) {
 				voisinsVisibles.push_back(indice);
 			}
 			else if (m.areMysterious(id, indice)) {
-				voisinsObscurs.push_back(indice);
+				voisinsMysterious.push_back(indice);
 			}
         }
     }
@@ -274,9 +275,9 @@ bool MapTile::isVoisinVisible(int id)
 	return std::find(voisinsVisibles.begin(), voisinsVisibles.end(), id) != voisinsVisibles.end();
 }
 
-bool MapTile::isVoisinObscur(int id)
+bool MapTile::isVoisinMysterious(int id)
 {
-	return std::find(voisinsObscurs.begin(), voisinsObscurs.end(), id) != voisinsObscurs.end();
+	return std::find(voisinsMysterious.begin(), voisinsMysterious.end(), id) != voisinsMysterious.end();
 }
 
 vector<int> MapTile::getVoisinFenetres()
