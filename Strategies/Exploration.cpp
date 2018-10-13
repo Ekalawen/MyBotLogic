@@ -9,9 +9,9 @@ BT_Noeud::ETAT_ELEMENT Exploration::execute()
 	//prend les cases visibles par le npc
 
 	//dans cette stratégie on doit choisir la case qui a le meilleurs score
-	// le score se calcule selon la pondération du nombre d'information obtenable, de la distance au npc
+	// le score se calcule selon la pondération du nombre d'information obtenable (nombre de voisins Visible et nombre voisins Accessibles), et de la distance au NPC
 
-
+	// score (NPC,ID_TILE);
 
 
 	return ETAT_ELEMENT();

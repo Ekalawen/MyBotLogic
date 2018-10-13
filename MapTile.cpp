@@ -5,18 +5,12 @@
 #include "GameManager.h"
 
 MapTile::MapTile(const TileInfo ti, int rowCount, int colCount) :
-    id{static_cast<int>(ti.tileID)},
-    x{id % colCount},
-    y{id / colCount},
-    voisins{vector<int>()},
-    voisinsAccessibles{vector<int>()},
-    type{ti.tileType},
-    NE{ -1 },
-    E{ -1 },
-    SE{ -1 },
-    NW{ -1 },
-    W{ -1 },
-    SW{ -1 }
+	id{ static_cast<int>(ti.tileID) },
+	x{ id % colCount },
+	y{ id / colCount },
+	voisins{ vector<int>() },
+	voisinsAccessibles{ vector<int>() },
+	type{ ti.tileType }
 {
 }
 
@@ -24,6 +18,7 @@ void MapTile::setVoisins(Map m) {
     // On réinitialise nos voisins
     voisins = vector<int>();
     voisinsAccessibles = vector<int>();
+    voisinsObscurs = vector<int>();
 
     // Si quelqu'un peut me dire comment faire ça mieux, je suis preneur ! x)
 
@@ -145,6 +140,64 @@ void MapTile::setVoisins(Map m) {
     for (auto v : voisinsAccessibles) {
         GameManager::Log(to_string(v));
     }
+}
+
+bool MapTile::isVoisinAccessible(Tile::ETilePosition direction)
+{
+	int id{};
+	switch (direction)
+	{
+	case Tile::NE:
+		id = NE;
+		break;
+	case Tile::E:
+		id = E;
+		break;
+	case Tile::SE:
+		id = SE;
+		break;
+	case Tile::SW:
+		id = SW;
+		break;
+	case Tile::W:
+		id = W;
+		break;
+	case Tile::NW:
+		id = NW;
+		break;
+	default:
+		GameManager::Log("Tentative d'obtenir un voisin n'existant pas ! id = " + to_string(id) + " direction = " + to_string(direction));
+		return false;
+		break;
+	}
+
+	return std::find(voisinsAccessibles.begin(), voisinsAccessibles.end(), id) != voisinsAccessibles.end();
+}
+
+bool MapTile::isVoisinAccessible(int id)
+{
+	return std::find(voisinsAccessibles.begin(), voisinsAccessibles.end(), id) != voisinsAccessibles.end();
+}
+
+bool MapTile::isVoisinVisible(int id)
+{
+	return std::find(voisinsVisibles.begin(), voisinsVisibles.end(), id) != voisinsVisibles.end();
+}
+
+bool MapTile::isVoisinObscur(int id)
+{
+	return std::find(voisinsObscurs.begin(), voisinsObscurs.end(), id) != voisinsObscurs.end();
+}
+
+vector<int> MapTile::getVoisinFenetres()
+{
+	vector<int> voisinsFenetres{};
+	for (auto idTile : voisinsVisibles) {
+		if (std::find(voisinsAccessibles.begin(), voisinsAccessibles.end(), idTile) == voisinsAccessibles.end()) {
+			voisinsFenetres.push_back(idTile);
+		}
+	}
+	return voisinsFenetres;
 }
 
 int MapTile::getVoisinByDirection(Tile::ETilePosition direction) {
