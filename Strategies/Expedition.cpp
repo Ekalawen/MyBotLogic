@@ -95,7 +95,7 @@ float Expedition::interet(MapTile tile) {
 
     int nbInconnuesAccessibles = 0;
     int nbInconnuesNonAccessiblesMaisVisibles = 0;
-    for (auto autre : tile.voisinsObscurs) {
+    for (auto autre : tile.voisinsMysterious) {
         // Si autre est accessible ...
         if (find(tile.voisinsAccessibles.begin(), tile.voisinsAccessibles.end(), autre) != tile.voisinsAccessibles.end()) {
             nbInconnuesAccessibles++;
