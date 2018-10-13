@@ -6,6 +6,9 @@
 #include "Logger.h"
 #include "Mouvement.h"
 #include "TurnInfo.h"
+
+#include "BehaviorTree/Composite/Selecteur.h"
+
 #include <map>
 
 class GameManager {
@@ -13,6 +16,7 @@ class GameManager {
 public:
     Map m;
     map<int, Npc> npcs; // Les npcs sont stockés par leurs ids
+    Selecteur behaviorTreeManager; // Arbre de comportement du GameManager pour déterminer la stratégie à suivre
     vector<int> objectifPris; // Permet de savoir quels sont les objectifs actuellement assignés à des npcs
 
     GameManager() = default;
@@ -21,6 +25,7 @@ public:
     void moveNpcs(vector<Action*>& actionList); // Remplie l'action liste !
     void ordonnerMouvements(vector<Mouvement*>& mouvements); // Permet d'ordonner les mouvements pour éviter les collisions et gérer les politesses de priorités =)
     void updateModel(TurnInfo); // Met à jour le modèle avec les informations que découvrent les NPCS
+    void execute() { behaviorTreeManager.execute(); };
 
     static void Log(string str) { // Permet de débugger ! :D
         logger.Log(str);

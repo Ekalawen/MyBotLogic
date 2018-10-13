@@ -6,6 +6,7 @@ using namespace std;
 class BT_Composite : public BT_Noeud
 {
 public:
+   BT_Composite() = default;
    BT_Composite(vector<BT_Noeud*> noeuds) : noeuds{ noeuds } {
    }
    virtual ETAT_ELEMENT execute() override = 0;

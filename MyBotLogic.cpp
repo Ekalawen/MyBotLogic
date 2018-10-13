@@ -45,7 +45,7 @@ MyBotLogic::MyBotLogic() :
     gm = GameManager(_levelInfo);
 
     // On associe à chaque npc son objectif !
-    gm.associateNpcsWithObjectiv();
+    //gm.associateNpcsWithObjectiv();
 }
 
 /*virtual*/ void MyBotLogic::OnGameStarted()
@@ -57,6 +57,9 @@ MyBotLogic::MyBotLogic() :
 {
     // On complète notre modèle avec l'information qu'on vient de découvrir !
     gm.updateModel(_turnInfo);
+
+    // On définit notre stratégie en exécutant notre arbre de comportement
+    gm.execute();
 
     // On fait se déplacer chaque Npc vers son objectif associé =)
     GameManager::Log("TURN =========================== " + to_string(_turnInfo.turnNb));
