@@ -14,7 +14,7 @@ public:
     Tile::ETileType type;
     vector<int> voisins;
     vector<int> voisinsAccessibles;
-    int NE, E, SE, SW, W, NW;
+    int NE, E, SE, SW, W, NW; // -1 -> not accessible, -2 -> undefined
 
     MapTile() = default; // Constructeur par défaut obligatoire pour pouvoir utiliser tuple ...
     MapTile(const TileInfo, int rowCount, int colCount);
