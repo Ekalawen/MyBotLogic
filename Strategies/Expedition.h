@@ -18,7 +18,7 @@ public:
     enum { COEF_INTERET = 1 };
     enum { COEF_INTERET_ACCESSIBLE = 2 };
     enum { COEF_INTERET_INACCESSIBLE_MAIS_VISIBLE = 1 };
-    Expedition(GameManager);
+    Expedition(GameManager&);
     ETAT_ELEMENT execute() override;
 };
 

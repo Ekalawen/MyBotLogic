@@ -25,6 +25,7 @@ public:
     void moveNpcs(vector<Action*>& actionList); // Remplie l'action liste !
     void ordonnerMouvements(vector<Mouvement*>& mouvements); // Permet d'ordonner les mouvements pour éviter les collisions et gérer les politesses de priorités =)
     void updateModel(TurnInfo); // Met à jour le modèle avec les informations que découvrent les NPCS
+    void GameManager::InitializeBehaviorTree(); // Permet d'initialiser le BT
     void execute() { behaviorTreeManager.execute(); };
 
     static void Log(string str) { // Permet de débugger ! :D

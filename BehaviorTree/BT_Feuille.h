@@ -3,8 +3,7 @@
 
 #include "BT_Noeud.h"
 
-class BT_Feuille : public BT_Noeud
-{
+class BT_Feuille : public BT_Noeud {
 public:
    BT_Feuille() = default;
    virtual ETAT_ELEMENT execute() = 0;

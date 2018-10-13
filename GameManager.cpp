@@ -27,22 +27,21 @@ GameManager::GameManager(LevelInfo info) :
         NPCInfo npc = pair_npc.second;
         npcs[npc.npcID] = Npc(npc);
     }
+}
 
+void GameManager::InitializeBehaviorTree() {
     //  Création du behaviorTree Manager
-    ObjectifsForAllNpcs *obj = &ObjectifsForAllNpcs(*this);
-    CheminsForAllNpcs *chem = &CheminsForAllNpcs(*this);
-    Expedition *expedition = &Expedition(*this);
+    ObjectifsForAllNpcs *obj = new ObjectifsForAllNpcs(*this);
+    CheminsForAllNpcs *chem = new CheminsForAllNpcs(*this);
+    Expedition *expedition = new Expedition(*this);
     //Exploration exploration = Exploration(*this);
 
-    Selecteur *sel1 = &Selecteur({ chem, expedition });
+    Selecteur *sel1 = new Selecteur({ chem, expedition });
 
-    Sequenceur *seq2 = &Sequenceur({ obj, sel1 });
-
+    Sequenceur *seq2 = new Sequenceur({ obj, sel1 });
 
     //{&exploration};
     behaviorTreeManager = Selecteur({ seq2 });
-
-
 }
 
 

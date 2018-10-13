@@ -43,6 +43,8 @@ MyBotLogic::MyBotLogic() :
 	GameManager::SetLog(logpath, "MyLog.log");
     // On crée notre modèle du jeu en cours !
     gm = GameManager(_levelInfo);
+    gm.InitializeBehaviorTree();
+
 
     // On associe à chaque npc son objectif !
     //gm.associateNpcsWithObjectiv();

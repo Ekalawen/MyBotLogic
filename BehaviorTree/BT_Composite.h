@@ -3,14 +3,16 @@
 #include "BT_Noeud.h"
 #include <vector>
 using namespace std;
-class BT_Composite : public BT_Noeud
-{
+
+class BT_Composite : public BT_Noeud {
 public:
+   vector<BT_Noeud*> noeuds;
+
    BT_Composite() = default;
    BT_Composite(vector<BT_Noeud*> noeuds) : noeuds{ noeuds } {
    }
+
    virtual ETAT_ELEMENT execute() override = 0;
-public:
-   vector<BT_Noeud*> noeuds;
 };
+
 #endif

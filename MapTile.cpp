@@ -137,10 +137,6 @@ void MapTile::setVoisins(Map m) {
 			putTileInVectors(m, indice);
         }
     }
-    GameManager::Log("Voisins accessibles de la tile " + to_string(id));
-    for (auto v : voisinsAccessibles) {
-        GameManager::Log(to_string(v));
-    }
 }
 
 bool MapTile::isVoisinAccessible(Tile::ETilePosition direction)

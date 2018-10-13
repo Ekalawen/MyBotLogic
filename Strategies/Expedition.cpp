@@ -1,12 +1,13 @@
 
 #include "Expedition.h"
 
-Expedition::Expedition(GameManager gm) 
+Expedition::Expedition(GameManager& gm) 
     : gm{ gm }
 {
 }
 
 BT_Noeud::ETAT_ELEMENT Expedition::execute() {
+    GameManager::Log("Appel de Expedition.execute()");
     // Donc on sait ou se trouvent les objectifs
     // Mais on n'a pas de chemins qui nous relie à eux
     // Donc on va chercher à trouver ces chemins !

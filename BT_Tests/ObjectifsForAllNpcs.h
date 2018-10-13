@@ -5,20 +5,13 @@
 #include "../GameManager.h"
 
 class ObjectifsForAllNpcs : public BT_Feuille {
-
-   GameManager gm;
+   GameManager& gm;
 public:
    ObjectifsForAllNpcs(GameManager& gm) : gm{ gm } {}
 
    // Méthode naive car si on voit un objectif, on considère qu'il est atteignable !!!
    // On devrait vérifier si il y a au moins autant d'objectifs potentiellement atteignables que de npcs !!!
-   ETAT_ELEMENT execute() override {
-      if (gm.m.objectifs.size() >= gm.npcs.size()) {
-         return ETAT_ELEMENT::REUSSI;
-      } else {
-         return ETAT_ELEMENT::ECHEC;
-      }
-   }
+   ETAT_ELEMENT execute() override;
 };
 
 #endif

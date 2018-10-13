@@ -3,8 +3,8 @@
 #include "Exploration.h"
 #include "MyBotLogic/BehaviorTree/BT_Noeud.h"
 
-BT_Noeud::ETAT_ELEMENT Exploration::execute()
-{
+BT_Noeud::ETAT_ELEMENT Exploration::execute() {
+    GameManager::Log("Appel de Exploration.execute()");
 	/// PSEUDO-CODE
 	//prend les cases visibles par le npc
 
