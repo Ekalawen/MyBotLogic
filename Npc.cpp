@@ -1,6 +1,7 @@
 
 #include "Npc.h"
 #include "Globals.h"
+#include "GameManager.h"
 
 Npc::Npc(const NPCInfo info) : 
     id{ static_cast<int>(info.npcID) },
@@ -17,10 +18,16 @@ void Npc::move(Tile::ETilePosition direction, Map m) {
 
 void Npc::resetChemins() {
     cheminsPossibles.clear();
+    scoresAssocies.clear();
 }
 
 void Npc::addChemin(Chemin& chemin) {
     cheminsPossibles.push_back(chemin);
+}
+
+void Npc::addCheminWithScore(Chemin& chemin, float score) {
+    addChemin(chemin);
+    scoresAssocies.push_back(score);
 }
 
 Chemin Npc::getCheminMinNonPris(vector<int> objectifsPris, int tailleCheminMax) {
@@ -39,4 +46,26 @@ Chemin Npc::getCheminMinNonPris(vector<int> objectifsPris, int tailleCheminMax) 
     }
 
     return cheminMin;
+}
+
+int Npc::affecterMeilleurChemin() {
+    if (scoresAssocies.empty() || cheminsPossibles.empty()) {
+        GameManager::Log("Appel de affecterMeilleurChemin sur des données vides !");
+    }
+
+    // On cherche le meilleur score
+    float bestScore = -1;
+    int bestScoreIndice = 0;
+    for (int i = 0; i < scoresAssocies.size(); ++i) {
+        if (scoresAssocies[i] > bestScore) {
+            bestScore = scoresAssocies[i];
+            bestScoreIndice = i;
+        }
+    }
+
+    // On affecte son chemin
+    chemin = cheminsPossibles[bestScoreIndice];
+
+    // On renvoie la destination
+    return chemin.destination();
 }
