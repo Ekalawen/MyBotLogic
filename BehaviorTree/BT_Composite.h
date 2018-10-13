@@ -9,12 +9,7 @@ public:
    BT_Composite(vector<BT_Noeud*> noeuds) : noeuds{ noeuds } {
    }
    virtual ETAT_ELEMENT execute() override = 0;
-protected:
+public:
    vector<BT_Noeud*> noeuds;
-
-   
-
-
-
 };
 #endif

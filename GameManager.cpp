@@ -5,6 +5,8 @@
 #include "BehaviorTree/BT_Noeud.h"
 #include "BehaviorTree/BT_Composite.h"
 #include "BehaviorTree/Composite/Sequenceur.h"
+#include "BehaviorTree/Composite/Selecteur.h"
+#include "BT_Tests/CheminsForAllNpcs.h"
 #include "BT_Tests/ObjectifsForAllNpcs.h"
 
 #include <algorithm>

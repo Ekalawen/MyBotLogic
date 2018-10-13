@@ -5,8 +5,12 @@
 
 class Sequenceur : public BT_Composite {
 
-   Sequenceur() = default;
+public:
 
+   Sequenceur() = default;
+   Sequenceur(vector<BT_Noeud*> noeuds) : BT_Composite(noeuds) {
+   }
+  
    BT_Noeud::ETAT_ELEMENT execute() override {
       int ind = 0;
       BT_Noeud::ETAT_ELEMENT res;
