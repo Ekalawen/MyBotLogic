@@ -1,4 +1,3 @@
-
 #ifndef EXPEDITION_H
 #define EXPEDITION_H
 
@@ -6,7 +5,7 @@
 #include "MyBotLogic/GameManager.h"
 
 class Expedition : public BT_Feuille {
-    GameManager gm;
+    GameManager &gm;
     void calculerScoresEtCheminsTilesPourNpc(Npc& npc, vector<int> tilesAVisiter);
     void saveScore(MapTile tile, Npc& npc, vector<int> tilesAVisiter);
     float interet(MapTile tile);

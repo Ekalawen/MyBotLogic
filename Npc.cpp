@@ -54,9 +54,9 @@ int Npc::affecterMeilleurChemin() {
     }
 
     // On cherche le meilleur score
-    float bestScore = -1;
+    float bestScore = scoresAssocies[0];
     int bestScoreIndice = 0;
-    for (int i = 0; i < scoresAssocies.size(); ++i) {
+    for (int i = 1; i < scoresAssocies.size(); ++i) {
         if (scoresAssocies[i] > bestScore) {
             bestScore = scoresAssocies[i];
             bestScoreIndice = i;
@@ -65,6 +65,7 @@ int Npc::affecterMeilleurChemin() {
 
     // On affecte son chemin
     chemin = cheminsPossibles[bestScoreIndice];
+    GameManager::Log("Le Npc " + to_string(id) + " va rechercher la tile " + to_string(chemin.destination()));
 
     // On renvoie la destination
     return chemin.destination();

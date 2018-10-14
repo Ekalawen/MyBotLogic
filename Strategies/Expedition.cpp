@@ -77,12 +77,14 @@ void Expedition::saveScore(MapTile tile, Npc& npc, vector<int> tilesAVisiter) {
     score += distanceMoyenne * COEF_DISTANCE_OBJECTIFS_TILE;
 
     // On regarde la distance moyenne de cette tuile aux autres tuiles déjà visités
-    float distanceMoyenneTiles = 0;
-    for (auto autre : tilesAVisiter) {
-        distanceMoyenneTiles += gm.m.distanceHex(tile.id, autre);
+    if (!tilesAVisiter.empty()) {
+        float distanceMoyenneTiles = 0;
+        for (auto autre : tilesAVisiter) {
+            distanceMoyenneTiles += gm.m.distanceHex(tile.id, autre);
+        }
+        distanceMoyenneTiles /= tilesAVisiter.size();
+        score += distanceMoyenneTiles * COEF_DISTANCE_TILE_AUTRE_TILES;
     }
-    distanceMoyenneTiles /= tilesAVisiter.size();
-    score += distanceMoyenneTiles * COEF_DISTANCE_TILE_AUTRE_TILES;
 
     // Il reste à affecter le score et le chemin au npc
     npc.addCheminWithScore(cheminNpcTile, score);

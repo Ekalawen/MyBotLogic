@@ -41,6 +41,10 @@ public:
 
     void addTile(TileInfo); // Permet de rajouter une tile à la map
     void addObject(ObjectInfo); // Permet de rajouter un object à la map
+
+    int getX(int id); // Permet de récupérer x et y à partir d'un indice
+    int getY(int id);
+    vector<int> getVoisins(int id);
 };
 
 

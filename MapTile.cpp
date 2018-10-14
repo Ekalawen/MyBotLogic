@@ -22,20 +22,20 @@ MapTile::MapTile(const TileInfo ti, int rowCount, int colCount) :
 
 void MapTile::putTileInVectors(Map m, int indice)
 {
-	if (m.areAccessible(id, indice)) {
-		voisinsAccessibles.push_back(indice);
-		voisinsVisibles.push_back(indice);
-	}
-	else if (m.areVisible(id, indice)) {
-		voisinsVisibles.push_back(indice);
-	}
-	else if (m.areMysteriousAccessible(id, indice)) {
-		voisinsMysterious.push_back(indice);
-		voisinsAccessibles.push_back(indice);
-	}
-	else if (m.areMysterious(id, indice)) {
-		voisinsMysterious.push_back(indice);
-	}
+    // Accessible
+    if (m.areAccessible(id, indice)) {
+        voisinsAccessibles.push_back(indice);
+    }
+
+    // Visibles
+    if (m.areVisible(id, indice)) {
+        voisinsVisibles.push_back(indice);
+    }
+
+    // Mystérieux
+    if (m.areMysterious(id, indice)) {
+        voisinsMysterious.push_back(indice);
+    }
 }
 
 void MapTile::setVoisins(Map m) {

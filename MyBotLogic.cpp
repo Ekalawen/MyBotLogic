@@ -57,6 +57,8 @@ MyBotLogic::MyBotLogic() :
 
 /*virtual*/ void MyBotLogic::FillActionList(TurnInfo& _turnInfo, std::vector<Action*>& _actionList)
 {
+    GameManager::Log("TURN =========================== " + to_string(_turnInfo.turnNb));
+
     // On complète notre modèle avec l'information qu'on vient de découvrir !
     gm.updateModel(_turnInfo);
 
@@ -64,7 +66,6 @@ MyBotLogic::MyBotLogic() :
     gm.execute();
 
     // On fait se déplacer chaque Npc vers son objectif associé =)
-    GameManager::Log("TURN =========================== " + to_string(_turnInfo.turnNb));
     gm.moveNpcs(_actionList);
 }
 

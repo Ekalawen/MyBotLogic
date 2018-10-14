@@ -78,9 +78,11 @@ Chemin Map::aStar(int depart, int arrivee) {
 
     // Et on ajoute ses voisins accessibles à la liste des cases à visiter !
     for (auto voisin : tiles[depart].voisinsAccessibles) {
-        toVisit.push_back(voisin);
-        toVisitAntecedants.push_back(depart);
-        toVisitDistance.push_back(distanceL2(voisin, arrivee));
+        if (tiles.find(voisin) != tiles.end()) {
+            toVisit.push_back(voisin);
+            toVisitAntecedants.push_back(depart);
+            toVisitDistance.push_back(distanceL2(voisin, arrivee));
+        }
     }
 
     // On trie, pour a*
@@ -104,9 +106,12 @@ Chemin Map::aStar(int depart, int arrivee) {
         for (auto voisin : currentTile.voisinsAccessibles) {
            // Si notre voisin n'appartient pas aux cases visitées ou à visiter, alors on l'ajoute à cette dernière
            if (!(find(visitees.begin(), visitees.end(), voisin) != visitees.end()) && !(find(toVisit.begin(), toVisit.end(), voisin) != toVisit.end())) {
-              toVisit.push_back(voisin);
-              toVisitAntecedants.push_back(currentTile.id);
-              toVisitDistance.push_back(distanceL2(voisin, arrivee));
+              // On l'ajoute que si cette case a déjà été découverte !
+              if (tiles.find(voisin) != tiles.end()) {
+                  toVisit.push_back(voisin);
+                  toVisitAntecedants.push_back(currentTile.id);
+                  toVisitDistance.push_back(distanceL2(voisin, arrivee));
+              }
            }
         }
 
@@ -121,7 +126,6 @@ Chemin Map::aStar(int depart, int arrivee) {
         while (currentTile.id != depart) {
             // On enregistre la case
             path.chemin.push_back(currentTile.id);
-
 
             // Faut trouver son indice dans le vecteur ...
             int indice;
@@ -145,9 +149,8 @@ Chemin Map::aStar(int depart, int arrivee) {
 }
 
 bool Map::areAccessible(int ind1, int ind2) {
-    // On vérifie que les indices sont à coté l'un de l'autre !
-    MapTile mt1 = tiles[ind1];
-    bool pair = (mt1.y % 2 == 0);
+    int y = getY(ind1);
+    bool pair = (y % 2 == 0);
     if (pair) {
         if (!(ind2 == ind1 - colCount // NE
             || ind2 == ind1 + 1 // E
@@ -169,7 +172,8 @@ bool Map::areAccessible(int ind1, int ind2) {
     }
 
     // On vérifie également que la case d'indice 2 n'est pas une case bloqué !
-    if (tiles[ind2].type == Tile::TileAttribute_Forbidden) {
+    if (tiles.find(ind2) != tiles.end()
+    && tiles[ind2].type == Tile::TileAttribute_Forbidden) {
         return false;
     }
 
@@ -209,47 +213,8 @@ bool Map::areAccessible(int ind1, int ind2) {
 
 bool Map::areVisible(int ind1, int ind2) {
 	// On vérifie que les indices sont à coté l'un de l'autre !
-	MapTile mt1 = tiles[ind1];
-	bool pair = (mt1.y % 2 == 0);
-	if (pair) {
-		if (!(ind2 == ind1 - colCount // NE
-			|| ind2 == ind1 + 1 // E
-			|| ind2 == ind1 + colCount // SE
-			|| ind2 == ind1 + colCount - 1 // SW
-			|| ind2 == ind1 - 1 // W
-			|| ind2 == ind1 - colCount - 1)) { // NW
-			return false;
-		}
-	}
-	else { // impair
-		if (!(ind2 == ind1 - colCount + 1 // NE
-			|| ind2 == ind1 + 1 // E
-			|| ind2 == ind1 + colCount + 1 // SE
-			|| ind2 == ind1 + colCount // SW
-			|| ind2 == ind1 - 1 // W
-			|| ind2 == ind1 - colCount)) { // NW
-			return false;
-		}
-	}
-
-	// Puis on vérifie qu'il n'y a pas de murs, de porte fermée entre eux !
-	// Il faut vérifier la présence des objets sur les 2 tiles !
-	// Fenetres
-	for (auto fenetre : fenetres) {
-		if (fenetre.second.tileID == ind1 && fenetre.second.position == getDirection(ind1, ind2)) {
-			if (fenetre.second.tileID == ind2 && fenetre.second.position == getDirection(ind2, ind1)) {
-				return true;
-			}
-		}
-	}
-
-	return false;
-}
-
-bool Map::areMysterious(int ind1, int ind2) {
-	// On vérifie que les indices sont à coté l'un de l'autre !
-	MapTile mt1 = tiles[ind1];
-	bool pair = (mt1.y % 2 == 0);
+    int y = getY(ind1);
+	bool pair = (y % 2 == 0);
 	if (pair) {
 		if (!(ind2 == ind1 - colCount // NE
 			|| ind2 == ind1 + 1 // E
@@ -284,24 +249,35 @@ bool Map::areMysterious(int ind1, int ind2) {
 	}
 	// Porte fermée
 	for (auto porte : portes) {
-		if (porte.second.tileID == ind1 && porte.second.position == getDirection(ind1, ind2)
-			&& porte.second.objectStates.find(Object::ObjectState_Closed) != porte.second.objectStates.end()) {
-			return false;
-		}
-		if (porte.second.tileID == ind2 && porte.second.position == getDirection(ind2, ind1)
-			&& porte.second.objectStates.find(Object::ObjectState_Closed) != porte.second.objectStates.end()) {
-			return false;
-		}
+        if (find(porte.second.objectTypes.begin(), porte.second.objectTypes.end(), Object::ObjectType_Window) == porte.second.objectTypes.end()) { // Non fenêtré ! :D
+            if (porte.second.tileID == ind1 && porte.second.position == getDirection(ind1, ind2)
+                && porte.second.objectStates.find(Object::ObjectState_Closed) != porte.second.objectStates.end()) {
+                return false;
+            }
+            if (porte.second.tileID == ind2 && porte.second.position == getDirection(ind2, ind1)
+                && porte.second.objectStates.find(Object::ObjectState_Closed) != porte.second.objectStates.end()) {
+                return false;
+            }
+        }
 	}
 
 	return true;
 }
 
+bool Map::areMysterious(int ind1, int ind2) {
+    if (areAccessible(ind1, ind2) || areVisible(ind1, ind2)) {
+        if (tiles.find(ind2) == tiles.end()) {
+            return true;
+        }
+    }
+    return false;
+}
+
 bool Map::areMysteriousAccessible(int ind1, int ind2)
 {
 	// On vérifie que les indices sont à coté l'un de l'autre !
-	MapTile mt1 = tiles[ind1];
-	bool pair = (mt1.y % 2 == 0);
+    int y = getY(ind1);
+	bool pair = (y % 2 == 0);
 	if (pair) {
 		if (!(ind2 == ind1 - colCount // NE
 			|| ind2 == ind1 + 1 // E
@@ -324,7 +300,8 @@ bool Map::areMysteriousAccessible(int ind1, int ind2)
 	}
 
 	// On vérifie également que la case d'indice 2 n'est pas une case bloqué !
-	if (tiles[ind2].type == Tile::TileAttribute_Forbidden) {
+	if (tiles.find(ind2) != tiles.end()
+    && tiles[ind2].type == Tile::TileAttribute_Forbidden) {
 		return false;
 	}
 
@@ -365,8 +342,8 @@ bool Map::areMysteriousAccessible(int ind1, int ind2)
 
 
 Tile::ETilePosition Map::getDirection(int ind1, int ind2) {
-    MapTile mt1 = tiles[ind1];
-    bool pair = (mt1.y % 2 == 0);
+    int y = getY(ind1);
+    bool pair = (y % 2 == 0);
     if (pair) {
         if (ind2 == ind1 - colCount) {
             return Tile::NE;
@@ -402,7 +379,7 @@ Tile::ETilePosition Map::getDirection(int ind1, int ind2) {
 }
 
 int Map::getAdjacentTileAt(int tileSource, Tile::ETilePosition direction) {
-    int y = tileSource / colCount;
+    int y = getY(tileSource);
     bool pair = (y % 2 == 0);
     int res;
     switch (direction)
@@ -467,10 +444,10 @@ float Map::distanceL2(int depart, int arrivee) {
 }
 
 int Map::distanceHex(int tile1ID, int tile2ID) {
-   int ligne1 = tiles[tile1ID].y;
-   int colonne1 = tiles[tile1ID].x;
-   int ligne2 = tiles[tile2ID].y;
-   int colonne2 = tiles[tile2ID].x;
+   int ligne1 = tile1ID / colCount;
+   int colonne1 = tile1ID % colCount;
+   int ligne2 = tile2ID / colCount;
+   int colonne2 = tile2ID % colCount;
    int x1 = colonne1 - (ligne1 - ligne1 % 2) / 2;
    int z1 = ligne1;
    int y1 = -x1 - z1;
@@ -524,11 +501,16 @@ void Map::addTile(TileInfo tile) {
     tiles[tile.tileID] = MapTile(tile, rowCount, colCount);
 
     // On met à jour ses voisins
-    tiles[tile.tileID].setVoisins(*this);
+    if (tiles.find(tile.tileID) != tiles.end()) {
+        tiles[tile.tileID].setVoisins(*this);
+    }
 
     // Puis on met à jour les voisins de ses voisins ! :D
     for (auto voisin : tiles[tile.tileID].voisins) {
-        tiles[voisin].setVoisins(*this);
+        // Il faut vérifier que cette tile existe déjà ! Canard !
+        if (tiles.find(voisin) != tiles.end()) {
+            tiles[voisin].setVoisins(*this);
+        }
     }
 
     // Si c'est un objectif, on le retient !
@@ -557,14 +539,97 @@ void Map::addObject(ObjectInfo object) {
     }
     
     // Puis on met à jour les voisins de la case de notre objet
-    tiles[object.tileID].setVoisins(*this);
+    if (tiles.find(object.tileID) != tiles.end()) {
+        tiles[object.tileID].setVoisins(*this);
+    }
 
     // Puis on met à jour les voisins des voisins de la case de notre objet
-    for (auto voisin : tiles[object.tileID].voisins) {
-        tiles[voisin].setVoisins(*this);
+    for (auto voisin : getVoisins(object.tileID)) {
+        if (tiles.find(voisin) != tiles.end()) {
+            tiles[voisin].setVoisins(*this);
+        }
     }
 
     // On le note !
-    GameManager::Log("Decouverte de l'objet " + to_string(object.objectID));
+    GameManager::Log("Decouverte de l'objet " + to_string(object.objectID) + " sur la tuile " + to_string(object.tileID) + " orienté en " + to_string(object.position));
 }
 
+int Map::getX(int id) {
+    return id % colCount;
+}
+int Map::getY(int id) {
+    return id / colCount;
+}
+
+vector<int> Map::getVoisins(int id) {
+    vector<int> voisins;
+    int x = getX(id);
+    int y = getY(id);
+    int indice;
+    if (y % 2 == 0) { // Ligne paire
+        // NE
+        indice = id - colCount;
+        if (isInMap(indice) && y > 0) {
+            voisins.push_back(indice);
+        }
+        // E
+        indice = id + 1;
+        if (isInMap(indice) && x < colCount-1) {
+            voisins.push_back(indice);
+        }
+        // SE
+        indice = id + colCount;
+        if (isInMap(indice) && y < rowCount-1) {
+            voisins.push_back(indice);
+        }
+        // SW
+        indice = id + colCount - 1;
+        if (isInMap(indice) && y < rowCount-1 && x > 0) {
+            voisins.push_back(indice);
+        }
+        // W
+        indice = id - 1;
+        if (isInMap(indice) && x > 0) {
+            voisins.push_back(indice);
+        }
+        // NW
+        indice = id - colCount - 1;
+        if (isInMap(indice) && y > 0 && x > 0) {
+            voisins.push_back(indice);
+        }
+
+    } else { // Ligne impaire !
+        // NE
+        indice = id - colCount + 1;
+        if (isInMap(indice) && x < colCount-1) {
+            voisins.push_back(indice);
+        }
+        // E
+        indice = id + 1;
+        if (isInMap(indice) && x < colCount-1) {
+            voisins.push_back(indice);
+        }
+        // SE
+        indice = id + colCount + 1;
+        if (isInMap(indice) && x < colCount-1 && y < rowCount-1) {
+            voisins.push_back(indice);
+        }
+        // SW
+        indice = id + colCount;
+        if (isInMap(indice) && y < rowCount-1) {
+            voisins.push_back(indice);
+        }
+        // W
+        indice = id - 1;
+        if (isInMap(indice) && x > 0) {
+            voisins.push_back(indice);
+        }
+        // NW
+        indice = id - colCount;
+        if (isInMap(indice)) { // Pas de conditions, c'est marrant ! =)
+            voisins.push_back(indice);
+        }
+    }
+
+    return voisins;
+}

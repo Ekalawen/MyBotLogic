@@ -34,14 +34,13 @@ void GameManager::InitializeBehaviorTree() {
     ObjectifsForAllNpcs *obj = new ObjectifsForAllNpcs(*this);
     CheminsForAllNpcs *chem = new CheminsForAllNpcs(*this);
     Expedition *expedition = new Expedition(*this);
-    //Exploration exploration = Exploration(*this);
+    Exploration *exploration = new Exploration(*this);
 
     Selecteur *sel1 = new Selecteur({ chem, expedition });
 
     Sequenceur *seq2 = new Sequenceur({ obj, sel1 });
 
-    //{&exploration};
-    behaviorTreeManager = Selecteur({ seq2 });
+    behaviorTreeManager = Selecteur({ seq2, exploration });
 }
 
 
@@ -273,7 +272,7 @@ void GameManager::addNewTiles(TurnInfo ti) {
         // On va regarder si on a découvert des tiles
         for (auto tile : ti.tiles) {
             // Si on ne connaît pas cette tile, on l'ajoute
-            if (m.tiles.find(tile.second.tileID) != m.tiles.end()) {
+            if (m.tiles.find(tile.second.tileID) == m.tiles.end()) {
                 m.addTile(tile.second);
             }
         }
@@ -284,10 +283,10 @@ void GameManager::addNewObjects(TurnInfo ti) {
     // Tous les objets
     for (auto objet : ti.objects) {
         // Si on ne connaît pas cet objet on l'ajoute
-        if (m.murs.find(objet.second.objectID) != m.murs.end()
-         && m.portes.find(objet.second.objectID) != m.portes.end()
-         && m.fenetres.find(objet.second.objectID) != m.fenetres.end()
-         && m.activateurs.find(objet.second.objectID) != m.activateurs.end()) {
+        if (m.murs.find(objet.second.objectID) == m.murs.end()
+         && m.portes.find(objet.second.objectID) == m.portes.end()
+         && m.fenetres.find(objet.second.objectID) == m.fenetres.end()
+         && m.activateurs.find(objet.second.objectID) == m.activateurs.end()) {
             m.addObject(objet.second);
         }
     }
