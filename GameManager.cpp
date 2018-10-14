@@ -6,7 +6,6 @@
 #include "BehaviorTree/BT_Composite.h"
 #include "BehaviorTree/Composite/Sequenceur.h"
 #include "BehaviorTree/Composite/Selecteur.h"
-#include "BT_Tests/CheminsForAllNpcs.h"
 #include "BT_Tests/ObjectifsForAllNpcs.h"
 #include "Strategies/Expedition.h"
 #include "Strategies/Exploration.h"
@@ -33,12 +32,11 @@ GameManager::GameManager(LevelInfo info) :
 void GameManager::InitializeBehaviorTree() {
     //  Création du behaviorTree Manager
     ObjectifsForAllNpcs *objectifs = new ObjectifsForAllNpcs(*this);
-    CheminsForAllNpcs *chemins = new CheminsForAllNpcs(*this);
     ScoreStrategie *expedition = new Expedition(*this, "Expedition");
     ScoreStrategie *exploration = new Exploration(*this, "Exploration");
     Exploitation *exploitation = new Exploitation(*this);
 
-    Selecteur *selecteur = new Selecteur({ chemins, expedition });
+    Selecteur *selecteur = new Selecteur({ exploitation, expedition });
 
     Sequenceur *sequenceur = new Sequenceur({ objectifs, selecteur });
 
