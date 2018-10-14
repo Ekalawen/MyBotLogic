@@ -32,6 +32,7 @@ void Npc::addCheminWithScore(Chemin& chemin, float score) {
 
 Chemin Npc::getCheminMinNonPris(vector<int> objectifsPris, int tailleCheminMax) {
     Chemin cheminMin;
+    cheminMin.setInaccessible();
     int distMin = tailleCheminMax;
 
     for (int i = 0; i < cheminsPossibles.size(); i++) {
@@ -50,7 +51,10 @@ Chemin Npc::getCheminMinNonPris(vector<int> objectifsPris, int tailleCheminMax) 
 
 int Npc::affecterMeilleurChemin() {
     if (scoresAssocies.empty() || cheminsPossibles.empty()) {
-        GameManager::Log("Appel de affecterMeilleurChemin sur des données vides !");
+        // Dans ce cas-là on reste sur place !
+        chemin = Chemin{};
+        GameManager::Log("Le Npc " + to_string(id) + " n'a rien a rechercher et reste sur place !");
+        return tileId;
     }
 
     // On cherche le meilleur score

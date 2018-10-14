@@ -32,9 +32,9 @@ GameManager::GameManager(LevelInfo info) :
 void GameManager::InitializeBehaviorTree() {
     //  Création du behaviorTree Manager
     ObjectifsForAllNpcs *objectifs = new ObjectifsForAllNpcs(*this);
+    Exploitation *exploitation = new Exploitation(*this);
     ScoreStrategie *expedition = new Expedition(*this, "Expedition");
     ScoreStrategie *exploration = new Exploration(*this, "Exploration");
-    Exploitation *exploitation = new Exploitation(*this);
 
     Selecteur *selecteur = new Selecteur({ exploitation, expedition });
 
@@ -68,7 +68,7 @@ void GameManager::associateNpcsWithObjectiv() {
             Npc& npc = pair_npc.second;
             if (find(npcAffectes.begin(), npcAffectes.end(), npc.id) == npcAffectes.end()) { // Si on a pas déjà affecté cet npc !
                 Chemin chemin = npc.getCheminMinNonPris(objectifsPris, m.tailleCheminMax());
-                if (chemin.distance() > distMax) {
+                if (chemin.isAccessible() && chemin.distance() > distMax) {
                     lastNpc = &npc;
                     distMax = chemin.distance();
                     cheminMin = chemin;
@@ -78,8 +78,13 @@ void GameManager::associateNpcsWithObjectiv() {
 
         // Puis on lui affecte son chemin le plus court !
         lastNpc->chemin = cheminMin;
-        lastNpc->tileObjectif = cheminMin.destination();
-        objectifsPris.push_back(cheminMin.destination());
+        if (!cheminMin.empty()) {
+            lastNpc->tileObjectif = cheminMin.destination();
+            objectifsPris.push_back(cheminMin.destination());
+        } else {
+            lastNpc->tileObjectif = lastNpc->tileId;
+            objectifsPris.push_back(lastNpc->tileId);
+        }
 
         npcAffectes.push_back(lastNpc->id);
     }
@@ -154,6 +159,7 @@ void GameManager::moveNpcs(vector<Action*>& actionList) {
     for (auto& npc : npcs) {
         // Si le npc doit aller quelquepart !!!
         GameManager::Log("NPC = " + to_string(npc.second.id));
+        GameManager::Log("chemin = " + npc.second.chemin.toString());
         GameManager::Log("case actuelle = " + to_string(npc.second.tileId));
         if (!npc.second.chemin.chemin.empty()) {
             // On récupère la case où il doit aller
@@ -215,7 +221,7 @@ void GameManager::ordonnerMouvements(vector<Mouvement*>& mouvements) {
             int t = m.getAdjacentTileAt(npcs[mvt->npcID].tileId, mvt->direction);
             if (t == tileCible && npcs[mvt->npcID].id != npcMax) {
                 // Et il faut aussi lui rendre son mouvement pour le prochain tour !
-                npcs[mvt->direction].chemin.chemin.push_back(m.getAdjacentTileAt(npcs[mvt->direction].tileId, mvt->direction));
+                npcs[mvt->npcID].chemin.chemin.push_back(m.getAdjacentTileAt(npcs[mvt->npcID].tileId, mvt->direction));
                 mvt->direction = Tile::CENTER;
                 GameManager::Log("Npc " + to_string(mvt->npcID) + " est poli et laisse passer.");
             }

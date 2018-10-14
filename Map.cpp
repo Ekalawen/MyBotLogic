@@ -141,7 +141,7 @@ Chemin Map::aStar(int depart, int arrivee) {
         }
     }
     else {
-        GameManager::Log("On ne peut pas accéder à cette tile ! (chemin = " + to_string(depart) + ", " + to_string(arrivee) + ")");
+        // GameManager::Log("On ne peut pas accéder à cette tile ! (chemin = " + to_string(depart) + ", " + to_string(arrivee) + ")");
         path.setInaccessible();
     }
 
@@ -514,7 +514,8 @@ void Map::addTile(TileInfo tile) {
     }
 
     // Si c'est un objectif, on le retient !
-    if (tiles[tile.tileID].type == Tile::TileAttribute_Goal) {
+    if(tile.tileType == Tile::TileAttribute_Goal) {
+        tiles[tile.tileID].type == Tile::TileAttribute_Goal;
         objectifs[tile.tileID] = tiles[tile.tileID];
     }
 

@@ -3,7 +3,7 @@
 
 Chemin::Chemin()
     : chemin{ vector<int>() },
-    inaccessible{false}
+    inaccessible{ false }
 {
 }
 
@@ -28,5 +28,25 @@ void Chemin::setInaccessible() {
 
 bool Chemin::isAccessible() {
     return !inaccessible;
+}
+
+bool Chemin::empty() {
+    return chemin.empty();
+}
+
+string Chemin::toString() {
+    string str;
+    if (chemin.size() <= 0) {
+        str += "vide";
+    } else {
+        if (!isAccessible()) {
+            str += "inaccessible : ";
+        }
+        for (int i = chemin.size() - 1; i >= 0; i--) {
+            str += to_string(chemin[i]) + " ";
+        }
+        str.pop_back();
+    }
+    return str;
 }
 

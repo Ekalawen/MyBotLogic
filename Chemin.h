@@ -15,6 +15,8 @@ public:
     int destination();
     void setInaccessible();
     bool isAccessible();
+    bool empty();
+    string toString();
 };
 
 
