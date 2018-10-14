@@ -10,6 +10,7 @@
 #include "BT_Tests/ObjectifsForAllNpcs.h"
 #include "Strategies/Expedition.h"
 #include "Strategies/Exploration.h"
+#include "Strategies/Exploitation.h"
 
 #include <algorithm>
 #include <tuple>
@@ -31,16 +32,17 @@ GameManager::GameManager(LevelInfo info) :
 
 void GameManager::InitializeBehaviorTree() {
     //  Création du behaviorTree Manager
-    ObjectifsForAllNpcs *obj = new ObjectifsForAllNpcs(*this);
-    CheminsForAllNpcs *chem = new CheminsForAllNpcs(*this);
-    Expedition *expedition = new Expedition(*this);
-    Exploration *exploration = new Exploration(*this);
+    ObjectifsForAllNpcs *objectifs = new ObjectifsForAllNpcs(*this);
+    CheminsForAllNpcs *chemins = new CheminsForAllNpcs(*this);
+    ScoreStrategie *expedition = new Expedition(*this, "Expedition");
+    ScoreStrategie *exploration = new Exploration(*this, "Exploration");
+    Exploitation *exploitation = new Exploitation(*this);
 
-    Selecteur *sel1 = new Selecteur({ chem, expedition });
+    Selecteur *selecteur = new Selecteur({ chemins, expedition });
 
-    Sequenceur *seq2 = new Sequenceur({ obj, sel1 });
+    Sequenceur *sequenceur = new Sequenceur({ objectifs, selecteur });
 
-    behaviorTreeManager = Selecteur({ seq2, exploration });
+    behaviorTreeManager = Selecteur({ sequenceur, exploration });
 }
 
 

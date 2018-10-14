@@ -1,51 +1,9 @@
 
 #include "Expedition.h"
 
-Expedition::Expedition(GameManager& gm) 
-    : gm{ gm }
+Expedition::Expedition(GameManager& gm, string nom) 
+    : ScoreStrategie(gm, nom)
 {
-}
-
-BT_Noeud::ETAT_ELEMENT Expedition::execute() {
-    GameManager::Log("Appel de Expedition.execute()");
-    // Donc on sait ou se trouvent les objectifs
-    // Mais on n'a pas de chemins qui nous relie à eux
-    // Donc on va chercher à trouver ces chemins !
-
-    // Pour ça chaque npc va visiter en premier les tuiles avec le plus haut score
-
-    // L'ensemble des tiles que l'on va visiter
-    vector<int> tilesAVisiter;
-
-    for (auto& pair : gm.npcs) {
-        Npc& npc = pair.second;
-        npc.resetChemins();
-
-        // Calculer le score de chaque tile pour le npc
-        // En même temps on calcul le chemin pour aller à cette tile
-        // On stocke ces deux informations dans l'attribut cheminsPossibles du Npc
-        calculerScoresEtCheminsTilesPourNpc(npc, tilesAVisiter);
-
-        // Choisir la meilleure tile pour ce npc et lui affecter son chemin
-        int tileChoisi = npc.affecterMeilleurChemin();
-
-        // Mettre à jour les tilesAVisiter
-        tilesAVisiter.push_back(tileChoisi);
-    }
-
-    return ETAT_ELEMENT::REUSSI;
-}
-
-// Calcul le score de chaque tiles et son chemin pour un npc
-// On prend en compte les tilesAVisiter des autres npcs pour que les tiles soient loins les unes des autres
-void Expedition::calculerScoresEtCheminsTilesPourNpc(Npc& npc, vector<int> tilesAVisiter) {
-    for (auto pair : gm.m.tiles) {
-        MapTile tile = pair.second;
-        // On ne considère la tile que si on ne la visite pas déjà !
-        if (find(tilesAVisiter.begin(), tilesAVisiter.end(), tile.id) == tilesAVisiter.end()) {
-            saveScore(tile, npc, tilesAVisiter);
-        }
-    }
 }
 
 // Le score est définit ici par plusieurs critères :

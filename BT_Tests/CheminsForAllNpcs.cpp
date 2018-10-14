@@ -2,7 +2,7 @@
 #include "../BehaviorTree/BT_Noeud.h"
 
 BT_Noeud::ETAT_ELEMENT CheminsForAllNpcs::execute() {
-    GameManager::Log("Appel de CheminsForAllNpcs.execute()");
+    GameManager::Log("CheminsForAllNpcs");
     // Précondition vérifié : il y a au moins autant d'objectifs que de npcs
     // Calculer si il existe un chemin pour un objectif unique pour chacun des npcs
 
