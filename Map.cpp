@@ -75,6 +75,9 @@ struct Noeud {
         : tile{ tile }, cout{ cout }, evaluation{ evaluation }, idPrecedant{ idPrecedant } {
         heuristique = cout + evaluation * coefEvaluation;
     }
+    friend bool operator==(const Noeud& g, const Noeud& d) {
+        return g.tile.id == d.tile.id;
+    }
 };
 float Noeud::coefEvaluation = 1;
 
@@ -105,14 +108,21 @@ Chemin Map::WAStar(int depart, int arrivee, float coefEvaluation) {
                 // On construit le nouveau noeud
                 Noeud nouveauNoeud = Noeud(tiles[voisin], noeudCourant.cout + 1, distanceL2(voisin, arrivee), noeudCourant.tile.id);
                 // On vérifie s'il existe dans closedList avec un cout inférieur ou dans openList avec un cout inférieur
-                bool existeDeja = false;
-                for (auto n : closedList) if (n.tile.id == nouveauNoeud.tile.id && n.heuristique < nouveauNoeud.heuristique) existeDeja = true;
-                for (auto n : openList) if (n.tile.id == nouveauNoeud.tile.id && n.heuristique < nouveauNoeud.heuristique) existeDeja = true;
+                auto itClose = find(closedList.begin(), closedList.end(), nouveauNoeud);
+                    //[nouveauNoeud](Noeud n) {return n.tile.id == nouveauNoeud.tile.id; });
+                auto itOpen = find(openList.begin(), openList.end(), nouveauNoeud);
+                    //[nouveauNoeud](Noeud n) {return n.tile.id == nouveauNoeud.tile.id; });
 
-                // Si on a pas déjà ce noeuds ...
-                if (!existeDeja) {
-                    // On l'ajoute aux ouverts !                    
-                    openList.push_back(nouveauNoeud); // On notera qu'il n'est pas grâve d'avoir plusieurs fois le même noeud avec des poids différents <3 C'est une petite optimisation =)
+                if (itClose == closedList.end() && itOpen == openList.end()) {
+                    openList.push_back(nouveauNoeud);
+                } else if (itClose != closedList.end() && itOpen == openList.end()) {
+                    //int indice = distance(closedList.begin(), itClose);
+                    //closedList[indice] = nouveauNoeud;
+                    // (*itClose) = nouveauNoeud;
+                } else if (itClose == closedList.end() && itOpen != openList.end()) {
+                    (*itOpen) = nouveauNoeud;
+                } else {
+                    GameManager::Log("OMG On a fait n'imp !");
                 }
             }
         }
@@ -129,13 +139,6 @@ Chemin Map::WAStar(int depart, int arrivee, float coefEvaluation) {
 
     // On test si on a atteint l'objectif ou pas
     if (noeudCourant.tile.id == arrivee) {
-
-        // On trie la closed liste pour que les noeuds avec la plus petite heuristique soient les plus rapides
-        // IL EST POSSIBLE QUE CE BLOCK SOIT UNE ERREUR !!! <3
-        sort(closedList.begin(), closedList.end(), [](const Noeud a, const Noeud b) {
-            return a.heuristique < b.heuristique; // Par ordre croissant
-        });
-
         // Si oui on reconstruit le path !
         while (noeudCourant.tile.id != depart) {
             // On enregistre dans le path ...
