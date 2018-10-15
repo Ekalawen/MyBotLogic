@@ -26,7 +26,7 @@ public:
 	bool isVoisinAccessible(int id) const noexcept;
 	bool isVoisinVisible(int id) const noexcept;
 	bool isVoisinMysterious(int id) const noexcept;
-	vector<int> getVoisinFenetres() noexcept;
+	vector<int> getVoisinFenetres() const noexcept;
 	void putTileInVectors(Map m, int indice) noexcept;
 };
 

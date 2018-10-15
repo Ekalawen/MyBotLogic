@@ -181,7 +181,7 @@ bool MapTile::isVoisinMysterious(int id) const noexcept {
 	return std::find(voisinsMysterious.begin(), voisinsMysterious.end(), id) != voisinsMysterious.end();
 }
 
-vector<int> MapTile::getVoisinFenetres() noexcept {
+vector<int> MapTile::getVoisinFenetres() const noexcept {
 	vector<int> voisinsFenetres{};
 	for (auto idTile : voisinsVisibles) {
 		if (std::find(voisinsAccessibles.begin(), voisinsAccessibles.end(), idTile) == voisinsAccessibles.end()) {

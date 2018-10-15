@@ -59,7 +59,7 @@ bool Map::isInMap(int idTile) const noexcept {
     return idTile >= 0 && idTile < rowCount * colCount;
 }
 
-map<unsigned int, MapTile> Map::getObjectifs() noexcept {
+map<unsigned int, MapTile> Map::getObjectifs() const noexcept {
     return objectifs;
 }
 
@@ -541,7 +541,7 @@ int Map::getAdjacentTileAt(int tileSource, Tile::ETilePosition direction) const 
     }
 }
 
-float Map::distanceL2(int depart, int arrivee) noexcept {
+float Map::distanceL2(int depart, int arrivee) const noexcept {
     int xd = depart % colCount;
     int yd = depart / colCount;
     int xa = arrivee % colCount;
@@ -549,7 +549,7 @@ float Map::distanceL2(int depart, int arrivee) noexcept {
     return (float)sqrt(pow(xd - xa, 2) + pow(yd - ya, 2));
 }
 
-int Map::distanceHex(int tile1ID, int tile2ID) noexcept {
+int Map::distanceHex(int tile1ID, int tile2ID) const noexcept {
    int ligne1 = tile1ID / colCount;
    int colonne1 = tile1ID % colCount;
    int ligne2 = tile2ID / colCount;
@@ -594,7 +594,7 @@ void Map::sortByDistance(vector<tuple<int, float>>& base, vector<int>& autre1, v
     autre2 = autre2bis;
 }
 
-int Map::tailleCheminMax() noexcept {
+int Map::tailleCheminMax() const noexcept {
     return colCount * rowCount + 1;
 }
 
