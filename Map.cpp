@@ -63,13 +63,111 @@ map<unsigned int, MapTile> Map::getObjectifs() {
     return objectifs;
 }
 
+struct Noeud {
+    static float coefEvaluation;
+    MapTile tile;
+    float cout; // La distance calculé depuis le départ
+    float evaluation; // La distance estimée à l'arrivée
+    float heuristique; // La somme du cout et de l'evaluation
+    int idPrecedant;
+    Noeud() = default;
+    Noeud(MapTile tile, float cout, float evaluation, int idPrecedant)
+        : tile{ tile }, cout{ cout }, evaluation{ evaluation }, idPrecedant{ idPrecedant } {
+        heuristique = cout + evaluation * coefEvaluation;
+    }
+};
+float Noeud::coefEvaluation = 1;
+
+// Il s'agit de l'algorithme AStar auquel on peut rajouter un coefficiant à l'évaluation pour modifier l'heuristique.
+// Par défaut sa valeur est 1. Si on l'augmente l'algorithme ira plus vite au détriment de trouver un chemin optimal.
+// Si on le diminue l'algorithme se rapproche de plus en plus d'un parcours en largeur.
+Chemin Map::WAStar(int depart, int arrivee, float coefEvaluation) {
+    Noeud::coefEvaluation = coefEvaluation;
+    // On crée nos liste et notre noeud courrant
+    vector<Noeud> closedList{};
+    vector<Noeud> openList{};
+    Noeud noeudCourant;
+    Chemin path;
+
+    // On ajoute le noeud initial
+    openList.push_back(Noeud(tiles[depart], 0, distanceL2(depart, arrivee), depart));
+
+    // Tant qu'il reste des noeuds à traiter ...
+    while (!openList.empty() && noeudCourant.tile.id != arrivee) {
+        // On récupère le premier noeud de notre liste
+        noeudCourant = openList.back();
+        openList.pop_back();
+
+        // Pour tous les voisins du noeud courant ...
+        for (auto voisin : noeudCourant.tile.voisinsAccessibles) {
+            // On vérifie que le voisin existe ...
+            if (tiles.find(voisin) != tiles.end()) {
+                // On construit le nouveau noeud
+                Noeud nouveauNoeud = Noeud(tiles[voisin], noeudCourant.cout + 1, distanceL2(voisin, arrivee), noeudCourant.tile.id);
+                // On vérifie s'il existe dans closedList avec un cout inférieur ou dans openList avec un cout inférieur
+                bool existeDeja = false;
+                for (auto n : closedList) if (n.tile.id == nouveauNoeud.tile.id && n.heuristique < nouveauNoeud.heuristique) existeDeja = true;
+                for (auto n : openList) if (n.tile.id == nouveauNoeud.tile.id && n.heuristique < nouveauNoeud.heuristique) existeDeja = true;
+
+                // Si on a pas déjà ce noeuds ...
+                if (!existeDeja) {
+                    // On l'ajoute aux ouverts !                    
+                    openList.push_back(nouveauNoeud); // On notera qu'il n'est pas grâve d'avoir plusieurs fois le même noeud avec des poids différents <3 C'est une petite optimisation =)
+                }
+            }
+        }
+
+        // On trie notre openList pour que le dernier soit le meilleur !
+        // Donc celui qui minimise et le cout, et l'évaluation !
+        sort(openList.begin(), openList.end(), [](const Noeud a, const Noeud b) {
+            return a.heuristique > b.heuristique; // Par ordre décroissant
+        });
+
+        // On ferme notre noeud
+        closedList.push_back(noeudCourant);
+    }
+
+    // On test si on a atteint l'objectif ou pas
+    if (noeudCourant.tile.id == arrivee) {
+
+        // On trie la closed liste pour que les noeuds avec la plus petite heuristique soient les plus rapides
+        // IL EST POSSIBLE QUE CE BLOCK SOIT UNE ERREUR !!! <3
+        sort(closedList.begin(), closedList.end(), [](const Noeud a, const Noeud b) {
+            return a.heuristique < b.heuristique; // Par ordre croissant
+        });
+
+        // Si oui on reconstruit le path !
+        while (noeudCourant.tile.id != depart) {
+            // On enregistre dans le path ...
+            path.chemin.push_back(noeudCourant.tile.id);
+
+            // On cherche l'antécédant ...
+            for (auto n : closedList) {
+                if (n.tile.id == noeudCourant.idPrecedant) {
+                    // On remet à jour le noeud ...
+                    noeudCourant = n;
+                    break;
+                }
+            }
+        }
+
+    } else {
+        // Si non le path est inaccessible !
+        path.setInaccessible();
+    }
+
+    return path;
+}
+
+// AStar doit prendre en compte l'heuristique (la distance supposée à l'arrivée) et le coût (la distance réelle au départ)
+// pour chaque case pour être sur que l'algorithme trouve réellement un des chemins optimaux ! <3
 Chemin Map::aStar(int depart, int arrivee) {
     Chemin path; // le chemin final
     MapTile currentTile = tiles[depart];
     vector<int> visitees; // Les cases que l'on a déjà découvertes
     vector<int> toVisit; // Les cases qu'il faut visiter !
     vector<int> toVisitAntecedants; // Les cases qu'il faut visiter !
-    vector<float> toVisitDistance; // La distance L1 à l'arrivée
+    vector<tuple<int, float>> toVisitCoutPoids; // En premier le le cout, puis le poids (cad la somme cout + heuristique)
     vector<int> antecedants; // à partir de quelle case on l'a décourverte
 
     // On marque le point de départ
@@ -81,12 +179,14 @@ Chemin Map::aStar(int depart, int arrivee) {
         if (tiles.find(voisin) != tiles.end()) {
             toVisit.push_back(voisin);
             toVisitAntecedants.push_back(depart);
-            toVisitDistance.push_back(distanceL2(voisin, arrivee));
+            float heuristique = distanceL2(voisin, arrivee);
+            int cout = 1; // Ce sont les premiers voisins !
+            toVisitCoutPoids.push_back(tuple<int, float>(cout, cout + heuristique));
         }
     }
 
     // On trie, pour a*
-    sortByDistance(toVisitDistance, toVisit, toVisitAntecedants);
+    sortByDistance(toVisitCoutPoids, toVisit, toVisitAntecedants);
 
     // Tant qu'il reste des voisins à visiter
     while (currentTile.id != arrivee && !toVisit.empty()) {
@@ -96,7 +196,8 @@ Chemin Map::aStar(int depart, int arrivee) {
         toVisit.pop_back();
         antecedants.push_back(toVisitAntecedants.back()); // On retient l'antecedant !
         toVisitAntecedants.pop_back();
-        toVisitDistance.pop_back();
+        int coutCurrentTile = get<int>(toVisitCoutPoids.back()); // On retient le cout de la case avant de la supprimer !
+        toVisitCoutPoids.pop_back();
 
         // On la marque
         visitees.push_back(currentTile.id);
@@ -110,14 +211,20 @@ Chemin Map::aStar(int depart, int arrivee) {
               if (tiles.find(voisin) != tiles.end()) {
                   toVisit.push_back(voisin);
                   toVisitAntecedants.push_back(currentTile.id);
-                  toVisitDistance.push_back(distanceL2(voisin, arrivee));
+                  float heuristique = distanceL2(voisin, arrivee);
+                  int cout = coutCurrentTile + 1;
+                  GameManager::Log("voisinID = " + to_string(voisin));
+                  GameManager::Log("cout = " + to_string(cout));
+                  GameManager::Log("heuristique = " + to_string(heuristique));
+                  GameManager::Log("POIDS = " + to_string(cout + heuristique));
+                  toVisitCoutPoids.push_back(tuple<int, float>(cout, cout + heuristique));
               }
            }
         }
 
         // On trie, pour a*
 
-        sortByDistance(toVisitDistance, toVisit, toVisitAntecedants);
+        sortByDistance(toVisitCoutPoids, toVisit, toVisitAntecedants);
     }
 
     // On regarde si on a trouvé l'arrivée :
@@ -457,7 +564,7 @@ int Map::distanceHex(int tile1ID, int tile2ID) {
    return max(max(abs(x1 - x2), abs(y1 - y2)), abs(z1 - z2));
 }
 
-void Map::sortByDistance(vector<float>& base, vector<int>& autre1, vector<int>& autre2) {
+void Map::sortByDistance(vector<tuple<int, float>>& base, vector<int>& autre1, vector<int>& autre2) {
     // On va vouloir trier base dans l'ordre décroissant (la plus petite valeur en dernière)
     // Puis retenir la permutation
     // Et l'appliquer aux deux autres vecteurs =)
@@ -471,11 +578,11 @@ void Map::sortByDistance(vector<float>& base, vector<int>& autre1, vector<int>& 
     // La permutation à appliquer à base
     sort(index.begin(), index.end(),
         [&](const int& a, const int& b) {
-            return (base[a] > base[b]); // décroissant
+            return (get<float>(base[a]) > get<float>(base[b])); // décroissant
     });
 
     // On applique la permutation à base, autre1 et autre2
-    vector<float> basebis = base;
+    vector<tuple<int, float>> basebis = base;
     vector<int> autre1bis = autre1;
     vector<int> autre2bis = autre2;
     for (int i = 0; i < index.size(); i++) {
@@ -515,7 +622,7 @@ void Map::addTile(TileInfo tile) {
 
     // Si c'est un objectif, on le retient !
     if(tile.tileType == Tile::TileAttribute_Goal) {
-        tiles[tile.tileID].type == Tile::TileAttribute_Goal;
+        tiles[tile.tileID].type = Tile::TileAttribute_Goal;
         objectifs[tile.tileID] = tiles[tile.tileID];
     }
 

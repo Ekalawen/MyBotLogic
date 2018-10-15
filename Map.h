@@ -11,7 +11,7 @@ using namespace std;
 
 class MapTile;
 class Map {
-    void sortByDistance(vector<float>& base, vector<int>& autre1, vector<int>& autre2); // Permet de trier base dans l'ordre décroissant, et autre1 et autre2 dans le même ordre
+    void sortByDistance(vector<tuple<int, float>>& base, vector<int>& autre1, vector<int>& autre2); // Permet de trier base dans l'ordre décroissant, et autre1 et autre2 dans le même ordre, on prend le poids qui est la somme du coup et de l'heuristique
 public:
     int rowCount;
     int colCount;
@@ -29,6 +29,7 @@ public:
     bool isInMap(int idTile) const;
     map<unsigned int, MapTile> getObjectifs();
     Chemin aStar(int depart, int arrivee); // Renvoie le chemin à parcourir pour aller du départ à l'arrivée
+    Chemin Map::WAStar(int depart, int arrivee, float coefEvaluation = 1); // Applique WAStar
     float distanceL2(int depart, int arrivee); // Renvoie la distance L2 à vol d'oiseau !
     int distanceHex(int depart, int arrivee);
     bool areAccessible(int tile1, int tile2); // Permet de savoir si deux tiles sont accessibles l'une par rapport à l'autre ! pour 2 tiles adjacentes
