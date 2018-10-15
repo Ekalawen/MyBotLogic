@@ -35,7 +35,7 @@ Chemin Npc::getCheminMinNonPris(vector<int> objectifsPris, int tailleCheminMax) 
     cheminMin.setInaccessible();
     int distMin = tailleCheminMax;
 
-    for (int i = 0; i < cheminsPossibles.size(); i++) {
+    for (int i = 0; i < cheminsPossibles.size(); ++i) {
         Chemin chemin = cheminsPossibles[i];
         // Si le chemin n'est pas déjà pris et qu'il est plus court !
         if (chemin.isAccessible()

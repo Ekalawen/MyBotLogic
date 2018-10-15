@@ -59,12 +59,12 @@ float Expedition::interet(MapTile tile) {
     for (auto autre : tile.voisinsMysterious) {
         // Si autre est accessible ...
         if (find(tile.voisinsAccessibles.begin(), tile.voisinsAccessibles.end(), autre) != tile.voisinsAccessibles.end()) {
-            nbInconnuesAccessibles++;
+            ++nbInconnuesAccessibles;
         // Si autre est inaccessible ...
         } else {
             // Mais visible ...
             if (find(tile.voisinsVisibles.begin(), tile.voisinsVisibles.end(), autre) != tile.voisinsVisibles.end()) {
-                nbInconnuesNonAccessiblesMaisVisibles++;
+                ++nbInconnuesNonAccessiblesMaisVisibles;
             }
         }
     }

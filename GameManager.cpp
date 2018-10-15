@@ -233,7 +233,7 @@ void GameManager::ordonnerMouvements(vector<Mouvement*>& mouvements) {
     // Pour ça on place le mouvement associé à la "cible" juste après la source =)
     vector<tuple<int, int>> mouvementsCibles; // Première position = indice de la tile, deuxième l'indice du mouvement associé
     vector<tuple<int, int>> mouvementsSources; // idem
-    for (int i = 0; i < mouvements.size(); i++) {
+    for (int i = 0; i < mouvements.size(); ++i) {
         auto mouvement = mouvements[i];
         int tileCible = m.getAdjacentTileAt(npcs[mouvement->npcID].tileId, mouvement->direction);
         int tileSource = npcs[mouvement->npcID].tileId;
@@ -253,7 +253,7 @@ void GameManager::ordonnerMouvements(vector<Mouvement*>& mouvements) {
             }
         }
         if (lastToGo != -1) {
-            lastToGo++;
+            ++lastToGo;
             // On fait passer notre mouvement en dernière position possible !
             // Si lastToGo était en dernière position !
             if (lastToGo == mouvements.size()) {

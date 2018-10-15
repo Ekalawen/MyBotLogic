@@ -236,7 +236,7 @@ Chemin Map::aStar(int depart, int arrivee) {
 
             // Faut trouver son indice dans le vecteur ...
             int indice;
-            for (int i = 0; i < visitees.size(); i++) {
+            for (int i = 0; i < visitees.size(); ++i) {
                 if (visitees[i] == currentTile.id) {
                     indice = i;
                     break;
@@ -571,7 +571,7 @@ void Map::sortByDistance(vector<tuple<int, float>>& base, vector<int>& autre1, v
 
     // Les index dans l'ordre
     vector<int> index(base.size(), 0);
-    for (int i = 0; i < index.size(); i++) {
+    for (int i = 0; i < index.size(); ++i) {
         index[i] = i;
     }
 
@@ -585,7 +585,7 @@ void Map::sortByDistance(vector<tuple<int, float>>& base, vector<int>& autre1, v
     vector<tuple<int, float>> basebis = base;
     vector<int> autre1bis = autre1;
     vector<int> autre2bis = autre2;
-    for (int i = 0; i < index.size(); i++) {
+    for (int i = 0; i < index.size(); ++i) {
         basebis[i] = base[index[i]];
         autre1bis[i] = autre1[index[i]];
         autre2bis[i] = autre2[index[i]];
@@ -602,7 +602,7 @@ int Map::tailleCheminMax() {
 // Il ne faut pas ajouter une tile qui est déjà dans la map !
 void Map::addTile(TileInfo tile) {
     // On met à jour le nombre de tiles
-    nbtilesDecouvertes++;
+    ++nbtilesDecouvertes;
 
     // On la rajoute aux tiles
     tiles[tile.tileID] = MapTile(tile, rowCount, colCount);
