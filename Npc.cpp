@@ -60,7 +60,9 @@ int Npc::affecterMeilleurChemin() {
     // On cherche le meilleur score
     float bestScore = scoresAssocies[0];
     int bestScoreIndice = 0;
+    GameManager::Log("Case potentielle à explorer : " + to_string(cheminsPossibles[0].destination()) + " de score " + to_string(scoresAssocies[0]));
     for (int i = 1; i < scoresAssocies.size(); ++i) {
+        GameManager::Log("Case potentielle à explorer : " + to_string(cheminsPossibles[i].destination()) + " de score " + to_string(scoresAssocies[i]));
         if (scoresAssocies[i] > bestScore) {
             bestScore = scoresAssocies[i];
             bestScoreIndice = i;

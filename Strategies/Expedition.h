@@ -11,7 +11,7 @@ class Expedition : public ScoreStrategie {
 
 public:
     enum { COEF_DISTANCE_NPC_TILE = -12 }; // Il faut que ce soit négatif
-    enum { COEF_DISTANCE_OBJECTIFS_TILE = -2 }; // Il faut que ce soit négatif
+    enum { COEF_DISTANCE_OBJECTIFS_TILE = -12 }; // Il faut que ce soit négatif
     enum { COEF_DISTANCE_TILE_AUTRE_TILES = 1 };
     enum { COEF_INTERET = 1 };
     enum { COEF_INTERET_ACCESSIBLE = 2 };

@@ -5,6 +5,9 @@
 #include "LevelInfo.h"
 
 #include "windows.h"
+#include <chrono>
+using namespace std::chrono;
+
 
 MyBotLogic::MyBotLogic() :
     logpath{""}
@@ -39,6 +42,7 @@ MyBotLogic::MyBotLogic() :
 
 /*virtual*/ void MyBotLogic::Init(LevelInfo& _levelInfo)
 {
+    auto pre = high_resolution_clock::now();
     // Le logger
 	GameManager::SetLog(logpath, "MyLog.log");
     // On crée notre modèle du jeu en cours !
@@ -48,6 +52,8 @@ MyBotLogic::MyBotLogic() :
 
     // On associe à chaque npc son objectif !
     //gm.associateNpcsWithObjectiv();
+    auto post = high_resolution_clock::now();
+    GameManager::Log("Durée Initialisation = " + to_string(duration_cast<microseconds>(post - pre).count() / 1000.f) + "ms");
 }
 
 /*virtual*/ void MyBotLogic::OnGameStarted()
@@ -57,6 +63,7 @@ MyBotLogic::MyBotLogic() :
 
 /*virtual*/ void MyBotLogic::FillActionList(TurnInfo& _turnInfo, std::vector<Action*>& _actionList)
 {
+    auto pre = high_resolution_clock::now();
     GameManager::Log("TURN =========================== " + to_string(_turnInfo.turnNb));
 
     // On complète notre modèle avec l'information qu'on vient de découvrir !
@@ -67,6 +74,8 @@ MyBotLogic::MyBotLogic() :
 
     // On fait se déplacer chaque Npc vers son objectif associé =)
     gm.moveNpcs(_actionList);
+    auto post = high_resolution_clock::now();
+    GameManager::Log("Durée Tour = " + to_string(duration_cast<microseconds>(post - pre).count() / 1000.f) + "ms");
 }
 
 /*virtual*/ void MyBotLogic::Exit()
