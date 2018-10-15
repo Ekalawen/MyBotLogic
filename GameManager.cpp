@@ -29,7 +29,7 @@ GameManager::GameManager(LevelInfo info) :
     }
 }
 
-void GameManager::InitializeBehaviorTree() {
+void GameManager::InitializeBehaviorTree() noexcept {
     //  Création du behaviorTree Manager
     ObjectifsForAllNpcs *objectifs = new ObjectifsForAllNpcs(*this);
     Exploitation *exploitation = new Exploitation(*this);
@@ -44,7 +44,7 @@ void GameManager::InitializeBehaviorTree() {
 }
 
 
-void GameManager::associateNpcsWithObjectiv() {
+void GameManager::associateNpcsWithObjectiv() noexcept {
     // Pour chaque npc, on calcul l'ensemble de ses chemins possibles !
     for (auto& pair_npc : npcs) {
         Npc& npc = pair_npc.second;
@@ -151,7 +151,7 @@ void GameManager::associateNpcsWithObjectiv() {
     */
 }
 
-void GameManager::moveNpcs(vector<Action*>& actionList) {
+void GameManager::moveNpcs(vector<Action*>& actionList) noexcept {
     // On va récupérer la liste des mouvements
     vector<Mouvement*> mouvements;
 
@@ -191,7 +191,7 @@ void GameManager::moveNpcs(vector<Action*>& actionList) {
     }
 }
 
-void GameManager::ordonnerMouvements(vector<Mouvement*>& mouvements) {
+void GameManager::ordonnerMouvements(vector<Mouvement*>& mouvements) noexcept {
     // Quels sont les cas particuliers ?
     // Si deux npcs veulent aller sur la même case, alors celui qui a le plus de chemin à faire passe, et tous les autres restent sur place !
     // OK !
@@ -272,7 +272,7 @@ void GameManager::ordonnerMouvements(vector<Mouvement*>& mouvements) {
     }
 }
 
-void GameManager::addNewTiles(TurnInfo ti) {
+void GameManager::addNewTiles(TurnInfo ti) noexcept {
     // On vérifie si on a pas déjà la connaissance totale sur les tiles de la map
     if (m.nbtilesDecouvertes < m.nbTiles) {
         // On va regarder si on a découvert des tiles
@@ -285,7 +285,7 @@ void GameManager::addNewTiles(TurnInfo ti) {
     }
 }
 
-void GameManager::addNewObjects(TurnInfo ti) {
+void GameManager::addNewObjects(TurnInfo ti) noexcept {
     // Tous les objets
     for (auto objet : ti.objects) {
         // Si on ne connaît pas cet objet on l'ajoute
@@ -298,7 +298,7 @@ void GameManager::addNewObjects(TurnInfo ti) {
     }
 }
 
-void GameManager::updateModel(TurnInfo ti) {
+void GameManager::updateModel(TurnInfo ti) noexcept {
     // On essaye de rajouter les nouveaux objectifs et les nouvelles tiles !
     addNewTiles(ti);
     addNewObjects(ti);

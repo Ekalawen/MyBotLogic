@@ -12,7 +12,7 @@ Expedition::Expedition(GameManager& gm, string nom)
     // La distance moyenne de cette tile à tous les objectifs
     // La distance moyenne de cette tuile aux autres tuiles qui seront visités !
     // Le degré d'intêret de la tuile. 
-void Expedition::saveScore(MapTile tile, Npc& npc, vector<int> tilesAVisiter) {
+void Expedition::saveScore(MapTile tile, Npc& npc, vector<int> tilesAVisiter) noexcept {
     float score = 0;
 
     // Si le chemin entre le npc et la tile n'est pas accessible, on enregistre même pas le score de cette tile, elle est hors-jeu !
@@ -51,7 +51,7 @@ void Expedition::saveScore(MapTile tile, Npc& npc, vector<int> tilesAVisiter) {
 // L'intérêt est définit par :
     // Le nombre de voisins inconnues accessibles
     // Le nombre de voisins inconnues non accessibles MAIS visibles !
-float Expedition::interet(MapTile tile) {
+float Expedition::interet(MapTile tile) noexcept {
     float interet = 0;
 
     int nbInconnuesAccessibles = 0;

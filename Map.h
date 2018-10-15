@@ -11,7 +11,7 @@ using namespace std;
 
 class MapTile;
 class Map {
-    void sortByDistance(vector<tuple<int, float>>& base, vector<int>& autre1, vector<int>& autre2); // Permet de trier base dans l'ordre décroissant, et autre1 et autre2 dans le même ordre, on prend le poids qui est la somme du coup et de l'heuristique
+    void sortByDistance(vector<tuple<int, float>>& base, vector<int>& autre1, vector<int>& autre2) noexcept; // Permet de trier base dans l'ordre décroissant, et autre1 et autre2 dans le même ordre, on prend le poids qui est la somme du coup et de l'heuristique
 public:
     int rowCount;
     int colCount;
@@ -26,26 +26,26 @@ public:
 
     Map() = default;
     Map(const LevelInfo);
-    bool isInMap(int idTile) const;
-    map<unsigned int, MapTile> getObjectifs();
-    Chemin aStar(int depart, int arrivee); // Renvoie le chemin à parcourir pour aller du départ à l'arrivée
-    Chemin Map::WAStar(int depart, int arrivee, float coefEvaluation = 1); // Applique WAStar
-    float distanceL2(int depart, int arrivee); // Renvoie la distance L2 à vol d'oiseau !
-    int distanceHex(int depart, int arrivee);
-    bool areAccessible(int tile1, int tile2); // Permet de savoir si deux tiles sont accessibles l'une par rapport à l'autre ! pour 2 tiles adjacentes
-    bool areVisible(int tile1, int tile2); // Permet de savoir si deux tiles sont visibles l'une par rapport à l'autre ! pour 2 tiles adjacentes
-    bool areMysterious(int tile1, int tile2); // Permet de savoir si deux tiles sont adjascentes l'une par rapport à l'autre ! pour 2 tiles adjacentes
-    bool areMysteriousAccessible(int tile1, int tile2); // Permet de savoir si deux tiles sont adjascentes l'une par rapport à l'autre et accessible ! pour 2 tiles adjacentes
-    Tile::ETilePosition getDirection(int tile1, int tile2); // Permet de savoir dans quel sens se déplacer pour aller d'une tile à l'autre si celles-ci sont adjacentes ! =)
-    int Map::getAdjacentTileAt(int tileSource, Tile::ETilePosition direction); // Permet de récupérer l'indice d'une tuile adjacente à une autre
-    int tailleCheminMax(); // Permet de savoir la taille maximum d'un chemin
+    bool isInMap(int idTile) const noexcept;
+    map<unsigned int, MapTile> getObjectifs() noexcept;
+    Chemin aStar(int depart, int arrivee) noexcept; // Renvoie le chemin à parcourir pour aller du départ à l'arrivée
+    Chemin Map::WAStar(int depart, int arrivee, float coefEvaluation = 1) noexcept; // Applique WAStar
+    float distanceL2(int depart, int arrivee) noexcept; // Renvoie la distance L2 à vol d'oiseau !
+    int distanceHex(int depart, int arrivee) noexcept;
+    bool areAccessible(int tile1, int tile2) noexcept; // Permet de savoir si deux tiles sont accessibles l'une par rapport à l'autre ! pour 2 tiles adjacentes
+    bool areVisible(int tile1, int tile2) const noexcept; // Permet de savoir si deux tiles sont visibles l'une par rapport à l'autre ! pour 2 tiles adjacentes
+    bool areMysterious(int tile1, int tile2) noexcept; // Permet de savoir si deux tiles sont adjascentes l'une par rapport à l'autre ! pour 2 tiles adjacentes
+    bool areMysteriousAccessible(int tile1, int tile2) noexcept; // Permet de savoir si deux tiles sont adjascentes l'une par rapport à l'autre et accessible ! pour 2 tiles adjacentes
+    Tile::ETilePosition getDirection(int tile1, int tile2) const noexcept; // Permet de savoir dans quel sens se déplacer pour aller d'une tile à l'autre si celles-ci sont adjacentes ! =)
+    int Map::getAdjacentTileAt(int tileSource, Tile::ETilePosition direction) const noexcept; // Permet de récupérer l'indice d'une tuile adjacente à une autre
+    int tailleCheminMax() noexcept; // Permet de savoir la taille maximum d'un chemin
 
-    void addTile(TileInfo); // Permet de rajouter une tile à la map
-    void addObject(ObjectInfo); // Permet de rajouter un object à la map
+    void addTile(TileInfo) noexcept; // Permet de rajouter une tile à la map
+    void addObject(ObjectInfo) noexcept; // Permet de rajouter un object à la map
 
-    int getX(int id); // Permet de récupérer x et y à partir d'un indice
-    int getY(int id);
-    vector<int> getVoisins(int id);
+    int getX(int id) const noexcept; // Permet de récupérer x et y à partir d'un indice
+    int getY(int id) const noexcept;
+    vector<int> getVoisins(int id) const noexcept;
 };
 
 

@@ -12,25 +12,25 @@ Npc::Npc(const NPCInfo info) :
 }
 
 
-void Npc::move(Tile::ETilePosition direction, Map m) {
+void Npc::move(Tile::ETilePosition direction, Map m) noexcept {
     tileId = m.getAdjacentTileAt(tileId, direction);
 }
 
-void Npc::resetChemins() {
+void Npc::resetChemins() noexcept {
     cheminsPossibles.clear();
     scoresAssocies.clear();
 }
 
-void Npc::addChemin(Chemin& chemin) {
+void Npc::addChemin(Chemin& chemin) noexcept {
     cheminsPossibles.push_back(chemin);
 }
 
-void Npc::addCheminWithScore(Chemin& chemin, float score) {
+void Npc::addCheminWithScore(Chemin& chemin, float score) noexcept {
     addChemin(chemin);
     scoresAssocies.push_back(score);
 }
 
-Chemin Npc::getCheminMinNonPris(vector<int> objectifsPris, int tailleCheminMax) {
+Chemin Npc::getCheminMinNonPris(vector<int> objectifsPris, int tailleCheminMax) const noexcept {
     Chemin cheminMin;
     cheminMin.setInaccessible();
     int distMin = tailleCheminMax;
@@ -49,7 +49,7 @@ Chemin Npc::getCheminMinNonPris(vector<int> objectifsPris, int tailleCheminMax) 
     return cheminMin;
 }
 
-int Npc::affecterMeilleurChemin() {
+int Npc::affecterMeilleurChemin() noexcept {
     if (scoresAssocies.empty() || cheminsPossibles.empty()) {
         // Dans ce cas-là on reste sur place !
         chemin = Chemin{};

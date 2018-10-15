@@ -19,13 +19,13 @@ public:
     Npc() = default;
     Npc(const NPCInfo);
 
-    void move(Tile::ETilePosition, Map); // Permet de faire bouger notre npc dans notre modèle =)
+    void move(Tile::ETilePosition, Map) noexcept; // Permet de faire bouger notre npc dans notre modèle =)
 
-    void resetChemins();
-    void addChemin(Chemin& chemin);
-    void addCheminWithScore(Chemin& chemin, float score);
-    Chemin getCheminMinNonPris(vector<int> objectifsPris, int tailleCheminMax); // Permet de trouver le chemin le plus court qui ne soit pas déjà pris
-    int affecterMeilleurChemin(); // Affecte au npc le chemin avec le meilleur score et renvoie la destination de ce chemin !
+    void resetChemins() noexcept;
+    void addChemin(Chemin& chemin) noexcept;
+    void addCheminWithScore(Chemin& chemin, float score) noexcept;
+    Chemin getCheminMinNonPris(vector<int> objectifsPris, int tailleCheminMax) const noexcept; // Permet de trouver le chemin le plus court qui ne soit pas déjà pris
+    int affecterMeilleurChemin() noexcept; // Affecte au npc le chemin avec le meilleur score et renvoie la destination de ce chemin !
 };
 
 

@@ -55,11 +55,11 @@ Map::Map(const LevelInfo levelInfo) :
     }
 }
 
-bool Map::isInMap(int idTile) const {
+bool Map::isInMap(int idTile) const noexcept {
     return idTile >= 0 && idTile < rowCount * colCount;
 }
 
-map<unsigned int, MapTile> Map::getObjectifs() {
+map<unsigned int, MapTile> Map::getObjectifs() noexcept {
     return objectifs;
 }
 
@@ -81,7 +81,7 @@ float Noeud::coefEvaluation = 1;
 // Il s'agit de l'algorithme AStar auquel on peut rajouter un coefficiant à l'évaluation pour modifier l'heuristique.
 // Par défaut sa valeur est 1. Si on l'augmente l'algorithme ira plus vite au détriment de trouver un chemin optimal.
 // Si on le diminue l'algorithme se rapproche de plus en plus d'un parcours en largeur.
-Chemin Map::WAStar(int depart, int arrivee, float coefEvaluation) {
+Chemin Map::WAStar(int depart, int arrivee, float coefEvaluation) noexcept {
     Noeud::coefEvaluation = coefEvaluation;
     // On crée nos liste et notre noeud courrant
     vector<Noeud> closedList{};
@@ -161,7 +161,7 @@ Chemin Map::WAStar(int depart, int arrivee, float coefEvaluation) {
 
 // AStar doit prendre en compte l'heuristique (la distance supposée à l'arrivée) et le coût (la distance réelle au départ)
 // pour chaque case pour être sur que l'algorithme trouve réellement un des chemins optimaux ! <3
-Chemin Map::aStar(int depart, int arrivee) {
+Chemin Map::aStar(int depart, int arrivee) noexcept {
     Chemin path; // le chemin final
     MapTile currentTile = tiles[depart];
     vector<int> visitees; // Les cases que l'on a déjà découvertes
@@ -255,7 +255,7 @@ Chemin Map::aStar(int depart, int arrivee) {
     return path;
 }
 
-bool Map::areAccessible(int ind1, int ind2) {
+bool Map::areAccessible(int ind1, int ind2) noexcept {
     int y = getY(ind1);
     bool pair = (y % 2 == 0);
     if (pair) {
@@ -318,7 +318,7 @@ bool Map::areAccessible(int ind1, int ind2) {
     return true;
 }
 
-bool Map::areVisible(int ind1, int ind2) {
+bool Map::areVisible(int ind1, int ind2) const noexcept {
 	// On vérifie que les indices sont à coté l'un de l'autre !
     int y = getY(ind1);
 	bool pair = (y % 2 == 0);
@@ -371,7 +371,7 @@ bool Map::areVisible(int ind1, int ind2) {
 	return true;
 }
 
-bool Map::areMysterious(int ind1, int ind2) {
+bool Map::areMysterious(int ind1, int ind2) noexcept {
     if (areAccessible(ind1, ind2) || areVisible(ind1, ind2)) {
         if (tiles.find(ind2) == tiles.end()) {
             return true;
@@ -380,8 +380,7 @@ bool Map::areMysterious(int ind1, int ind2) {
     return false;
 }
 
-bool Map::areMysteriousAccessible(int ind1, int ind2)
-{
+bool Map::areMysteriousAccessible(int ind1, int ind2) noexcept {
 	// On vérifie que les indices sont à coté l'un de l'autre !
     int y = getY(ind1);
 	bool pair = (y % 2 == 0);
@@ -448,7 +447,7 @@ bool Map::areMysteriousAccessible(int ind1, int ind2)
 }
 
 
-Tile::ETilePosition Map::getDirection(int ind1, int ind2) {
+Tile::ETilePosition Map::getDirection(int ind1, int ind2) const noexcept {
     int y = getY(ind1);
     bool pair = (y % 2 == 0);
     if (pair) {
@@ -485,7 +484,7 @@ Tile::ETilePosition Map::getDirection(int ind1, int ind2) {
     return Tile::CENTER;
 }
 
-int Map::getAdjacentTileAt(int tileSource, Tile::ETilePosition direction) {
+int Map::getAdjacentTileAt(int tileSource, Tile::ETilePosition direction) const noexcept {
     int y = getY(tileSource);
     bool pair = (y % 2 == 0);
     int res;
@@ -542,7 +541,7 @@ int Map::getAdjacentTileAt(int tileSource, Tile::ETilePosition direction) {
     }
 }
 
-float Map::distanceL2(int depart, int arrivee) {
+float Map::distanceL2(int depart, int arrivee) noexcept {
     int xd = depart % colCount;
     int yd = depart / colCount;
     int xa = arrivee % colCount;
@@ -550,7 +549,7 @@ float Map::distanceL2(int depart, int arrivee) {
     return (float)sqrt(pow(xd - xa, 2) + pow(yd - ya, 2));
 }
 
-int Map::distanceHex(int tile1ID, int tile2ID) {
+int Map::distanceHex(int tile1ID, int tile2ID) noexcept {
    int ligne1 = tile1ID / colCount;
    int colonne1 = tile1ID % colCount;
    int ligne2 = tile2ID / colCount;
@@ -564,7 +563,7 @@ int Map::distanceHex(int tile1ID, int tile2ID) {
    return max(max(abs(x1 - x2), abs(y1 - y2)), abs(z1 - z2));
 }
 
-void Map::sortByDistance(vector<tuple<int, float>>& base, vector<int>& autre1, vector<int>& autre2) {
+void Map::sortByDistance(vector<tuple<int, float>>& base, vector<int>& autre1, vector<int>& autre2) noexcept {
     // On va vouloir trier base dans l'ordre décroissant (la plus petite valeur en dernière)
     // Puis retenir la permutation
     // Et l'appliquer aux deux autres vecteurs =)
@@ -595,12 +594,12 @@ void Map::sortByDistance(vector<tuple<int, float>>& base, vector<int>& autre1, v
     autre2 = autre2bis;
 }
 
-int Map::tailleCheminMax() {
+int Map::tailleCheminMax() noexcept {
     return colCount * rowCount + 1;
 }
 
 // Il ne faut pas ajouter une tile qui est déjà dans la map !
-void Map::addTile(TileInfo tile) {
+void Map::addTile(TileInfo tile) noexcept {
     // On met à jour le nombre de tiles
     ++nbtilesDecouvertes;
 
@@ -631,7 +630,7 @@ void Map::addTile(TileInfo tile) {
 }
 
 // Il ne faut pas ajouter un objet qui est déjà dans la map !
-void Map::addObject(ObjectInfo object) {
+void Map::addObject(ObjectInfo object) noexcept {
     // On ajoute notre objet à l'ensemble de nos objets
     if (object.objectTypes.find(Object::ObjectType_Wall) != object.objectTypes.end()) {
         murs[object.objectID] = object;
@@ -662,14 +661,14 @@ void Map::addObject(ObjectInfo object) {
     GameManager::Log("Decouverte de l'objet " + to_string(object.objectID) + " sur la tuile " + to_string(object.tileID) + " orienté en " + to_string(object.position));
 }
 
-int Map::getX(int id) {
+int Map::getX(int id) const noexcept {
     return id % colCount;
 }
-int Map::getY(int id) {
+int Map::getY(int id) const noexcept {
     return id / colCount;
 }
 
-vector<int> Map::getVoisins(int id) {
+vector<int> Map::getVoisins(int id) const noexcept {
     vector<int> voisins;
     int x = getX(id);
     int y = getY(id);
