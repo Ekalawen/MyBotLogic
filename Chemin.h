@@ -11,12 +11,12 @@ public:
     vector<int> chemin;
 
     Chemin();
-    int distance();
-    int destination();
-    void setInaccessible();
-    bool isAccessible();
-    bool empty();
-    string toString();
+    int distance() const noexcept;
+    int destination() const noexcept;
+    void setInaccessible() noexcept;
+    bool isAccessible() const noexcept;
+    bool empty() const noexcept;
+    string toString() const noexcept;
 };
 
 

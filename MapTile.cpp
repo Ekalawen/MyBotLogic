@@ -20,8 +20,7 @@ MapTile::MapTile(const TileInfo ti, int rowCount, int colCount) :
 {
 }
 
-void MapTile::putTileInVectors(Map m, int indice)
-{
+void MapTile::putTileInVectors(Map m, int indice) noexcept {
     // Accessible
     if (m.areAccessible(id, indice)) {
         voisinsAccessibles.push_back(indice);
@@ -38,7 +37,7 @@ void MapTile::putTileInVectors(Map m, int indice)
     }
 }
 
-void MapTile::setVoisins(Map m) {
+void MapTile::setVoisins(Map m) noexcept {
     // On réinitialise nos voisins
     voisins = vector<int>();
     voisinsAccessibles = vector<int>();
@@ -139,8 +138,7 @@ void MapTile::setVoisins(Map m) {
     }
 }
 
-bool MapTile::isVoisinAccessible(Tile::ETilePosition direction)
-{
+bool MapTile::isVoisinAccessible(Tile::ETilePosition direction) const noexcept {
 	int id{};
 	switch (direction)
 	{
@@ -171,23 +169,19 @@ bool MapTile::isVoisinAccessible(Tile::ETilePosition direction)
 	return std::find(voisinsAccessibles.begin(), voisinsAccessibles.end(), id) != voisinsAccessibles.end();
 }
 
-bool MapTile::isVoisinAccessible(int id)
-{
+bool MapTile::isVoisinAccessible(int id) const noexcept {
 	return std::find(voisinsAccessibles.begin(), voisinsAccessibles.end(), id) != voisinsAccessibles.end();
 }
 
-bool MapTile::isVoisinVisible(int id)
-{
+bool MapTile::isVoisinVisible(int id) const noexcept {
 	return std::find(voisinsVisibles.begin(), voisinsVisibles.end(), id) != voisinsVisibles.end();
 }
 
-bool MapTile::isVoisinMysterious(int id)
-{
+bool MapTile::isVoisinMysterious(int id) const noexcept {
 	return std::find(voisinsMysterious.begin(), voisinsMysterious.end(), id) != voisinsMysterious.end();
 }
 
-vector<int> MapTile::getVoisinFenetres()
-{
+vector<int> MapTile::getVoisinFenetres() const noexcept {
 	vector<int> voisinsFenetres{};
 	for (auto idTile : voisinsVisibles) {
 		if (std::find(voisinsAccessibles.begin(), voisinsAccessibles.end(), idTile) == voisinsAccessibles.end()) {
@@ -197,7 +191,7 @@ vector<int> MapTile::getVoisinFenetres()
 	return voisinsFenetres;
 }
 
-int MapTile::getVoisinByDirection(Tile::ETilePosition direction) {
+int MapTile::getVoisinByDirection(Tile::ETilePosition direction) const noexcept {
     switch (direction)
     {
     case Tile::NE:

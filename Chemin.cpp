@@ -7,13 +7,13 @@ Chemin::Chemin()
 {
 }
 
-int Chemin::distance() {
+int Chemin::distance() const noexcept {
     if (!inaccessible)
         return static_cast<int>(chemin.size());
     return -1;
 }
 
-int Chemin::destination() {
+int Chemin::destination() const noexcept {
     if (!chemin.empty() && !inaccessible) {
         return chemin[0];
     } else {
@@ -22,19 +22,19 @@ int Chemin::destination() {
     }
 }
 
-void Chemin::setInaccessible() {
+void Chemin::setInaccessible() noexcept {
     inaccessible = true;
 }
 
-bool Chemin::isAccessible() {
+bool Chemin::isAccessible() const noexcept {
     return !inaccessible;
 }
 
-bool Chemin::empty() {
+bool Chemin::empty() const noexcept {
     return chemin.empty();
 }
 
-string Chemin::toString() {
+string Chemin::toString() const noexcept {
     string str;
     if (chemin.size() <= 0) {
         str += "vide";
@@ -42,7 +42,7 @@ string Chemin::toString() {
         if (!isAccessible()) {
             str += "inaccessible : ";
         }
-        for (int i = chemin.size() - 1; i >= 0; i--) {
+        for (int i = static_cast<int>(chemin.size() - 1); i >= 0; i--) {
             str += to_string(chemin[i]) + " ";
         }
         str.pop_back();

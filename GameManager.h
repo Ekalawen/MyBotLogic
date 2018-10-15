@@ -21,23 +21,23 @@ public:
 
     GameManager() = default;
     GameManager(LevelInfo);
-    void associateNpcsWithObjectiv();
-    void moveNpcs(vector<Action*>& actionList); // Remplie l'action liste !
-    void ordonnerMouvements(vector<Mouvement*>& mouvements); // Permet d'ordonner les mouvements pour éviter les collisions et gérer les politesses de priorités =)
-    void updateModel(TurnInfo); // Met à jour le modèle avec les informations que découvrent les NPCS
-    void GameManager::InitializeBehaviorTree(); // Permet d'initialiser le BT
-    void execute() { behaviorTreeManager.execute(); };
+    void associateNpcsWithObjectiv() noexcept;
+    void moveNpcs(vector<Action*>& actionList) noexcept; // Remplie l'action liste !
+    void ordonnerMouvements(vector<Mouvement*>& mouvements) noexcept; // Permet d'ordonner les mouvements pour éviter les collisions et gérer les politesses de priorités =)
+    void updateModel(TurnInfo) noexcept; // Met à jour le modèle avec les informations que découvrent les NPCS
+    void GameManager::InitializeBehaviorTree() noexcept; // Permet d'initialiser le BT
+    void execute() noexcept { behaviorTreeManager.execute(); };
 
-    static void Log(string str) { // Permet de débugger ! :D
+    static void Log(string str) noexcept { // Permet de débugger ! :D
         logger.Log(str);
     }
-    static void SetLog(string path, string fileName) { // Permet d'initialiser le logger =)
+    static void SetLog(string path, string fileName) noexcept { // Permet d'initialiser le logger =)
         logger.Init(path, fileName);
     }
 
 private:
-    void addNewTiles(TurnInfo ti);
-    void addNewObjects(TurnInfo ti);
+    void addNewTiles(TurnInfo ti) noexcept;
+    void addNewObjects(TurnInfo ti) noexcept;
 };
 
 #endif

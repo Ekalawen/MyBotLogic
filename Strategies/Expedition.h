@@ -6,8 +6,8 @@
 #include "MyBotLogic/Strategies/ScoreStrategie.h"
 
 class Expedition : public ScoreStrategie {
-    void saveScore(MapTile tile, Npc& npc, vector<int> tilesAVisiter);
-    float interet(MapTile tile);
+    void saveScore(MapTile tile, Npc& npc, vector<int> tilesAVisiter) noexcept;
+    float interet(MapTile tile) noexcept;
 
 public:
     enum { COEF_DISTANCE_NPC_TILE = -12 }; // Il faut que ce soit négatif
