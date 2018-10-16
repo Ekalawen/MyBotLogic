@@ -16,6 +16,9 @@ Exploration::Exploration(GameManager& gm, string nom)
 void Exploration::saveScore(MapTile tile, Npc& npc, vector<int> tilesAVisiter) {
     float score = 0;
 
+    // Si on a déjà visité cette case, son score est nul
+    if (tile.statut == MapTile::STATUT::VISITE) return;
+
     // Si le chemin entre le npc et la tile n'est pas accessible, on enregistre même pas le score de cette tile, elle est hors-jeu !
     Chemin cheminNpcTile = gm.m.WAStar(npc.tileId, tile.id);
     if (!cheminNpcTile.isAccessible()) return;

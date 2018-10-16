@@ -41,10 +41,9 @@ BT_Noeud::ETAT_ELEMENT ScoreStrategie::execute() {
 // Calcul le score de chaque tiles et son chemin pour un npc
 // On prend en compte les tilesAVisiter des autres npcs pour que les tiles soient loins les unes des autres
 void ScoreStrategie::calculerScoresEtCheminsTilesPourNpc(Npc& npc, vector<int> tilesAVisiter) {
-    for (auto pair : gm.m.tiles) {
-        MapTile tile = pair.second;
+    for (MapTile tile : gm.m.tiles) {
         // On ne considère la tile que si on ne la visite pas déjà !
-        if (find(tilesAVisiter.begin(), tilesAVisiter.end(), tile.id) == tilesAVisiter.end()) {
+        if (tile.statut == MapTile::STATUT::CONNU && find(tilesAVisiter.begin(), tilesAVisiter.end(), tile.id) == tilesAVisiter.end()) {
             saveScore(tile, npc, tilesAVisiter);
         }
     }

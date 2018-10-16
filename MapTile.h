@@ -9,6 +9,8 @@ using namespace std;
 class Map;
 class MapTile {
 public:
+   enum STATUT{INCONNU,CONNU,VISITE};
+
     int id;
     int x, y; // La position de la tile. x est l'indice de colonne, y est l'indice de ligne.
     Tile::ETileType type;
@@ -17,10 +19,14 @@ public:
 	vector<int> voisinsAccessibles; // les voisins connus et accessible (pas de murs ni de fenêtres) y compris les voisinsMysterious
 	vector<int> voisinsVisibles; // les voisins visibles (contient les voisins accessibles et les voisins fenetres)
 	vector<int> voisinsMysterious; // les voisins sur lequel on a pas encore d'information
+   STATUT statut;
+
 
     MapTile() = default; // Constructeur par défaut obligatoire pour pouvoir utiliser tuple ...
+    MapTile(unsigned int id, int colCount);
     MapTile(const TileInfo, int rowCount, int colCount);
-    void setVoisins(Map m) noexcept;
+    void setTile(const TileInfo ti);
+    void setVoisins(Map &m) noexcept;
     int getVoisinByDirection(Tile::ETilePosition direction) const noexcept; // Permet de récupérer le voisin dans une certaine direction d'une tile
 	bool isVoisinAccessible(Tile::ETilePosition direction) const noexcept;
 	bool isVoisinAccessible(int id) const noexcept;
