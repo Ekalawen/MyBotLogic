@@ -109,16 +109,12 @@ Chemin Map::WAStar(int depart, int arrivee, float coefEvaluation) noexcept {
                 Noeud nouveauNoeud = Noeud(tiles[voisin], noeudCourant.cout + 1, distanceL2(voisin, arrivee), noeudCourant.tile.id);
                 // On vérifie s'il existe dans closedList avec un cout inférieur ou dans openList avec un cout inférieur
                 auto itClose = find(closedList.begin(), closedList.end(), nouveauNoeud);
-                    //[nouveauNoeud](Noeud n) {return n.tile.id == nouveauNoeud.tile.id; });
                 auto itOpen = find(openList.begin(), openList.end(), nouveauNoeud);
-                    //[nouveauNoeud](Noeud n) {return n.tile.id == nouveauNoeud.tile.id; });
 
                 if (itClose == closedList.end() && itOpen == openList.end()) {
                     openList.push_back(nouveauNoeud);
                 } else if (itClose != closedList.end() && itOpen == openList.end()) {
-                    //int indice = distance(closedList.begin(), itClose);
-                    //closedList[indice] = nouveauNoeud;
-                    // (*itClose) = nouveauNoeud;
+                    // Do nothing
                 } else if (itClose == closedList.end() && itOpen != openList.end()) {
                     (*itOpen) = nouveauNoeud;
                 } else {

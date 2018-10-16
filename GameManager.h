@@ -29,10 +29,14 @@ public:
     void execute() noexcept { behaviorTreeManager.execute(); };
 
     static void Log(string str) noexcept { // Permet de débugger ! :D
+        #ifdef _DEBUG
         logger.Log(str);
+        #endif
     }
     static void SetLog(string path, string fileName) noexcept { // Permet d'initialiser le logger =)
+        #ifdef _DEBUG
         logger.Init(path, fileName);
+        #endif
     }
 
 private:
