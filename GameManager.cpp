@@ -13,7 +13,9 @@
 
 #include <algorithm>
 #include <tuple>
+#include<chrono>
 using namespace std;
+using namespace std::chrono;
 
 // On initialise notre attribut statique ...
 Logger GameManager::logger{};
@@ -278,7 +280,7 @@ void GameManager::addNewTiles(TurnInfo ti) noexcept {
         // On va regarder si on a découvert des tiles
         for (auto tile : ti.tiles) {
             // Si on ne connaît pas cette tile, on l'ajoute
-            if (m.tiles.find(tile.second.tileID) == m.tiles.end()) {
+            if (m.tiles[tile.second.tileID].statut != MapTile::STATUT::CONNU) {
                 m.addTile(tile.second);
             }
         }
@@ -300,6 +302,13 @@ void GameManager::addNewObjects(TurnInfo ti) noexcept {
 
 void GameManager::updateModel(TurnInfo ti) noexcept {
     // On essaye de rajouter les nouveaux objectifs et les nouvelles tiles !
+   
+    auto pre = high_resolution_clock::now();
     addNewTiles(ti);
+    auto post = high_resolution_clock::now();
+    GameManager::Log("Durée AddTile = " + to_string(duration_cast<microseconds>(post - pre).count() / 1000.f) + "ms");
+    pre = high_resolution_clock::now();
     addNewObjects(ti);
+    post = high_resolution_clock::now();
+    GameManager::Log("Durée AddObjects = " + to_string(duration_cast<microseconds>(post - pre).count() / 1000.f) + "ms");
 }

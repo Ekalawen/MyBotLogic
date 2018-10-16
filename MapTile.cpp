@@ -4,6 +4,23 @@
 #include "TileInfo.h"
 #include "GameManager.h"
 
+MapTile::MapTile(unsigned int id, int colCount) :
+   id{ static_cast<int>(id) },
+   x{ static_cast<int>(id) % colCount },
+   y{ static_cast<int>(id) / colCount },
+   voisins{ vector<int>() },
+   voisinsAccessibles{ vector<int>() },
+   type{},
+   NE{ -1 },
+   E{ -1 },
+   SE{ -1 },
+   NW{ -1 },
+   W{ -1 },
+   SW{ -1 },
+   statut {INCONNU}
+{
+}
+
 MapTile::MapTile(const TileInfo ti, int rowCount, int colCount) :
 	id{ static_cast<int>(ti.tileID) },
 	x{ id % colCount },
@@ -18,6 +35,11 @@ MapTile::MapTile(const TileInfo ti, int rowCount, int colCount) :
 	W{ -1 },
 	SW{ -1 }
 {
+}
+
+void MapTile::setTile(const TileInfo tile) {
+   type = tile.tileType;
+   statut = CONNU;
 }
 
 void MapTile::putTileInVectors(Map m, int indice) noexcept {
@@ -37,7 +59,7 @@ void MapTile::putTileInVectors(Map m, int indice) noexcept {
     }
 }
 
-void MapTile::setVoisins(Map m) noexcept {
+void MapTile::setVoisins(Map &m) noexcept {
     // On réinitialise nos voisins
     voisins = vector<int>();
     voisinsAccessibles = vector<int>();

@@ -17,7 +17,9 @@ public:
     int colCount;
     int nbTiles;
     int nbtilesDecouvertes;
-    map<unsigned int, MapTile> tiles;
+    vector<MapTile> tiles;
+    //map<unsigned int, MapTile> tiles;
+
     map<unsigned int, MapTile> objectifs;
     map<unsigned int, ObjectInfo> murs;
     map<unsigned int, ObjectInfo> portes;
