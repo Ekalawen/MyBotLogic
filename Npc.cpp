@@ -12,9 +12,9 @@ Npc::Npc(const NPCInfo info) :
 }
 
 
-void Npc::move(Tile::ETilePosition direction, Map m) noexcept {
+void Npc::move(Tile::ETilePosition direction, Map &m) noexcept {
     tileId = m.getAdjacentTileAt(tileId, direction);
-    m.tiles[tileId].statut = MapTile::STATUT::VISITE;
+    m.tiles[tileId].statut = MapTile::Statut::VISITE;
 }
 
 void Npc::resetChemins() noexcept {

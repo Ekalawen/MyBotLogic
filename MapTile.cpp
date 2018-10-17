@@ -4,40 +4,105 @@
 #include "TileInfo.h"
 #include "GameManager.h"
 
-MapTile::MapTile(unsigned int id, int colCount) :
-   id{ static_cast<int>(id) },
-   x{ static_cast<int>(id) % colCount },
-   y{ static_cast<int>(id) / colCount },
-   voisins{ vector<int>() },
-   voisinsAccessibles{ vector<int>() },
-   type{},
-   NE{ -1 },
-   E{ -1 },
-   SE{ -1 },
-   NW{ -1 },
-   W{ -1 },
-   SW{ -1 },
-   statut {INCONNU}
+MapTile::MapTile(unsigned int id, Map &m) :
+    id{ static_cast<int>(id) },
+    x{ static_cast<int>(id) % m.colCount },
+    y{ static_cast<int>(id) / m.colCount },
+    voisins{ vector<int>() },
+    type{},
+    NE{ -1 },
+    E{ -1 },
+    SE{ -1 },
+    NW{ -1 },
+    W{ -1 },
+    SW{ -1 },
+    statut{ INCONNU }
 {
+    // On regarde sur quelle ligne on est, car ça change les indices
+    int indice;
+    if (y % 2 == 0) { // Ligne paire
+                      // NE
+        indice = id - m.colCount;
+        if (m.isInMap(indice) && y > 0) {
+            NE = indice;
+            voisins.push_back(indice);
+        }
+        // E
+        indice = id + 1;
+        if (m.isInMap(indice) && x < m.colCount - 1) {
+            E = indice;
+            voisins.push_back(indice);
+        }
+        // SE
+        indice = id + m.colCount;
+        if (m.isInMap(indice) && y < m.rowCount - 1) {
+            SE = indice;
+            voisins.push_back(indice);
+        }
+        // SW 
+        indice = id + m.colCount - 1;
+        if (m.isInMap(indice) && y < m.rowCount - 1 && x > 0) {
+            SW = indice;
+            voisins.push_back(indice);
+        }
+        // W
+        indice = id - 1;
+        if (m.isInMap(indice) && x > 0) {
+            W = indice;
+            voisins.push_back(indice);
+        }
+        // NW
+        indice = id - m.colCount - 1;
+        if (m.isInMap(indice) && y > 0 && x > 0) {
+            NW = indice;
+            voisins.push_back(indice);
+        }
+    }
+    else { // Ligne impaire !
+           // NE
+        indice = id - m.colCount + 1;
+        if (m.isInMap(indice) && x < m.colCount - 1) {
+            NE = indice;
+            voisins.push_back(indice);
+        }
+        // E
+        indice = id + 1;
+        if (m.isInMap(indice) && x < m.colCount - 1) {
+            E = indice;
+            voisins.push_back(indice);
+        }
+        // SE
+        indice = id + m.colCount + 1;
+        if (m.isInMap(indice) && x < m.colCount - 1 && y < m.rowCount - 1) {
+            SE = indice;
+            voisins.push_back(indice);
+        }
+        // SW
+        indice = id + m.colCount;
+        if (m.isInMap(indice) && y < m.rowCount - 1) {
+            SW = indice;
+            voisins.push_back(indice);
+        }
+        // W
+        indice = id - 1;
+        if (m.isInMap(indice) && x > 0) {
+            W = indice;
+            voisins.push_back(indice);
+        }
+        // NW
+        indice = id - m.colCount;
+        if (m.isInMap(indice)) { // Pas de conditions, c'est marrant ! :smiley:
+            NW = indice;
+            voisins.push_back(indice);
+        }
+    }
+
+    voisinsVisibles = voisins;
+    voisinsAccessibles = voisins;
+    voisinsMysterious = voisins;
 }
 
-MapTile::MapTile(const TileInfo ti, int rowCount, int colCount) :
-	id{ static_cast<int>(ti.tileID) },
-	x{ id % colCount },
-	y{ id / colCount },
-	voisins{ vector<int>() },
-	voisinsAccessibles{ vector<int>() },
-	type{ ti.tileType },
-	NE{ -1 },
-	E{ -1 },
-	SE{ -1 },
-	NW{ -1 },
-	W{ -1 },
-	SW{ -1 }
-{
-}
-
-void MapTile::setTile(const TileInfo tile) {
+void MapTile::setTileDecouverte(const TileInfo tile) {
    type = tile.tileType;
    statut = CONNU;
 }
@@ -61,102 +126,12 @@ void MapTile::putTileInVectors(Map m, int indice) noexcept {
 
 void MapTile::setVoisins(Map &m) noexcept {
     // On réinitialise nos voisins
-    voisins = vector<int>();
     voisinsAccessibles = vector<int>();
     voisinsVisibles = vector<int>();
     voisinsMysterious = vector<int>();
 
-    // Si quelqu'un peut me dire comment faire ça mieux, je suis preneur ! x)
-
-    // On regarde sur quelle ligne on est, car ça change les indices
-    int indice;
-    if (y % 2 == 0) { // Ligne paire
-        // NE
-        indice = id - m.colCount;
-        NE = indice;
-        if (m.isInMap(indice) && y > 0) {
-            voisins.push_back(indice);
-			putTileInVectors(m, indice);
-        }
-        // E
-        indice = id + 1;
-        E = indice;
-        if (m.isInMap(indice) && x < m.colCount-1) {
-            voisins.push_back(indice);
-			putTileInVectors(m, indice);
-        }
-        // SE
-        indice = id + m.colCount;
-        SE = indice;
-        if (m.isInMap(indice) && y < m.rowCount-1) {
-            voisins.push_back(indice);
-			putTileInVectors(m, indice);
-        }
-        // SW
-        indice = id + m.colCount - 1;
-        SW = indice;
-        if (m.isInMap(indice) && y < m.rowCount-1 && x > 0) {
-            voisins.push_back(indice);
-			putTileInVectors(m, indice);
-        }
-        // W
-        indice = id - 1;
-        W = indice;
-        if (m.isInMap(indice) && x > 0) {
-            voisins.push_back(indice);
-			putTileInVectors(m, indice);
-        }
-        // NW
-        indice = id - m.colCount - 1;
-        NW = indice;
-        if (m.isInMap(indice) && y > 0 && x > 0) {
-            voisins.push_back(indice);
-			putTileInVectors(m, indice);
-        }
-
-    } else { // Ligne impaire !
-        // NE
-        indice = id - m.colCount + 1;
-        NE = indice;
-        if (m.isInMap(indice) && x < m.colCount-1) {
-            voisins.push_back(indice);
-			putTileInVectors(m, indice);
-        }
-        // E
-        indice = id + 1;
-        E = indice;
-        if (m.isInMap(indice) && x < m.colCount-1) {
-            voisins.push_back(indice);
-			putTileInVectors(m, indice);
-        }
-        // SE
-        indice = id + m.colCount + 1;
-        SE = indice;
-        if (m.isInMap(indice) && x < m.colCount-1 && y < m.rowCount-1) {
-            voisins.push_back(indice);
-			putTileInVectors(m, indice);
-        }
-        // SW
-        indice = id + m.colCount;
-        SW = indice;
-        if (m.isInMap(indice) && y < m.rowCount-1) {
-            voisins.push_back(indice);
-			putTileInVectors(m, indice);
-        }
-        // W
-        indice = id - 1;
-        W = indice;
-        if (m.isInMap(indice) && x > 0) {
-            voisins.push_back(indice);
-			putTileInVectors(m, indice);
-        }
-        // NW
-        indice = id - m.colCount;
-        NW = indice;
-        if (m.isInMap(indice)) { // Pas de conditions, c'est marrant ! =)
-            voisins.push_back(indice);
-			putTileInVectors(m, indice);
-        }
+    for (auto& voisin : voisins) {
+        putTileInVectors(m, voisin);
     }
 }
 
@@ -238,5 +213,26 @@ int MapTile::getVoisinByDirection(Tile::ETilePosition direction) const noexcept 
         GameManager::Log("Tentative d'obtenir un voisin n'existant pas ! id = " + to_string(id) + " direction = " + to_string(direction));
         return -1;
         break;
+    }
+}
+
+void MapTile::removeMysterieux(int id) {
+    auto it = find(voisinsMysterious.begin(), voisinsMysterious.end(), id);
+    if (it != voisinsMysterious.end()) {
+        voisinsMysterious.erase(it);
+    }
+}
+
+void MapTile::removeAccessible(int id) {
+    auto it = find(voisinsAccessibles.begin(), voisinsAccessibles.end(), id);
+    if (it != voisinsAccessibles.end()) {
+        voisinsAccessibles.erase(it);
+    }
+}
+
+void MapTile::removeVisible(int id) {
+    auto it = find(voisinsVisibles.begin(), voisinsVisibles.end(), id);
+    if (it != voisinsVisibles.end()) {
+        voisinsVisibles.erase(it);
     }
 }

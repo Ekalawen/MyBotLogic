@@ -23,16 +23,22 @@ public:
 
 
     MapTile() = default; // Constructeur par défaut obligatoire pour pouvoir utiliser tuple ...
-    MapTile(unsigned int id, int colCount);
-    MapTile(const TileInfo, int rowCount, int colCount);
-    void setTile(const TileInfo ti);
+    MapTile(unsigned int id, Map &m); // Appelé dès le début et uniquement là !
+
+    void setTileDecouverte(const TileInfo ti);
     void setVoisins(Map &m) noexcept;
+    void removeMysterieux(int id);
+    void removeAccessible(int id);
+    void removeVisible(int id);
+
     int getVoisinByDirection(Tile::ETilePosition direction) const noexcept; // Permet de récupérer le voisin dans une certaine direction d'une tile
 	bool isVoisinAccessible(Tile::ETilePosition direction) const noexcept;
 	bool isVoisinAccessible(int id) const noexcept;
 	bool isVoisinVisible(int id) const noexcept;
 	bool isVoisinMysterious(int id) const noexcept;
 	vector<int> getVoisinFenetres() const noexcept;
+
+private:
 	void putTileInVectors(Map m, int indice) noexcept;
 };
 

@@ -19,7 +19,7 @@ public:
     Npc() = default;
     Npc(const NPCInfo);
 
-    void move(Tile::ETilePosition, Map) noexcept; // Permet de faire bouger notre npc dans notre modèle =)
+    void move(Tile::ETilePosition, Map&) noexcept; // Permet de faire bouger notre npc dans notre modèle =)
 
     void resetChemins() noexcept;
     void addChemin(Chemin& chemin) noexcept;

@@ -11,53 +11,27 @@ Map::Map(const LevelInfo levelInfo) :
     rowCount{ levelInfo.rowCount },
     colCount{ levelInfo.colCount },
     nbTiles{ rowCount * colCount },
-    nbtilesDecouvertes{ static_cast<int>(levelInfo.tiles.size()) },
+    nbtilesDecouvertes{ 0 },
     tiles{},
     murs{},
     fenetres{},
     portes{},
     activateurs{}
 {
-
     // Créer toutes les tiles !
-   tiles.reserve(nbTiles);
-   for (int i = 0; i < nbTiles; ++i) {
-      tiles.push_back(MapTile(i, levelInfo.colCount));
-   }
-   // Mettre à jour les tiles connues
-    for (auto pair_t : levelInfo.tiles) {
-        TileInfo t = pair_t.second;
-        tiles[t.tileID].setTile(t);
+    tiles.reserve(nbTiles);
+    for (int id = 0; id < nbTiles; ++id) {
+       tiles.push_back(MapTile(id, *this));
     }
 
+    // Mettre à jour les tiles connues
+    for (auto tile : levelInfo.tiles) {
+        addTile(tile.second);
+    }
 
     // Enregistrer les objets
     for (auto object : levelInfo.objects) {
-        // Si notre objet est une porte ...
-        if (object.second.objectTypes.find(Object::ObjectType_Wall) != object.second.objectTypes.end()) {
-            murs[object.second.objectID] = object.second;
-        }
-        if (object.second.objectTypes.find(Object::ObjectType_Door) != object.second.objectTypes.end()) {
-            portes[object.second.objectID] = object.second;
-        }
-        if (object.second.objectTypes.find(Object::ObjectType_Window) != object.second.objectTypes.end()) {
-            fenetres[object.second.objectID] = object.second;
-        }
-        if (object.second.objectTypes.find(Object::ObjectType_PressurePlate) != object.second.objectTypes.end()) {
-            activateurs[object.second.objectID] = object.second;
-        }
-    }
-
-    // Associer tous les voisins de toutes les tiles
-    for (MapTile &t : tiles) {
-       if (t.statut == MapTile::Statut::CONNU) {
-          t.setVoisins(*this);
-       }
-
-        // On enregistre tous les objectifs !
-        if (t.type == Tile::TileAttribute_Goal) {
-            objectifs[t.id] = t;
-        }
+        addObject(object.second);
     }
 }
 
@@ -110,7 +84,7 @@ Chemin Map::WAStar(int depart, int arrivee, float coefEvaluation) noexcept {
         // Pour tous les voisins du noeud courant ...
         for (auto voisin : noeudCourant.tile.voisinsAccessibles) {
             // On vérifie que le voisin existe ...
-            if (tiles[voisin].statut == MapTile::Statut::CONNU) {
+            if (tiles[voisin].statut != MapTile::Statut::INCONNU) {
                 // On construit le nouveau noeud
                 Noeud nouveauNoeud = Noeud(tiles[voisin], noeudCourant.cout + 1, distanceL2(voisin, arrivee), noeudCourant.tile.id);
                 // On vérifie s'il existe dans closedList avec un cout inférieur ou dans openList avec un cout inférieur
@@ -181,7 +155,7 @@ Chemin Map::aStar(int depart, int arrivee) noexcept {
 
     // Et on ajoute ses voisins accessibles à la liste des cases à visiter !
     for (auto voisin : tiles[depart].voisinsAccessibles) {
-        if (tiles[voisin].statut == MapTile::Statut::CONNU) {
+        if (tiles[voisin].statut != MapTile::Statut::INCONNU) {
             toVisit.push_back(voisin);
             toVisitAntecedants.push_back(depart);
             float heuristique = distanceL2(voisin, arrivee);
@@ -213,7 +187,7 @@ Chemin Map::aStar(int depart, int arrivee) noexcept {
            // Si notre voisin n'appartient pas aux cases visitées ou à visiter, alors on l'ajoute à cette dernière
            if (!(find(visitees.begin(), visitees.end(), voisin) != visitees.end()) && !(find(toVisit.begin(), toVisit.end(), voisin) != toVisit.end())) {
               // On l'ajoute que si cette case a déjà été découverte !
-              if (tiles[voisin].statut == MapTile::Statut::CONNU) {
+              if (tiles[voisin].statut != MapTile::Statut::INCONNU) {
                   toVisit.push_back(voisin);
                   toVisitAntecedants.push_back(currentTile.id);
                   float heuristique = distanceL2(voisin, arrivee);
@@ -284,7 +258,7 @@ bool Map::areAccessible(int ind1, int ind2) noexcept {
     }
 
     // On vérifie également que la case d'indice 2 n'est pas une case bloqué !
-    if (tiles[ind2].statut == MapTile::Statut::CONNU
+    if (tiles[ind2].statut != MapTile::Statut::INCONNU
     && tiles[ind2].type == Tile::TileAttribute_Forbidden) {
         return false;
     }
@@ -378,7 +352,7 @@ bool Map::areVisible(int ind1, int ind2) const noexcept {
 
 bool Map::areMysterious(int ind1, int ind2) noexcept {
     if (areAccessible(ind1, ind2) || areVisible(ind1, ind2)) {
-        if (tiles[ind2].statut != MapTile::Statut::CONNU) {
+        if (tiles[ind2].statut == MapTile::Statut::INCONNU) {
             return true;
         }
     }
@@ -411,7 +385,7 @@ bool Map::areMysteriousAccessible(int ind1, int ind2) noexcept {
 	}
 
 	// On vérifie également que la case d'indice 2 n'est pas une case bloqué !
-	if (tiles[ind2].statut == MapTile::Statut::CONNU
+	if (tiles[ind2].statut != MapTile::Statut::INCONNU
     && tiles[ind2].type == Tile::TileAttribute_Forbidden) {
 		return false;
 	}
@@ -609,23 +583,20 @@ void Map::addTile(TileInfo tile) noexcept {
     ++nbtilesDecouvertes;
 
     // On la rajoute aux tiles
-    tiles[tile.tileID].setTile(tile);
-
-    // On met à jour ses voisins
-    tiles[tile.tileID].setVoisins(*this);
-
-    // Puis on met à jour les voisins de ses voisins ! :D
-    for (auto voisin : tiles[tile.tileID].voisins) {
-        // Il faut vérifier que cette tile existe déjà ! Canard !
-        if (tiles[voisin].statut == MapTile::Statut::CONNU) {
-            tiles[voisin].setVoisins(*this);
+    tiles[tile.tileID].setTileDecouverte(tile);
+    if (tiles[tile.tileID].type == Tile::TileAttribute_Goal) {
+        objectifs[tile.tileID] = tiles[tile.tileID];
+    }
+    if (tiles[tile.tileID].type == Tile::TileAttribute_Forbidden) {
+        for (auto voisin : tiles[tile.tileID].voisins) {
+            tiles[voisin].removeAccessible(tile.tileID);
         }
     }
 
-    // Si c'est un objectif, on le retient !
-    if(tile.tileType == Tile::TileAttribute_Goal) {
-        tiles[tile.tileID].type = Tile::TileAttribute_Goal;
-        objectifs[tile.tileID] = tiles[tile.tileID];
+    // Puis on met à jour les voisins de ses voisins ! :D
+    for (auto voisin : tiles[tile.tileID].voisins) { // On pourrait parcourir les voisinsVisibles
+        // Si ce voisin l'a en voisin mystérieux, on le lui enlève
+        tiles[voisin].removeMysterieux(tile.tileID);
     }
 
     // On le note !
@@ -634,32 +605,61 @@ void Map::addTile(TileInfo tile) noexcept {
 
 // Il ne faut pas ajouter un objet qui est déjà dans la map !
 void Map::addObject(ObjectInfo object) noexcept {
+    int voisin1 = object.tileID;
+    int voisin2 = getAdjacentTileAt(object.tileID, object.position);
+
     // On ajoute notre objet à l'ensemble de nos objets
     if (object.objectTypes.find(Object::ObjectType_Wall) != object.objectTypes.end()) {
         murs[object.objectID] = object;
+        if (isInMap(voisin1)) {
+            tiles[voisin1].removeMysterieux(voisin2);
+            tiles[voisin1].removeAccessible(voisin2);
+            tiles[voisin1].removeVisible(voisin2);
+        }
+        if (isInMap(voisin2)) {
+            tiles[voisin2].removeMysterieux(voisin1);
+            tiles[voisin2].removeAccessible(voisin1);
+            tiles[voisin2].removeVisible(voisin1);
+        }
     }
     if (object.objectTypes.find(Object::ObjectType_Door) != object.objectTypes.end()) {
         portes[object.objectID] = object;
+        if (object.objectTypes.find(Object::ObjectType_Window) != object.objectTypes.end()) { // c'est une porte fenetre
+            if (object.objectStates.find(Object::ObjectState_Closed) != object.objectStates.end()) {
+                if (isInMap(voisin1))
+                    tiles[voisin1].removeAccessible(voisin2);
+                if (isInMap(voisin2))
+                    tiles[voisin2].removeAccessible(voisin1);
+            } else {
+                // Si la porte est ouverte on est accessible ET visible ! =)
+            }
+        } else { // C'est une porte point.
+            if (object.objectStates.find(Object::ObjectState_Closed) != object.objectStates.end()) {
+                if (isInMap(voisin1)) {
+                    tiles[voisin1].removeAccessible(voisin2);
+                    tiles[voisin1].removeVisible(voisin2);
+                }
+                if (isInMap(voisin2)) {
+                    tiles[voisin2].removeAccessible(voisin1);
+                    tiles[voisin2].removeVisible(voisin1);
+                }
+            } else {
+                // Si la porte est ouverte on est accessible ET visible ! =)
+            }
+        }
     }
     if (object.objectTypes.find(Object::ObjectType_Window) != object.objectTypes.end()) {
         fenetres[object.objectID] = object;
+        if (isInMap(voisin1))
+            tiles[voisin1].removeAccessible(voisin2);
+        if (isInMap(voisin2))
+            tiles[voisin2].removeAccessible(voisin1);
     }
     if (object.objectTypes.find(Object::ObjectType_PressurePlate) != object.objectTypes.end()) {
         activateurs[object.objectID] = object;
+        // prout !
     }
     
-    // Puis on met à jour les voisins de la case de notre objet
-    if (tiles[object.tileID].statut == MapTile::Statut::CONNU) {
-        tiles[object.tileID].setVoisins(*this);
-    }
-
-    // Puis on met à jour les voisins des voisins de la case de notre objet
-    for (auto voisin : getVoisins(object.tileID)) {
-        if (tiles[voisin].statut == MapTile::Statut::CONNU) {
-            tiles[voisin].setVoisins(*this);
-        }
-    }
-
     // On le note !
     GameManager::Log("Decouverte de l'objet " + to_string(object.objectID) + " sur la tuile " + to_string(object.tileID) + " orienté en " + to_string(object.position));
 }

@@ -175,7 +175,6 @@ void GameManager::moveNpcs(vector<Action*>& actionList) noexcept {
             // On enregistre le mouvement
             mouvements.push_back(new Mouvement(npc.second.id, npc.second.tileId, caseCible, direction));
 
-            //}
         } else {
             GameManager::Log("case cible = Ne Bouge Pas");
         }
@@ -275,27 +274,32 @@ void GameManager::ordonnerMouvements(vector<Mouvement*>& mouvements) noexcept {
 }
 
 void GameManager::addNewTiles(TurnInfo ti) noexcept {
-    // On vérifie si on a pas déjà la connaissance totale sur les tiles de la map
     if (m.nbtilesDecouvertes < m.nbTiles) {
-        // On va regarder si on a découvert des tiles
-        for (auto tile : ti.tiles) {
-            // Si on ne connaît pas cette tile, on l'ajoute
-            if (m.tiles[tile.second.tileID].statut != MapTile::Statut::CONNU) {
-                m.addTile(tile.second);
+        // pour tous les npcs
+        for (auto& npc : ti.npcs) {
+            // On regarde les tuiles qu'ils voyent
+            for (auto& tileId : npc.second.visibleTiles) {
+                // Si ces tuiles n'ont pas été découvertes
+                if (m.tiles[tileId].statut == MapTile::INCONNU) {
+                    // On les setDecouverte
+                    m.addTile(ti.tiles[tileId]);
+                }
             }
         }
     }
 }
 
 void GameManager::addNewObjects(TurnInfo ti) noexcept {
-    // Tous les objets
-    for (auto objet : ti.objects) {
-        // Si on ne connaît pas cet objet on l'ajoute
-        if (m.murs.find(objet.second.objectID) == m.murs.end()
-         && m.portes.find(objet.second.objectID) == m.portes.end()
-         && m.fenetres.find(objet.second.objectID) == m.fenetres.end()
-         && m.activateurs.find(objet.second.objectID) == m.activateurs.end()) {
-            m.addObject(objet.second);
+    // Tous les objets visibles par tous les npcs ...
+    for (auto npc : ti.npcs) {
+        for (auto objet : npc.second.visibleObjects) {
+            // Si on ne connaît pas cet objet on l'ajoute
+            if (m.murs.find(objet) == m.murs.end()
+                && m.portes.find(objet) == m.portes.end()
+                && m.fenetres.find(objet) == m.fenetres.end()
+                && m.activateurs.find(objet) == m.activateurs.end()) {
+                m.addObject(ti.objects[objet]);
+            }
         }
     }
 }
@@ -307,8 +311,10 @@ void GameManager::updateModel(TurnInfo ti) noexcept {
     addNewTiles(ti);
     auto post = high_resolution_clock::now();
     GameManager::Log("Durée AddTile = " + to_string(duration_cast<microseconds>(post - pre).count() / 1000.f) + "ms");
+
     pre = high_resolution_clock::now();
     addNewObjects(ti);
     post = high_resolution_clock::now();
     GameManager::Log("Durée AddObjects = " + to_string(duration_cast<microseconds>(post - pre).count() / 1000.f) + "ms");
 }
+
