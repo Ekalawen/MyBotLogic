@@ -9,7 +9,7 @@ using namespace std;
 class Map;
 class MapTile {
 public:
-   enum STATUT{INCONNU,CONNU,VISITE};
+    enum Statut{INCONNU,CONNU,VISITE};
 
     int id;
     int x, y; // La position de la tile. x est l'indice de colonne, y est l'indice de ligne.
@@ -19,7 +19,7 @@ public:
 	vector<int> voisinsAccessibles; // les voisins connus et accessible (pas de murs ni de fenêtres) y compris les voisinsMysterious
 	vector<int> voisinsVisibles; // les voisins visibles (contient les voisins accessibles et les voisins fenetres)
 	vector<int> voisinsMysterious; // les voisins sur lequel on a pas encore d'information
-   STATUT statut;
+    Statut statut;
 
 
     MapTile() = default; // Constructeur par défaut obligatoire pour pouvoir utiliser tuple ...

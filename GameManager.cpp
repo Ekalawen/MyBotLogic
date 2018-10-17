@@ -280,7 +280,7 @@ void GameManager::addNewTiles(TurnInfo ti) noexcept {
         // On va regarder si on a découvert des tiles
         for (auto tile : ti.tiles) {
             // Si on ne connaît pas cette tile, on l'ajoute
-            if (m.tiles[tile.second.tileID].statut != MapTile::STATUT::CONNU) {
+            if (m.tiles[tile.second.tileID].statut != MapTile::Statut::CONNU) {
                 m.addTile(tile.second);
             }
         }

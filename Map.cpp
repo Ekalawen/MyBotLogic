@@ -50,7 +50,7 @@ Map::Map(const LevelInfo levelInfo) :
 
     // Associer tous les voisins de toutes les tiles
     for (MapTile &t : tiles) {
-       if (t.statut == MapTile::STATUT::CONNU) {
+       if (t.statut == MapTile::Statut::CONNU) {
           t.setVoisins(*this);
        }
 
@@ -110,7 +110,7 @@ Chemin Map::WAStar(int depart, int arrivee, float coefEvaluation) noexcept {
         // Pour tous les voisins du noeud courant ...
         for (auto voisin : noeudCourant.tile.voisinsAccessibles) {
             // On vérifie que le voisin existe ...
-            if (tiles[voisin].statut == MapTile::STATUT::CONNU) {
+            if (tiles[voisin].statut == MapTile::Statut::CONNU) {
                 // On construit le nouveau noeud
                 Noeud nouveauNoeud = Noeud(tiles[voisin], noeudCourant.cout + 1, distanceL2(voisin, arrivee), noeudCourant.tile.id);
                 // On vérifie s'il existe dans closedList avec un cout inférieur ou dans openList avec un cout inférieur
@@ -181,7 +181,7 @@ Chemin Map::aStar(int depart, int arrivee) noexcept {
 
     // Et on ajoute ses voisins accessibles à la liste des cases à visiter !
     for (auto voisin : tiles[depart].voisinsAccessibles) {
-        if (tiles[voisin].statut == MapTile::STATUT::CONNU) {
+        if (tiles[voisin].statut == MapTile::Statut::CONNU) {
             toVisit.push_back(voisin);
             toVisitAntecedants.push_back(depart);
             float heuristique = distanceL2(voisin, arrivee);
@@ -213,7 +213,7 @@ Chemin Map::aStar(int depart, int arrivee) noexcept {
            // Si notre voisin n'appartient pas aux cases visitées ou à visiter, alors on l'ajoute à cette dernière
            if (!(find(visitees.begin(), visitees.end(), voisin) != visitees.end()) && !(find(toVisit.begin(), toVisit.end(), voisin) != toVisit.end())) {
               // On l'ajoute que si cette case a déjà été découverte !
-              if (tiles[voisin].statut == MapTile::STATUT::CONNU) {
+              if (tiles[voisin].statut == MapTile::Statut::CONNU) {
                   toVisit.push_back(voisin);
                   toVisitAntecedants.push_back(currentTile.id);
                   float heuristique = distanceL2(voisin, arrivee);
@@ -284,7 +284,7 @@ bool Map::areAccessible(int ind1, int ind2) noexcept {
     }
 
     // On vérifie également que la case d'indice 2 n'est pas une case bloqué !
-    if (tiles[ind2].statut == MapTile::STATUT::CONNU
+    if (tiles[ind2].statut == MapTile::Statut::CONNU
     && tiles[ind2].type == Tile::TileAttribute_Forbidden) {
         return false;
     }
@@ -378,7 +378,7 @@ bool Map::areVisible(int ind1, int ind2) const noexcept {
 
 bool Map::areMysterious(int ind1, int ind2) noexcept {
     if (areAccessible(ind1, ind2) || areVisible(ind1, ind2)) {
-        if (tiles[ind2].statut != MapTile::STATUT::CONNU) {
+        if (tiles[ind2].statut != MapTile::Statut::CONNU) {
             return true;
         }
     }
@@ -411,7 +411,7 @@ bool Map::areMysteriousAccessible(int ind1, int ind2) noexcept {
 	}
 
 	// On vérifie également que la case d'indice 2 n'est pas une case bloqué !
-	if (tiles[ind2].statut == MapTile::STATUT::CONNU
+	if (tiles[ind2].statut == MapTile::Statut::CONNU
     && tiles[ind2].type == Tile::TileAttribute_Forbidden) {
 		return false;
 	}
@@ -617,7 +617,7 @@ void Map::addTile(TileInfo tile) noexcept {
     // Puis on met à jour les voisins de ses voisins ! :D
     for (auto voisin : tiles[tile.tileID].voisins) {
         // Il faut vérifier que cette tile existe déjà ! Canard !
-        if (tiles[voisin].statut == MapTile::STATUT::CONNU) {
+        if (tiles[voisin].statut == MapTile::Statut::CONNU) {
             tiles[voisin].setVoisins(*this);
         }
     }
@@ -649,13 +649,13 @@ void Map::addObject(ObjectInfo object) noexcept {
     }
     
     // Puis on met à jour les voisins de la case de notre objet
-    if (tiles[object.tileID].statut == MapTile::STATUT::CONNU) {
+    if (tiles[object.tileID].statut == MapTile::Statut::CONNU) {
         tiles[object.tileID].setVoisins(*this);
     }
 
     // Puis on met à jour les voisins des voisins de la case de notre objet
     for (auto voisin : getVoisins(object.tileID)) {
-        if (tiles[voisin].statut == MapTile::STATUT::CONNU) {
+        if (tiles[voisin].statut == MapTile::Statut::CONNU) {
             tiles[voisin].setVoisins(*this);
         }
     }

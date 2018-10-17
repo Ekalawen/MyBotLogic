@@ -43,7 +43,7 @@ BT_Noeud::ETAT_ELEMENT ScoreStrategie::execute() {
 void ScoreStrategie::calculerScoresEtCheminsTilesPourNpc(Npc& npc, vector<int> tilesAVisiter) {
     for (MapTile tile : gm.m.tiles) {
         // On ne considère la tile que si on ne la visite pas déjà !
-        if (tile.statut == MapTile::STATUT::CONNU && find(tilesAVisiter.begin(), tilesAVisiter.end(), tile.id) == tilesAVisiter.end()) {
+        if (tile.statut == MapTile::Statut::CONNU && find(tilesAVisiter.begin(), tilesAVisiter.end(), tile.id) == tilesAVisiter.end()) {
             saveScore(tile, npc, tilesAVisiter);
         }
     }
