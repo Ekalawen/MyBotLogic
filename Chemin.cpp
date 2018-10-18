@@ -14,8 +14,8 @@ int Chemin::distance() const noexcept {
 }
 
 int Chemin::destination() const noexcept {
-    if (!chemin.empty() && !inaccessible) {
-        return chemin[0];
+	if (!chemin.empty() && !inaccessible) {
+		return chemin[0];
     } else {
         GameManager::Log("Attention, on essaye de récupérer la destination d'un chemin vide !");
         return -1;
