@@ -6,7 +6,3 @@ Mouvement::Mouvement(int npcID, int tileSource, int tileDestination, Tile::ETile
 : npcID(npcID), tileSource(tileSource), tileDestination(tileSource), direction(direction)
 {
 }
-
-Mouvement::~Mouvement()
-{
-}

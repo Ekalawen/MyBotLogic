@@ -12,7 +12,7 @@ public:
    BT_Composite(vector<BT_Noeud*> noeuds) : noeuds{ noeuds } {
    }
 
-   virtual ETAT_ELEMENT execute() override = 0;
+   virtual ETAT_ELEMENT execute() noexcept override = 0;
 };
 
 #endif

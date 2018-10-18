@@ -6,7 +6,7 @@
 class BT_Feuille : public BT_Noeud {
 public:
    BT_Feuille() = default;
-   virtual ETAT_ELEMENT execute() = 0;
+   virtual ETAT_ELEMENT execute() noexcept = 0;
 };
 
 #endif

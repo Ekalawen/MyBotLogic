@@ -13,16 +13,14 @@ Exploration::Exploration(GameManager& gm, string nom)
     // La distance du npc à la tuile
     // La distance moyenne de cette tuile aux autres tuiles qui seront visités !
     // Le degré d'intêret de la tuile. 
-void Exploration::saveScore(MapTile tile, Npc& npc, vector<int> tilesAVisiter) {
+void Exploration::saveScore(MapTile tile, float cout, Npc& npc, vector<int> tilesAVisiter) noexcept {
     float score = 0;
 
     // Si on a déjà visité cette case, son score est nul
     if (tile.statut == MapTile::Statut::VISITE) return;
 
-    // Si le chemin entre le npc et la tile n'est pas accessible, on enregistre même pas le score de cette tile, elle est hors-jeu !
-    Chemin cheminNpcTile = gm.m.WAStar(npc.tileId, tile.id);
-    if (!cheminNpcTile.isAccessible()) return;
-    score += cheminNpcTile.distance() * COEF_DISTANCE_NPC_TILE;
+    // On enregistre le cout, cad la distanc npc-tile
+    score += cout * COEF_DISTANCE_NPC_TILE;
 
     // On regarde l'intêret de cette tile
     float interetTile = interet(tile);
@@ -40,13 +38,13 @@ void Exploration::saveScore(MapTile tile, Npc& npc, vector<int> tilesAVisiter) {
     }
 
     // Il reste à affecter le score et le chemin au npc
-    npc.addCheminWithScore(cheminNpcTile, score);
+    npc.addScore(tile.id, score);
 }
 
 // L'intérêt est définit par :
     // Le nombre de voisins inconnues accessibles
     // Le nombre de voisins inconnues non accessibles MAIS visibles !
-float Exploration::interet(MapTile tile) {
+float Exploration::interet(MapTile tile) noexcept {
     float interet = 0;
 
     int nbInconnuesAccessibles = 0;

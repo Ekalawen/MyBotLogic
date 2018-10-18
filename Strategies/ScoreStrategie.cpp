@@ -10,9 +10,9 @@ ScoreStrategie::ScoreStrategie(GameManager& gm, string nom)
 {
 }
 
-BT_Noeud::ETAT_ELEMENT ScoreStrategie::execute() {
+BT_Noeud::ETAT_ELEMENT ScoreStrategie::execute() noexcept {
    auto pre = std::chrono::high_resolution_clock::now();
-   
+
     GameManager::Log(nom);
     // On ne sait pas où se trouvent les objectifs !
     // On va les chercher !
@@ -32,23 +32,32 @@ BT_Noeud::ETAT_ELEMENT ScoreStrategie::execute() {
         calculerScoresEtCheminsTilesPourNpc(npc, tilesAVisiter);
 
         // Choisir la meilleure tile pour ce npc et lui affecter son chemin
-        int tileChoisi = npc.affecterMeilleurChemin();
+        int tileChoisi = npc.affecterMeilleurChemin(gm.m);
 
         // Mettre à jour les tilesAVisiter
         tilesAVisiter.push_back(tileChoisi);
     }
+
+    // Temps d'execution
     auto post = std::chrono::high_resolution_clock::now();
     GameManager::Log("Durée " + nom + " = " + to_string(std::chrono::duration_cast<std::chrono::microseconds>(post - pre).count() / 1000.f) + "ms");
+    
     return ETAT_ELEMENT::REUSSI;
 }
 
 // Calcul le score de chaque tiles et son chemin pour un npc
 // On prend en compte les tilesAVisiter des autres npcs pour que les tiles soient loins les unes des autres
-void ScoreStrategie::calculerScoresEtCheminsTilesPourNpc(Npc& npc, vector<int> tilesAVisiter) {
-    for (MapTile tile : gm.m.tiles) {
+void ScoreStrategie::calculerScoresEtCheminsTilesPourNpc(Npc& npc, vector<int> tilesAVisiter) noexcept {
+
+    map<int, float> tilesAccessibles = gm.m.floodfill(npc); // L'identifiants des tiles avec leurs coûts associés ! =)
+
+    for (auto pair_tile : tilesAccessibles) { // parcours toutes les tiles découvertes par l'ensemble des npcs et qui sont accessibles
+        MapTile tile = gm.m.tiles[pair_tile.first];
         // On ne considère la tile que si on ne la visite pas déjà !
         if (tile.statut == MapTile::Statut::CONNU && find(tilesAVisiter.begin(), tilesAVisiter.end(), tile.id) == tilesAVisiter.end()) {
-            saveScore(tile, npc, tilesAVisiter);
+            float cout = pair_tile.second;
+            saveScore(tile, cout, npc, tilesAVisiter);
         }
     }
 }
+

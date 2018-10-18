@@ -102,55 +102,6 @@ void GameManager::associateNpcsWithObjectiv() noexcept {
             GameManager::Log(to_string(tile));
         }
     }
-
-    /*
-    // Les objectifs déjà pris
-    vector<int> objectifs_pris;
-
-    // Pour chaque npc, on trouve l'objectif le plus proche possible de lui
-    for (auto& pair_npc : npcs) {
-
-        Npc npc = pair_npc.second;
-        
-        // Chercher l'objectif le plus proche
-        int dist_min = m.rowCount * m.colCount + 1;
-        int objectifChoisi = -1;
-        vector<int> cheminOptimal;
-        for (auto objectif : m.objectifs) {
-            // Si l'objectif n'est pas déjà pris !
-            bool pris = false;
-            for (int i = 0; i < objectifs_pris.size(); i++) {
-                if (objectifs_pris[i] == objectif.second.id) {
-                    pris = true;
-                    break;
-                }
-            }
-            if (!pris) {
-                vector<int> chemin = m.chemin(npc.tileId, objectif.second.id);
-                int dist = static_cast<int>(chemin.size());
-                if (dist < dist_min) {
-                    dist_min = dist;
-                    objectifChoisi = objectif.second.id;
-                    cheminOptimal = chemin;
-                }
-            }
-        }
-        // Lui affecter le chemin et l'objectif !
-        pair_npc.second.tileObjectif = objectifChoisi;
-        pair_npc.second.chemin = cheminOptimal;
-
-        GameManager::Log("NPC = " + to_string(npc.id));
-        GameManager::Log("objectif choisi = " + to_string(objectifChoisi));
-        GameManager::Log("distance = " + to_string(dist_min));
-        GameManager::Log("chemin :");
-        for (auto tile : pair_npc.second.chemin) {
-            GameManager::Log(to_string(tile));
-        }
-
-        // Rendre cet objectif inutilisable par les autres npcs !
-        objectifs_pris.push_back(objectifChoisi);
-    }
-    */
 }
 
 void GameManager::moveNpcs(vector<Action*>& actionList) noexcept {
