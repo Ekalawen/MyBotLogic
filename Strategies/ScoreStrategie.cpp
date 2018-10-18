@@ -2,6 +2,7 @@
 #include "ScoreStrategie.h"
 #include "MyBotLogic/BehaviorTree/BT_Noeud.h"
 #include "MyBotLogic/GameManager.h"
+#include <chrono>
 
 ScoreStrategie::ScoreStrategie(GameManager& gm, string nom)
     : gm{ gm },
@@ -10,6 +11,8 @@ ScoreStrategie::ScoreStrategie(GameManager& gm, string nom)
 }
 
 BT_Noeud::ETAT_ELEMENT ScoreStrategie::execute() {
+   auto pre = std::chrono::high_resolution_clock::now();
+   
     GameManager::Log(nom);
     // On ne sait pas où se trouvent les objectifs !
     // On va les chercher !
@@ -34,7 +37,8 @@ BT_Noeud::ETAT_ELEMENT ScoreStrategie::execute() {
         // Mettre à jour les tilesAVisiter
         tilesAVisiter.push_back(tileChoisi);
     }
-
+    auto post = std::chrono::high_resolution_clock::now();
+    GameManager::Log("Durée " + nom + " = " + to_string(std::chrono::duration_cast<std::chrono::microseconds>(post - pre).count() / 1000.f) + "ms");
     return ETAT_ELEMENT::REUSSI;
 }
 
