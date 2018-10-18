@@ -6,7 +6,7 @@
 #include "MyBotLogic/Strategies/ScoreStrategie.h"
 
 class Exploration : public ScoreStrategie {
-    void saveScore(MapTile tile, Npc& npc, vector<int> tilesAVisiter);
+    void saveScore(MapTile tile, float cout, Npc& npc, vector<int> tilesAVisiter);
     float interet(MapTile tile);
 
 public:

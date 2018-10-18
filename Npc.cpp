@@ -26,9 +26,8 @@ void Npc::addChemin(Chemin& chemin) noexcept {
     cheminsPossibles.push_back(chemin);
 }
 
-void Npc::addCheminWithScore(Chemin& chemin, float score) noexcept {
-    addChemin(chemin);
-    scoresAssocies.push_back(score);
+void Npc::addScore(int tileIndice, float score) noexcept {
+    scoresAssocies[tileIndice] = score;
 }
 
 Chemin Npc::getCheminMinNonPris(vector<int> objectifsPris, int tailleCheminMax) const noexcept {
@@ -50,8 +49,8 @@ Chemin Npc::getCheminMinNonPris(vector<int> objectifsPris, int tailleCheminMax) 
     return cheminMin;
 }
 
-int Npc::affecterMeilleurChemin() noexcept {
-    if (scoresAssocies.empty() || cheminsPossibles.empty()) {
+int Npc::affecterMeilleurChemin(Map m) noexcept {
+    if (scoresAssocies.empty()) {
         // Dans ce cas-là on reste sur place !
         chemin = Chemin{};
         GameManager::Log("Le Npc " + to_string(id) + " n'a rien a rechercher et reste sur place !");
@@ -59,19 +58,21 @@ int Npc::affecterMeilleurChemin() noexcept {
     }
 
     // On cherche le meilleur score
-    float bestScore = scoresAssocies[0];
-    int bestScoreIndice = 0;
-    GameManager::Log("Case potentielle à explorer : " + to_string(cheminsPossibles[0].destination()) + " de score " + to_string(scoresAssocies[0]));
-    for (int i = 1; i < scoresAssocies.size(); ++i) {
-        GameManager::Log("Case potentielle à explorer : " + to_string(cheminsPossibles[i].destination()) + " de score " + to_string(scoresAssocies[i]));
-        if (scoresAssocies[i] > bestScore) {
-            bestScore = scoresAssocies[i];
-            bestScoreIndice = i;
+    float bestScore = scoresAssocies.begin()->second;
+    int bestScoreIndice = scoresAssocies.begin()->first;
+    GameManager::Log("Case potentielle à explorer : " + to_string(bestScoreIndice) + " de score " + to_string(bestScore));
+    for (auto pair : scoresAssocies) {
+        int tileId = pair.first;
+        float score = pair.second;
+        GameManager::Log("Case potentielle à explorer : " + to_string(tileId) + " de score " + to_string(score));
+        if (score > bestScore) {
+            bestScore = score;
+            bestScoreIndice = tileId;
         }
     }
 
-    // On affecte son chemin
-    chemin = cheminsPossibles[bestScoreIndice];
+    // On affecte son chemin, mais il nous faut le calculer ! =)
+    chemin = m.WAStar(tileId, bestScoreIndice);
     GameManager::Log("Le Npc " + to_string(id) + " va rechercher la tile " + to_string(chemin.destination()));
 
     // On renvoie la destination

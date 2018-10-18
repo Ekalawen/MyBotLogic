@@ -138,6 +138,62 @@ Chemin Map::WAStar(int depart, int arrivee, float coefEvaluation) noexcept {
     return path;
 }
 
+// Calcule le coût et le chemin de chaque tiles accessibles pour un npc. Le cout et le chemin sont stockés dans la tile. Renvoie un vector des identifiants des tuiles accessibles.
+map<int, float> Map::floodfill(Npc& npc) {
+    map<int, float> coutCasesAccessibles;
+    vector<Noeud> closedList{};
+    vector<Noeud> openList{};
+    Noeud noeudCourant;
+
+    // On ajoute le noeud initial
+    int depart = npc.tileId;
+    openList.push_back(Noeud(tiles[depart], 0, 0, depart));
+
+    // Tant qu'il reste des noeuds à traiter ...
+    while (!openList.empty()) {
+        // On récupère le premier noeud de notre liste
+        noeudCourant = openList.back();
+        openList.pop_back();
+
+        // Pour tous les voisins du noeud courant ...
+        for (auto voisin : noeudCourant.tile.voisinsAccessibles) {
+            // On vérifie que le voisin existe ...
+            if (tiles[voisin].statut != MapTile::Statut::INCONNU) {
+                // On construit le nouveau noeud
+                Noeud nouveauNoeud = Noeud(tiles[voisin], noeudCourant.cout + 1, 0, noeudCourant.tile.id);
+                // On vérifie s'il existe dans closedList avec un cout inférieur ou dans openList avec un cout inférieur
+                auto itClose = find(closedList.begin(), closedList.end(), nouveauNoeud);
+                auto itOpen = find(openList.begin(), openList.end(), nouveauNoeud);
+
+                if (itClose == closedList.end() && itOpen == openList.end()) {
+                    openList.push_back(nouveauNoeud);
+                } else if (itClose != closedList.end() && itOpen == openList.end()) {
+                    // Do nothing
+                } else if (itClose == closedList.end() && itOpen != openList.end()) {
+                    // Do nothing
+                } else {
+                    GameManager::Log("OMG On a fait n'imp !");
+                }
+            }
+        }
+
+        // Pas besoin de priotariser car on veut juste tout parcourir en largeur !
+        // On trie notre openList pour que le dernier soit le meilleur !
+        // Donc celui qui minimise et le cout, et l'évaluation !
+        sort(openList.begin(), openList.end(), [](const Noeud a, const Noeud b) {
+            return a.cout > b.cout; // Par ordre décroissant
+        });
+
+        // On ferme notre noeud
+        closedList.push_back(noeudCourant);
+        // Et on enregistre son cout dans la map
+        coutCasesAccessibles[noeudCourant.tile.id] = noeudCourant.cout;
+    }
+
+    // On renvoie la map
+    return coutCasesAccessibles;
+}
+
 // AStar doit prendre en compte l'heuristique (la distance supposée à l'arrivée) et le coût (la distance réelle au départ)
 // pour chaque case pour être sur que l'algorithme trouve réellement un des chemins optimaux ! <3
 Chemin Map::aStar(int depart, int arrivee) noexcept {
@@ -514,8 +570,8 @@ int Map::getAdjacentTileAt(int tileSource, Tile::ETilePosition direction) const 
         return res;
     }
     else {
-        GameManager::Log("La direction demandé dans getAdjacentTileAt n'existe pas !");
-        GameManager::Log("origin = " + to_string(tileSource) + " direction = " + to_string(direction));
+        //GameManager::Log("La direction demandé dans getAdjacentTileAt n'existe pas !");
+        //GameManager::Log("origin = " + to_string(tileSource) + " direction = " + to_string(direction));
         return -1;
     }
 }

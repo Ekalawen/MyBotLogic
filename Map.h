@@ -5,11 +5,13 @@
 #include "TileInfo.h"
 #include "ObjectInfo.h"
 #include "Chemin.h"
+#include "Npc.h"
 #include "MyBotLogic/MapTile.h"
 #include <map>
 using namespace std;
 
 class MapTile;
+class Npc;
 class Map {
     void sortByDistance(vector<tuple<int, float>>& base, vector<int>& autre1, vector<int>& autre2) noexcept; // Permet de trier base dans l'ordre décroissant, et autre1 et autre2 dans le même ordre, on prend le poids qui est la somme du coup et de l'heuristique
 public:
@@ -30,8 +32,11 @@ public:
     Map(const LevelInfo);
     bool isInMap(int idTile) const noexcept;
     map<unsigned int, MapTile> getObjectifs() const noexcept;
+
     Chemin aStar(int depart, int arrivee) noexcept; // Renvoie le chemin à parcourir pour aller du départ à l'arrivée
     Chemin Map::WAStar(int depart, int arrivee, float coefEvaluation = 1) noexcept; // Applique WAStar
+    map<int, float> floodfill(Npc& npc); // Calcule le coût et le chemin de chaque tiles accessibles pour un npc. Le cout et le chemin sont stockés dans la tile. Renvoie un vector des identifiants des tuiles accessibles.
+
     float distanceL2(int depart, int arrivee) const noexcept; // Renvoie la distance L2 à vol d'oiseau !
     int distanceHex(int depart, int arrivee) const noexcept;
     bool areAccessible(int tile1, int tile2) noexcept; // Permet de savoir si deux tiles sont accessibles l'une par rapport à l'autre ! pour 2 tiles adjacentes

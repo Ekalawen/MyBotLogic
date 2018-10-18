@@ -3,14 +3,15 @@
 
 #include "Globals.h"
 #include "NPCInfo.h"
-#include "Map.h"
 #include "Chemin.h"
 #include <vector>
+#include "Map.h"
 using namespace std;
 
+class Map;
 class Npc {
     vector<Chemin> cheminsPossibles; // Ceci est une variable temporaire permettant de stocker les chemins parmis lesquelles choisirs un objectif
-    vector<float> scoresAssocies; // Les scores associes aux chemins !
+    map<int, float> scoresAssocies; // Les scores associés aux tiles !
 public:
     int id;
     int tileId; // Sa position sur la carte
@@ -23,9 +24,9 @@ public:
 
     void resetChemins() noexcept;
     void addChemin(Chemin& chemin) noexcept;
-    void addCheminWithScore(Chemin& chemin, float score) noexcept;
+    void addScore(int tileIndice, float score) noexcept;
     Chemin getCheminMinNonPris(vector<int> objectifsPris, int tailleCheminMax) const noexcept; // Permet de trouver le chemin le plus court qui ne soit pas déjà pris
-    int affecterMeilleurChemin() noexcept; // Affecte au npc le chemin avec le meilleur score et renvoie la destination de ce chemin !
+    int affecterMeilleurChemin(Map m) noexcept; // Affecte au npc le chemin avec le meilleur score et renvoie la destination de ce chemin !
 };
 
 
