@@ -18,13 +18,13 @@ void Expedition::saveScore(MapTile tile, float cout, Npc& npc, vector<int> tiles
     // Si on a déjà visité cette case, son score est nul
     if (tile.statut == MapTile::Statut::VISITE) return;
 
-    // On enregistre le cout, cad la distanc npc-tile
-    score += cout * COEF_DISTANCE_NPC_TILE;
+	// On regarde l'intêret de cette tile
+	float interetTile = interet(tile);
+	score += interetTile * COEF_INTERET;
+	if (interetTile == 0) return; // Si pas d'intêret, la tile ne nous intéresse pas !
 
-    // On regarde l'intêret de cette tile
-    float interetTile = interet(tile);
-    score += interetTile * COEF_INTERET;
-    if (interetTile == 0) return; // Si pas d'intêret, la tile ne nous intéresse pas !
+    // On enregistre le cout, cad la distance npc-tile
+    score += cout * COEF_DISTANCE_NPC_TILE;
 
     // On regarde la distance moyenne de cette tile à tous les objectifs
     float distanceMoyenne = 0;

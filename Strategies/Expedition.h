@@ -1,9 +1,9 @@
 #ifndef EXPEDITION_H
 #define EXPEDITION_H
 
-#include "MyBotLogic/BehaviorTree/BT_Feuille.h"
-#include "MyBotLogic/GameManager.h"
-#include "MyBotLogic/Strategies/ScoreStrategie.h"
+#include "../BehaviorTree/BT_Feuille.h"
+#include "../GameManager.h"
+#include "../Strategies/ScoreStrategie.h"
 
 class Expedition : public ScoreStrategie {
     void saveScore(MapTile tile, float cout, Npc& npc, vector<int> tilesAVisiter) noexcept;

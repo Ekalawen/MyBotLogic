@@ -10,7 +10,7 @@ public:
    Selecteur(vector<BT_Noeud*> noeuds) : BT_Composite(noeuds) {
    }
 
-   BT_Noeud::ETAT_ELEMENT execute() override {
+   BT_Noeud::ETAT_ELEMENT execute() noexcept override {
 	   int ind = 0;
 	   BT_Noeud::ETAT_ELEMENT res;
 	   do {

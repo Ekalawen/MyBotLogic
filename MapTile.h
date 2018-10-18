@@ -7,6 +7,7 @@
 using namespace std;
 
 class Map;
+
 class MapTile {
 public:
     enum Statut{INCONNU,CONNU,VISITE};

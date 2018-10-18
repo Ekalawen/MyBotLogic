@@ -8,12 +8,12 @@ class ScoreStrategie : public BT_Feuille {
 protected:
     GameManager &gm;
     string nom;
-    void calculerScoresEtCheminsTilesPourNpc(Npc& npc, vector<int> tilesAVisiter);
-    virtual void saveScore(MapTile tile, float cout, Npc& npc, vector<int> tilesAVisiter) = 0;
+    void calculerScoresEtCheminsTilesPourNpc(Npc& npc, vector<int> tilesAVisiter) noexcept;
+    virtual void saveScore(MapTile tile, float cout, Npc& npc, vector<int> tilesAVisiter) noexcept = 0;
 
 public:
     ScoreStrategie(GameManager&, string nom);
-    virtual ETAT_ELEMENT execute() override;
+    virtual ETAT_ELEMENT execute() noexcept override;
 };
 
 #endif

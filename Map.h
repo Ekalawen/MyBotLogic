@@ -20,7 +20,6 @@ public:
     int nbTiles;
     int nbtilesDecouvertes;
     vector<MapTile> tiles;
-    //map<unsigned int, MapTile> tiles;
 
     map<unsigned int, MapTile> objectifs;
     map<unsigned int, ObjectInfo> murs;

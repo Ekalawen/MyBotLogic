@@ -13,7 +13,7 @@ Exploration::Exploration(GameManager& gm, string nom)
     // La distance du npc à la tuile
     // La distance moyenne de cette tuile aux autres tuiles qui seront visités !
     // Le degré d'intêret de la tuile. 
-void Exploration::saveScore(MapTile tile, float cout, Npc& npc, vector<int> tilesAVisiter) {
+void Exploration::saveScore(MapTile tile, float cout, Npc& npc, vector<int> tilesAVisiter) noexcept {
     float score = 0;
 
     // Si on a déjà visité cette case, son score est nul
@@ -44,7 +44,7 @@ void Exploration::saveScore(MapTile tile, float cout, Npc& npc, vector<int> tile
 // L'intérêt est définit par :
     // Le nombre de voisins inconnues accessibles
     // Le nombre de voisins inconnues non accessibles MAIS visibles !
-float Exploration::interet(MapTile tile) {
+float Exploration::interet(MapTile tile) noexcept {
     float interet = 0;
 
     int nbInconnuesAccessibles = 0;

@@ -167,19 +167,15 @@ map<int, float> Map::floodfill(Npc& npc) {
 
                 if (itClose == closedList.end() && itOpen == openList.end()) {
                     openList.push_back(nouveauNoeud);
-                } else if (itClose != closedList.end() && itOpen == openList.end()) {
-                    // Do nothing
-                } else if (itClose == closedList.end() && itOpen != openList.end()) {
-                    // Do nothing
                 } else {
-                    GameManager::Log("OMG On a fait n'imp !");
+                    GameManager::Log("Le noeud est déjà dans open ou closed.");
                 }
             }
         }
 
         // Pas besoin de priotariser car on veut juste tout parcourir en largeur !
-        // On trie notre openList pour que le dernier soit le meilleur !
-        // Donc celui qui minimise et le cout, et l'évaluation !
+        // On trie notre openList pour que le dernier soit le plus court !
+        // Donc celui qui minimise le coût !
         sort(openList.begin(), openList.end(), [](const Noeud a, const Noeud b) {
             return a.cout > b.cout; // Par ordre décroissant
         });
