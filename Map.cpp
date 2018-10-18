@@ -168,7 +168,7 @@ map<int, float> Map::floodfill(Npc& npc) {
                 if (itClose == closedList.end() && itOpen == openList.end()) {
                     openList.push_back(nouveauNoeud);
                 } else {
-                    GameManager::Log("Le noeud est déjà dans open ou closed.");
+                    //GameManager::Log("Le noeud est déjà dans open ou closed.");
                 }
             }
         }
