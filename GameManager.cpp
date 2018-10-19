@@ -119,13 +119,14 @@ void GameManager::moveNpcs(vector<Action*>& actionList) noexcept {
             int caseCible = npc.second.chemin.chemin.back();
             GameManager::Log("case cible = " + to_string(caseCible));
 
-            npc.second.chemin.chemin.pop_back(); // On peut supprimer le chemin
+            
             Tile::ETilePosition direction = m.getDirection(npc.second.tileId, caseCible);
             GameManager::Log("direction = " + to_string(direction));
 
             // On enregistre le mouvement
             mouvements.push_back(new Mouvement(npc.second.id, npc.second.tileId, caseCible, direction));
 
+			npc.second.chemin.chemin.pop_back(); // On peut supprimer le chemin
         } else {
             GameManager::Log("case cible = Ne Bouge Pas");
         }
@@ -140,6 +141,15 @@ void GameManager::moveNpcs(vector<Action*>& actionList) noexcept {
         actionList.push_back(new Move(mouvement->npcID, mouvement->direction));
         // ET ON LE FAIT AUSSI BOUGER DANS NOTRE MODELE !!!
         npcs[mouvement->npcID].move(mouvement->direction, m);
+		// TEST : pour chaque npc qui se déplace sur son objectif à ce tour, alors mettre estArrive à vrai
+		if (mouvement->direction != Tile::ETilePosition::CENTER && npcs[mouvement->npcID].tileObjectif == mouvement->tileDestination)
+			// il faut aussi vérifier si tous les NPC ont un objectif atteignable, donc si on est en mode Exploitation
+		{
+			npcs[mouvement->npcID].estArrive = true;
+		}
+		else {
+			npcs[mouvement->npcID].estArrive = false;
+		}
     }
 }
 
@@ -149,7 +159,7 @@ void GameManager::ordonnerMouvements(vector<Mouvement*>& mouvements) noexcept {
     // OK !
     // Si deux npcs adjacents veulent aller à peu près dans la même direction, le plus en avant doit bouger en premier !
     // OK !
-    // Si deux npcs adjacents veulent aller dans des directions opposées ... XD TODO !!!
+    // Si deux npcs adjacents veulent aller dans des directions opposées ... C'est géré par le moteur du prof =)
     // TODO !
 
     // Pour toutes les tiles auxquelles on pourrait accéder ...

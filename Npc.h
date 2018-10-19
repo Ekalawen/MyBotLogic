@@ -18,6 +18,9 @@ public:
     int tileId; // Sa position sur la carte
     int tileObjectif; // Là où il doit aller !
     Chemin chemin; // Utilisé pour savoir quel chemin suivre pour se rendre à l'objectif
+
+	bool estArrive; // indique si le npc a atteind son objectif
+
     Npc() = default;
     Npc(const NPCInfo);
 

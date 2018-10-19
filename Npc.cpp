@@ -3,11 +3,12 @@
 #include "Globals.h"
 #include "GameManager.h"
 
-Npc::Npc(const NPCInfo info) : 
-    id{ static_cast<int>(info.npcID) },
-    tileId{static_cast<int>(info.tileID)},
-    tileObjectif{ -1 },
-    chemin{}
+Npc::Npc(const NPCInfo info) :
+	id{ static_cast<int>(info.npcID) },
+	tileId{ static_cast<int>(info.tileID) },
+	tileObjectif{ -1 },
+	chemin{},
+	estArrive{ false }
 {
 }
 
