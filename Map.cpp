@@ -139,55 +139,92 @@ Chemin Map::WAStar(int depart, int arrivee, float coefEvaluation) noexcept {
 }
 
 // Calcule le coût et le chemin de chaque tiles accessibles pour un npc. Le cout et le chemin sont stockés dans la tile. Renvoie un vector des identifiants des tuiles accessibles.
+//map<int, float> Map::floodfill(Npc& npc) {
+//    map<int, float> coutCasesAccessibles;
+//    vector<Noeud> closedList{};
+//    vector<Noeud> openList{};
+//    Noeud noeudCourant;
+//
+//    // On ajoute le noeud initial
+//    int depart = npc.tileId;
+//    openList.push_back(Noeud(tiles[depart], 0, 0, depart));
+//
+//    // Tant qu'il reste des noeuds à traiter ...
+//    while (!openList.empty()) {
+//        // On récupère le premier noeud de notre liste
+//        noeudCourant = openList.back();
+//        openList.pop_back();
+//
+//        // Pour tous les voisins du noeud courant ...
+//        for (auto voisin : noeudCourant.tile.voisinsAccessibles) {
+//            // On vérifie que le voisin existe ...
+//            if (tiles[voisin].statut != MapTile::Statut::INCONNU) {
+//                // On construit le nouveau noeud
+//                Noeud nouveauNoeud = Noeud(tiles[voisin], noeudCourant.cout + 1, 0, noeudCourant.tile.id);
+//                // On vérifie s'il existe dans closedList avec un cout inférieur ou dans openList avec un cout inférieur
+//                auto itClose = find(closedList.begin(), closedList.end(), nouveauNoeud);
+//                auto itOpen = find(openList.begin(), openList.end(), nouveauNoeud);
+//
+//                if (itClose == closedList.end() && itOpen == openList.end()) {
+//                    openList.push_back(nouveauNoeud);
+//                } else {
+//                    //GameManager::Log("Le noeud est déjà dans open ou closed.");
+//                }
+//            }
+//        }
+//
+//        // Pas besoin de priotariser car on veut juste tout parcourir en largeur !
+//        // On trie notre openList pour que le dernier soit le plus court !
+//        // Donc celui qui minimise le coût !
+//        sort(openList.begin(), openList.end(), [](const Noeud a, const Noeud b) {
+//            return a.cout > b.cout; // Par ordre décroissant
+//        });
+//
+//        // On ferme notre noeud
+//        closedList.push_back(noeudCourant);
+//        // Et on enregistre son cout dans la map
+//        coutCasesAccessibles[noeudCourant.tile.id] = noeudCourant.cout;
+//    }
+//
+//    // On renvoie la map
+//    return coutCasesAccessibles;
+//}
+
 map<int, float> Map::floodfill(Npc& npc) {
-    map<int, float> coutCasesAccessibles;
-    vector<Noeud> closedList{};
-    vector<Noeud> openList{};
-    Noeud noeudCourant;
 
-    // On ajoute le noeud initial
-    int depart = npc.tileId;
-    openList.push_back(Noeud(tiles[depart], 0, 0, depart));
+   vector<int> Open;
+   vector<int> oldOpen;
+   vector<int> newOpen;
+   map<int, float> coutCasesAccessibles;
 
-    // Tant qu'il reste des noeuds à traiter ...
-    while (!openList.empty()) {
-        // On récupère le premier noeud de notre liste
-        noeudCourant = openList.back();
-        openList.pop_back();
 
-        // Pour tous les voisins du noeud courant ...
-        for (auto voisin : noeudCourant.tile.voisinsAccessibles) {
-            // On vérifie que le voisin existe ...
+   // On ajoute le noeud initial
+   newOpen.push_back(npc.tileId);
+
+   int cout = 0;
+   // Tant qu'il reste des noeuds à traiter ...
+   while (!newOpen.empty()) {    
+      oldOpen = newOpen;
+      newOpen = vector<int>();
+      // On regarde les voisins des dernieres tuiles ajoutées
+      for (int tileID : oldOpen) {
+         for (auto voisin : tiles[tileID].voisinsAccessibles) {
+            // Si elle est connu
             if (tiles[voisin].statut != MapTile::Statut::INCONNU) {
-                // On construit le nouveau noeud
-                Noeud nouveauNoeud = Noeud(tiles[voisin], noeudCourant.cout + 1, 0, noeudCourant.tile.id);
-                // On vérifie s'il existe dans closedList avec un cout inférieur ou dans openList avec un cout inférieur
-                auto itClose = find(closedList.begin(), closedList.end(), nouveauNoeud);
-                auto itOpen = find(openList.begin(), openList.end(), nouveauNoeud);
-
-                if (itClose == closedList.end() && itOpen == openList.end()) {
-                    openList.push_back(nouveauNoeud);
-                } else {
-                    //GameManager::Log("Le noeud est déjà dans open ou closed.");
-                }
+               // Si elle n'est pas déjà ajouté
+               if (find(oldOpen.begin(), oldOpen.end(), voisin) == oldOpen.end() && find(Open.begin(), Open.end(), voisin) == Open.end()) {
+                  // On l'ajoute comme nouvelle tuile ouverte
+                  newOpen.push_back(voisin);
+               }
             }
-        }
-
-        // Pas besoin de priotariser car on veut juste tout parcourir en largeur !
-        // On trie notre openList pour que le dernier soit le plus court !
-        // Donc celui qui minimise le coût !
-        sort(openList.begin(), openList.end(), [](const Noeud a, const Noeud b) {
-            return a.cout > b.cout; // Par ordre décroissant
-        });
-
-        // On ferme notre noeud
-        closedList.push_back(noeudCourant);
-        // Et on enregistre son cout dans la map
-        coutCasesAccessibles[noeudCourant.tile.id] = noeudCourant.cout;
-    }
-
-    // On renvoie la map
-    return coutCasesAccessibles;
+         }
+         // On définit les dernières tuiles ajoutés avec leur coût corant
+         Open.push_back(tileID);
+         coutCasesAccessibles[tileID] = cout;
+      }
+      ++cout; 
+   }
+   return coutCasesAccessibles;
 }
 
 // AStar doit prendre en compte l'heuristique (la distance supposée à l'arrivée) et le coût (la distance réelle au départ)
