@@ -38,9 +38,10 @@ Chemin Npc::getCheminMinNonPris(vector<int> objectifsPris, int tailleCheminMax) 
     for (int i = 0; i < cheminsPossibles.size(); ++i) {
         Chemin chemin = cheminsPossibles[i];
         // Si le chemin n'est pas déjà pris et qu'il est plus court !
+		int destination = (chemin.empty()) ? tileId : chemin.destination(); // si le npc est déjà arrivé il reste là
         if (chemin.isAccessible()
         && chemin.distance() < distMin
-        && (objectifsPris.empty() || find(objectifsPris.begin(), objectifsPris.end(), chemin.destination()) == objectifsPris.end())) {
+        && (objectifsPris.empty() || find(objectifsPris.begin(), objectifsPris.end(), destination) == objectifsPris.end())) {
             cheminMin = chemin;
             distMin = chemin.distance();
         }
@@ -56,7 +57,7 @@ int Npc::affecterMeilleurChemin(Map m) noexcept {
         GameManager::Log("Le Npc " + to_string(id) + " n'a rien a rechercher et reste sur place !");
         return tileId;
     }
-
+	
     // On cherche le meilleur score
     float bestScore = scoresAssocies.begin()->second;
     int bestScoreIndice = scoresAssocies.begin()->first;
