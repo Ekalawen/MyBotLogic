@@ -55,6 +55,7 @@ SET( AIBOT_HEADERS
 	MyBotLogic/BehaviorTree/Composite/Sequenceur.h
 	MyBotLogic/BehaviorTree/BT_Feuille.h
 	MyBotLogic/BT_Tests/ObjectifsForAllNpcs.h
+	MyBotLogic/BT_Tests/CheminsForAllNpcs.h
 	MyBotLogic/Strategies/Expedition.h
 	MyBotLogic/Strategies/Exploitation.h
 	MyBotLogic/Strategies/Exploration.h
@@ -78,6 +79,7 @@ SET( AIBOT_SRC
 	MyBotLogic/Chemin.cpp
 	MyBotLogic/Mouvement.cpp
 	MyBotLogic/BT_Tests/ObjectifsForAllNpcs.cpp
+	MyBotLogic/BT_Tests/CheminsForAllNpcs.cpp
 	MyBotLogic/Strategies/Expedition.cpp
 	MyBotLogic/Strategies/Exploitation.cpp
 	MyBotLogic/Strategies/Exploration.cpp
