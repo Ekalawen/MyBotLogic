@@ -107,34 +107,6 @@ void MapTile::setTileDecouverte(const TileInfo tile) {
    statut = CONNU;
 }
 
-void MapTile::putTileInVectors(Map m, int indice) noexcept {
-    // Accessible
-    if (m.areAccessible(id, indice)) {
-        voisinsAccessibles.push_back(indice);
-    }
-
-    // Visibles
-    if (m.areVisible(id, indice)) {
-        voisinsVisibles.push_back(indice);
-    }
-
-    // Mystérieux
-    if (m.areMysterious(id, indice)) {
-        voisinsMysterious.push_back(indice);
-    }
-}
-
-void MapTile::setVoisins(Map &m) noexcept {
-    // On réinitialise nos voisins
-    voisinsAccessibles = vector<int>();
-    voisinsVisibles = vector<int>();
-    voisinsMysterious = vector<int>();
-
-    for (auto& voisin : voisins) {
-        putTileInVectors(m, voisin);
-    }
-}
-
 bool MapTile::isVoisinAccessible(Tile::ETilePosition direction) const noexcept {
 	int id{};
 	switch (direction)

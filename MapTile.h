@@ -27,7 +27,6 @@ public:
     MapTile(unsigned int id, Map &m); // Appelé dès le début et uniquement là !
 
     void setTileDecouverte(const TileInfo ti);
-    void setVoisins(Map &m) noexcept;
     void removeMysterieux(int id);
     void removeAccessible(int id);
     void removeVisible(int id);
@@ -41,8 +40,6 @@ public:
 
    bool existe();
 
-private:
-	void putTileInVectors(Map m, int indice) noexcept;
 };
 
 #endif
