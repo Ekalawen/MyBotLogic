@@ -2,6 +2,7 @@
 #include "Npc.h"
 #include "Globals.h"
 #include "GameManager.h"
+#include <chrono>
 
 Npc::Npc(const NPCInfo info) :
 	id{ static_cast<int>(info.npcID) },
@@ -62,7 +63,6 @@ int Npc::affecterMeilleurChemin(Map m) noexcept {
     // On cherche le meilleur score
     float bestScore = scoresAssocies.begin()->second;
     int bestScoreIndice = scoresAssocies.begin()->first;
-    GameManager::Log("Case potentielle à explorer : " + to_string(bestScoreIndice) + " de score " + to_string(bestScore));
     for (auto pair : scoresAssocies) {
         int tileId = pair.first;
         float score = pair.second;
@@ -74,9 +74,51 @@ int Npc::affecterMeilleurChemin(Map m) noexcept {
     }
 
     // On affecte son chemin, mais il nous faut le calculer ! =)
-    chemin = m.WAStar(tileId, bestScoreIndice);
+    chemin = m.aStar(tileId, bestScoreIndice);
     GameManager::Log("Le Npc " + to_string(id) + " va rechercher la tile " + to_string(chemin.destination()));
 
     // On renvoie la destination
     return chemin.destination();
+}
+
+void Npc::floodfill(Map &m) {
+   auto pre = std::chrono::high_resolution_clock::now();
+   vector<int> Open;
+   vector<int> oldOpen;
+   vector<int> newOpen;
+   map<int, int> coutCasesAccessibles;
+
+
+   // On ajoute le noeud initial
+   newOpen.push_back(tileId);
+
+   int cout = 0;
+   // Tant qu'il reste des noeuds à traiter ...
+   while (!newOpen.empty()) {
+      oldOpen = newOpen;
+      newOpen = vector<int>();
+      // On regarde les voisins des dernieres tuiles ajoutées
+      for (int tileID : oldOpen) {
+         for (auto voisin : m.tiles[tileID].voisinsAccessibles) {
+            // Si elle est connu
+            if (m.tiles[voisin].existe()) {
+               // Si elle n'est pas déjà ajouté
+               if (find(oldOpen.begin(), oldOpen.end(), voisin) == oldOpen.end() && find(Open.begin(), Open.end(), voisin) == Open.end()) {
+                  // On l'ajoute comme nouvelle tuile ouverte
+                  newOpen.push_back(voisin);
+               }
+            }
+         }
+         // On définit les dernières tuiles ajoutés avec leur coût corant
+         Open.push_back(tileID);
+         coutCasesAccessibles[tileID] = cout;
+      }
+      ++cout;
+   }
+   // On met à jour l'ensemble accessible d'un NPC
+   ensembleAccessible = Open;
+   distancesEnsembleAccessible = coutCasesAccessibles;
+   auto post = std::chrono::high_resolution_clock::now();
+   GameManager::Log("Durée FloodFill = " + to_string(std::chrono::duration_cast<std::chrono::microseconds>(post - pre).count() / 1000.f) + "ms");
+
 }

@@ -65,7 +65,7 @@ float Noeud::coefEvaluation = 1;
 // Il s'agit de l'algorithme AStar auquel on peut rajouter un coefficiant à l'évaluation pour modifier l'heuristique.
 // Par défaut sa valeur est 1. Si on l'augmente l'algorithme ira plus vite au détriment de trouver un chemin optimal.
 // Si on le diminue l'algorithme se rapproche de plus en plus d'un parcours en largeur.
-Chemin Map::WAStar(int depart, int arrivee, float coefEvaluation) noexcept {
+Chemin Map::aStar(int depart, int arrivee, float coefEvaluation) noexcept {
     Noeud::coefEvaluation = coefEvaluation;
     // On crée nos liste et notre noeud courrant
     vector<Noeud> closedList{};
@@ -85,7 +85,7 @@ Chemin Map::WAStar(int depart, int arrivee, float coefEvaluation) noexcept {
         // Pour tous les voisins du noeud courant ...
         for (auto voisin : noeudCourant.tile.voisinsAccessibles) {
             // On vérifie que le voisin existe ...
-            if (tiles[voisin].statut != MapTile::Statut::INCONNU) {
+            if (tiles[voisin].existe()) {
                 // On construit le nouveau noeud
                 Noeud nouveauNoeud = Noeud(tiles[voisin], noeudCourant.cout + 1, distanceL2(voisin, arrivee), noeudCourant.tile.id);
                 // On vérifie s'il existe dans closedList avec un cout inférieur ou dans openList avec un cout inférieur
@@ -139,144 +139,6 @@ Chemin Map::WAStar(int depart, int arrivee, float coefEvaluation) noexcept {
     return path;
 }
 
-void Map::floodfill(Npc& npc) {
-   auto pre = std::chrono::high_resolution_clock::now();
-   vector<int> Open;
-   vector<int> oldOpen;
-   vector<int> newOpen;
-   map<int, int> coutCasesAccessibles;
-
-
-   // On ajoute le noeud initial
-   newOpen.push_back(npc.tileId);
-
-   int cout = 0;
-   // Tant qu'il reste des noeuds à traiter ...
-   while (!newOpen.empty()) {    
-      oldOpen = newOpen;
-      newOpen = vector<int>();
-      // On regarde les voisins des dernieres tuiles ajoutées
-      for (int tileID : oldOpen) {
-         for (auto voisin : tiles[tileID].voisinsAccessibles) {
-            // Si elle est connu
-            if (tiles[voisin].statut != MapTile::Statut::INCONNU) {
-               // Si elle n'est pas déjà ajouté
-               if (find(oldOpen.begin(), oldOpen.end(), voisin) == oldOpen.end() && find(Open.begin(), Open.end(), voisin) == Open.end()) {
-                  // On l'ajoute comme nouvelle tuile ouverte
-                  newOpen.push_back(voisin);
-               }
-            }
-         }
-         // On définit les dernières tuiles ajoutés avec leur coût corant
-         Open.push_back(tileID);
-         coutCasesAccessibles[tileID] = cout;
-      }
-      ++cout; 
-   }
-   // On met à jour l'ensemble accessible d'un NPC
-   npc.ensembleAccessible = Open;
-   npc.distancesEnsembleAccessible = coutCasesAccessibles;
-   auto post = std::chrono::high_resolution_clock::now();
-   GameManager::Log("Durée FloodFill = " + to_string(std::chrono::duration_cast<std::chrono::microseconds>(post - pre).count() / 1000.f) + "ms");
-
-}
-
-// AStar doit prendre en compte l'heuristique (la distance supposée à l'arrivée) et le coût (la distance réelle au départ)
-// pour chaque case pour être sur que l'algorithme trouve réellement un des chemins optimaux ! <3
-Chemin Map::aStar(int depart, int arrivee) noexcept {
-    Chemin path; // le chemin final
-    MapTile currentTile = tiles[depart];
-    vector<int> visitees; // Les cases que l'on a déjà découvertes
-    vector<int> toVisit; // Les cases qu'il faut visiter !
-    vector<int> toVisitAntecedants; // Les cases qu'il faut visiter !
-    vector<tuple<int, float>> toVisitCoutPoids; // En premier le le cout, puis le poids (cad la somme cout + heuristique)
-    vector<int> antecedants; // à partir de quelle case on l'a décourverte
-
-    // On marque le point de départ
-    visitees.push_back(depart);
-    antecedants.push_back(depart);
-
-    // Et on ajoute ses voisins accessibles à la liste des cases à visiter !
-    for (auto voisin : tiles[depart].voisinsAccessibles) {
-        if (tiles[voisin].statut != MapTile::Statut::INCONNU) {
-            toVisit.push_back(voisin);
-            toVisitAntecedants.push_back(depart);
-            float heuristique = distanceL2(voisin, arrivee);
-            int cout = 1; // Ce sont les premiers voisins !
-            toVisitCoutPoids.push_back(tuple<int, float>(cout, cout + heuristique));
-        }
-    }
-
-    // On trie, pour a*
-    sortByDistance(toVisitCoutPoids, toVisit, toVisitAntecedants);
-
-    // Tant qu'il reste des voisins à visiter
-    while (currentTile.id != arrivee && !toVisit.empty()) {
-        // Que l'on prenne la première ou la dernière ça ne change rien !
-        // On prends la première case à visiter
-        currentTile = tiles[toVisit.back()]; // On prend la DERNIERE case !
-        toVisit.pop_back();
-        antecedants.push_back(toVisitAntecedants.back()); // On retient l'antecedant !
-        toVisitAntecedants.pop_back();
-        int coutCurrentTile = get<int>(toVisitCoutPoids.back()); // On retient le cout de la case avant de la supprimer !
-        toVisitCoutPoids.pop_back();
-
-        // On la marque
-        visitees.push_back(currentTile.id);
-
-        // On récupère tous ses voisins, et on les ajoutes à la liste de lecture s'ils ne sont pas encore marqués ! =)
-        // Ou qu'ils ne sont pas déjà prévu d'être visités !!!
-        for (auto voisin : currentTile.voisinsAccessibles) {
-           // Si notre voisin n'appartient pas aux cases visitées ou à visiter, alors on l'ajoute à cette dernière
-           if (!(find(visitees.begin(), visitees.end(), voisin) != visitees.end()) && !(find(toVisit.begin(), toVisit.end(), voisin) != toVisit.end())) {
-              // On l'ajoute que si cette case a déjà été découverte !
-              if (tiles[voisin].statut != MapTile::Statut::INCONNU) {
-                  toVisit.push_back(voisin);
-                  toVisitAntecedants.push_back(currentTile.id);
-                  float heuristique = distanceL2(voisin, arrivee);
-                  int cout = coutCurrentTile + 1;
-                  GameManager::Log("voisinID = " + to_string(voisin));
-                  GameManager::Log("cout = " + to_string(cout));
-                  GameManager::Log("heuristique = " + to_string(heuristique));
-                  GameManager::Log("POIDS = " + to_string(cout + heuristique));
-                  toVisitCoutPoids.push_back(tuple<int, float>(cout, cout + heuristique));
-              }
-           }
-        }
-
-        // On trie, pour a*
-
-        sortByDistance(toVisitCoutPoids, toVisit, toVisitAntecedants);
-    }
-
-    // On regarde si on a trouvé l'arrivée :
-    if (currentTile.id == arrivee) {
-        // On a plus qu'à construire le chemin !
-        while (currentTile.id != depart) {
-            // On enregistre la case
-            path.chemin.push_back(currentTile.id);
-
-            // Faut trouver son indice dans le vecteur ...
-            int indice;
-            for (int i = 0; i < visitees.size(); ++i) {
-                if (visitees[i] == currentTile.id) {
-                    indice = i;
-                    break;
-                }
-            }
-
-            // Puis on passe à son antécédante
-            currentTile = tiles[antecedants[indice]];
-        }
-    }
-    else {
-        // GameManager::Log("On ne peut pas accéder à cette tile ! (chemin = " + to_string(depart) + ", " + to_string(arrivee) + ")");
-        path.setInaccessible();
-    }
-
-    return path;
-}
-
 bool Map::areAccessible(int ind1, int ind2) noexcept {
     int y = getY(ind1);
     bool pair = (y % 2 == 0);
@@ -301,7 +163,7 @@ bool Map::areAccessible(int ind1, int ind2) noexcept {
     }
 
     // On vérifie également que la case d'indice 2 n'est pas une case bloqué !
-    if (tiles[ind2].statut != MapTile::Statut::INCONNU
+    if (tiles[ind2].existe()
     && tiles[ind2].type == Tile::TileAttribute_Forbidden) {
         return false;
     }
@@ -395,7 +257,7 @@ bool Map::areVisible(int ind1, int ind2) const noexcept {
 
 bool Map::areMysterious(int ind1, int ind2) noexcept {
     if (areAccessible(ind1, ind2) || areVisible(ind1, ind2)) {
-        if (tiles[ind2].statut == MapTile::Statut::INCONNU) {
+        if (!tiles[ind2].existe()) {
             return true;
         }
     }
@@ -428,7 +290,7 @@ bool Map::areMysteriousAccessible(int ind1, int ind2) noexcept {
 	}
 
 	// On vérifie également que la case d'indice 2 n'est pas une case bloqué !
-	if (tiles[ind2].statut != MapTile::Statut::INCONNU
+	if (tiles[ind2].existe()
     && tiles[ind2].type == Tile::TileAttribute_Forbidden) {
 		return false;
 	}

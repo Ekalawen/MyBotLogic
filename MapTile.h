@@ -39,6 +39,8 @@ public:
 	bool isVoisinMysterious(int id) const noexcept;
 	vector<int> getVoisinFenetres() const noexcept;
 
+   bool existe();
+
 private:
 	void putTileInVectors(Map m, int indice) noexcept;
 };

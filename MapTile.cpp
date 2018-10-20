@@ -236,3 +236,7 @@ void MapTile::removeVisible(int id) {
         voisinsVisibles.erase(it);
     }
 }
+
+bool MapTile::existe() {
+   return statut != MapTile::Statut::INCONNU;
+}

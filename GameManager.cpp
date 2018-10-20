@@ -57,7 +57,7 @@ void GameManager::associateNpcsWithObjectiv() noexcept {
         npc.resetChemins();
 
         for (auto objectif : m.objectifs) {
-            Chemin chemin = m.WAStar(npc.tileId, objectif);
+            Chemin chemin = m.aStar(npc.tileId, objectif);
             npc.addChemin(chemin);
         }
     }
@@ -283,7 +283,7 @@ void GameManager::updateModel(TurnInfo ti) noexcept {
     GameManager::Log("Durée AddObjects = " + to_string(duration_cast<microseconds>(post - pre).count() / 1000.f) + "ms");
 
     for (auto &npc : npcs) {
-       m.floodfill(npc.second);
+       (npc.second).floodfill(m);
     }
 }
 

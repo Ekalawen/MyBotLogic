@@ -32,9 +32,7 @@ public:
     bool isInMap(int idTile) const noexcept;
     vector<unsigned int> getObjectifs() const noexcept;
 
-    Chemin aStar(int depart, int arrivee) noexcept; // Renvoie le chemin à parcourir pour aller du départ à l'arrivée
-    Chemin Map::WAStar(int depart, int arrivee, float coefEvaluation = 1) noexcept; // Applique WAStar
-    void floodfill(Npc& npc); // Calcule le coût et l'ensemble des tiles accessibles pour un npcs, et MAJ ses attributs.
+    Chemin aStar(int depart, int arrivee, float coefEvaluation = 1) noexcept; // Renvoie le chemin à parcourir pour aller du départ à l'arrivée
 
     float distanceL2(int depart, int arrivee) const noexcept; // Renvoie la distance L2 à vol d'oiseau !
     int distanceHex(int depart, int arrivee) const noexcept;
