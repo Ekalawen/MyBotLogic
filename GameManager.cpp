@@ -57,7 +57,7 @@ void GameManager::associateNpcsWithObjectiv() noexcept {
         npc.resetChemins();
 
         for (auto objectif : m.objectifs) {
-            Chemin chemin = m.WAStar(npc.tileId, objectif.second.id);
+            Chemin chemin = m.WAStar(npc.tileId, objectif);
             npc.addChemin(chemin);
         }
     }

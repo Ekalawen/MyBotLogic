@@ -40,7 +40,7 @@ bool Map::isInMap(int idTile) const noexcept {
     return idTile >= 0 && idTile < rowCount * colCount;
 }
 
-map<unsigned int, MapTile> Map::getObjectifs() const noexcept {
+vector<unsigned int> Map::getObjectifs() const noexcept {
     return objectifs;
 }
 
@@ -628,7 +628,7 @@ void Map::addTile(TileInfo tile) noexcept {
     // On la rajoute aux tiles
     tiles[tile.tileID].setTileDecouverte(tile);
     if (tiles[tile.tileID].type == Tile::TileAttribute_Goal) {
-        objectifs[tile.tileID] = tiles[tile.tileID];
+        objectifs.push_back(tile.tileID);
     }
     if (tiles[tile.tileID].type == Tile::TileAttribute_Forbidden) {
         for (auto voisin : tiles[tile.tileID].voisins) {

@@ -21,7 +21,7 @@ public:
     int nbtilesDecouvertes;
     vector<MapTile> tiles;
 
-    map<unsigned int, MapTile> objectifs;
+    vector<unsigned int> objectifs;
     map<unsigned int, ObjectInfo> murs;
     map<unsigned int, ObjectInfo> portes;
     map<unsigned int, ObjectInfo> fenetres;
@@ -30,7 +30,7 @@ public:
     Map() = default;
     Map(const LevelInfo);
     bool isInMap(int idTile) const noexcept;
-    map<unsigned int, MapTile> getObjectifs() const noexcept;
+    vector<unsigned int> getObjectifs() const noexcept;
 
     Chemin aStar(int depart, int arrivee) noexcept; // Renvoie le chemin à parcourir pour aller du départ à l'arrivée
     Chemin Map::WAStar(int depart, int arrivee, float coefEvaluation = 1) noexcept; // Applique WAStar

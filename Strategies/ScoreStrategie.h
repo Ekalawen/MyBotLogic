@@ -9,7 +9,7 @@ protected:
     GameManager &gm;
     string nom;
     void calculerScoresEtCheminsTilesPourNpc(Npc& npc, vector<int> tilesAVisiter) noexcept;
-    virtual void saveScore(MapTile tile, float cout, Npc& npc, vector<int> tilesAVisiter) noexcept = 0;
+    virtual void saveScore(MapTile tile, int cout, Npc& npc, vector<int> tilesAVisiter) noexcept = 0;
 
 public:
     ScoreStrategie(GameManager&, string nom);

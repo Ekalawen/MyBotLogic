@@ -53,7 +53,7 @@ void ScoreStrategie::calculerScoresEtCheminsTilesPourNpc(Npc& npc, vector<int> t
         MapTile tile = gm.m.tiles[tileID];
         // On ne considère la tile que si on ne la visite pas déjà !
         if (tile.statut == MapTile::Statut::CONNU && find(tilesAVisiter.begin(), tilesAVisiter.end(), tile.id) == tilesAVisiter.end()) {
-            float cout = npc.distancesEnsembleAccessible[tileID];
+            int cout = npc.distancesEnsembleAccessible[tileID];
             saveScore(tile, cout, npc, tilesAVisiter);
         }
     }

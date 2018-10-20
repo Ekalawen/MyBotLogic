@@ -6,7 +6,7 @@
 #include "../Strategies/ScoreStrategie.h"
 
 class Expedition : public ScoreStrategie {
-    void saveScore(MapTile tile, float cout, Npc& npc, vector<int> tilesAVisiter) noexcept;
+    void saveScore(MapTile tile, int cout, Npc& npc, vector<int> tilesAVisiter) noexcept;
     float interet(MapTile tile) noexcept;
 
 public:
