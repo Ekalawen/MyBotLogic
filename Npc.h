@@ -18,7 +18,8 @@ public:
     int tileId; // Sa position sur la carte
     int tileObjectif; // Là où il doit aller !
     Chemin chemin; // Utilisé pour savoir quel chemin suivre pour se rendre à l'objectif
-
+    vector<int> ensembleAccessible; // ensemble des tuiles auquel un npc à accès
+    map<int, int> distancesEnsembleAccessible;
 	bool estArrive; // indique si le npc a atteind son objectif
 
     Npc() = default;

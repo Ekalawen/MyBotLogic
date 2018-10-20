@@ -49,17 +49,11 @@ BT_Noeud::ETAT_ELEMENT ScoreStrategie::execute() noexcept {
 // On prend en compte les tilesAVisiter des autres npcs pour que les tiles soient loins les unes des autres
 void ScoreStrategie::calculerScoresEtCheminsTilesPourNpc(Npc& npc, vector<int> tilesAVisiter) noexcept {
 
-   auto pre = std::chrono::high_resolution_clock::now();
-    map<int, float> tilesAccessibles = gm.m.floodfill(npc); // L'identifiants des tiles avec leurs coûts associés ! =)
-    auto post = std::chrono::high_resolution_clock::now();
-    GameManager::Log("Durée FloodFill = " + to_string(std::chrono::duration_cast<std::chrono::microseconds>(post - pre).count() / 1000.f) + "ms");
-
-
-    for (auto pair_tile : tilesAccessibles) { // parcours toutes les tiles découvertes par l'ensemble des npcs et qui sont accessibles
-        MapTile tile = gm.m.tiles[pair_tile.first];
+    for (auto tileID : npc.ensembleAccessible) { // parcours toutes les tiles découvertes par l'ensemble des npcs et qui sont accessibles
+        MapTile tile = gm.m.tiles[tileID];
         // On ne considère la tile que si on ne la visite pas déjà !
         if (tile.statut == MapTile::Statut::CONNU && find(tilesAVisiter.begin(), tilesAVisiter.end(), tile.id) == tilesAVisiter.end()) {
-            float cout = pair_tile.second;
+            float cout = npc.distancesEnsembleAccessible[tileID];
             saveScore(tile, cout, npc, tilesAVisiter);
         }
     }

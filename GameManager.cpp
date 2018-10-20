@@ -7,6 +7,7 @@
 #include "BehaviorTree/Composite/Sequenceur.h"
 #include "BehaviorTree/Composite/Selecteur.h"
 #include "BT_Tests/ObjectifsForAllNpcs.h"
+#include "BT_Tests/CheminsForAllNpcs.h"
 #include "Strategies/Expedition.h"
 #include "Strategies/Exploration.h"
 #include "Strategies/Exploitation.h"
@@ -34,15 +35,18 @@ GameManager::GameManager(LevelInfo info) :
 void GameManager::InitializeBehaviorTree() noexcept {
     //  Création du behaviorTree Manager
     ObjectifsForAllNpcs *objectifs = new ObjectifsForAllNpcs(*this);
+    CheminsForAllNpcs *chemins = new CheminsForAllNpcs(*this);
     Exploitation *exploitation = new Exploitation(*this);
     ScoreStrategie *expedition = new Expedition(*this, "Expedition");
     ScoreStrategie *exploration = new Exploration(*this, "Exploration");
 
-    Selecteur *selecteur = new Selecteur({ exploitation, expedition });
+    Sequenceur *sequenceur1 = new Sequenceur({ chemins, exploitation });
 
-    Sequenceur *sequenceur = new Sequenceur({ objectifs, selecteur });
+    Selecteur *selecteur = new Selecteur({ sequenceur1, expedition });
 
-    behaviorTreeManager = Selecteur({ sequenceur, exploration });
+    Sequenceur *sequenceur2 = new Sequenceur({ objectifs, selecteur });
+
+    behaviorTreeManager = Selecteur({ sequenceur2, exploration });
 }
 
 
@@ -277,5 +281,9 @@ void GameManager::updateModel(TurnInfo ti) noexcept {
     addNewObjects(ti);
     post = high_resolution_clock::now();
     GameManager::Log("Durée AddObjects = " + to_string(duration_cast<microseconds>(post - pre).count() / 1000.f) + "ms");
+
+    for (auto &npc : npcs) {
+       m.floodfill(npc.second);
+    }
 }
 

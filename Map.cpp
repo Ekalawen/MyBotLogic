@@ -5,6 +5,7 @@
 #include "Globals.h"
 #include <map>
 #include <algorithm>
+#include <chrono>
 using namespace std;
 
 Map::Map(const LevelInfo levelInfo) :
@@ -138,64 +139,12 @@ Chemin Map::WAStar(int depart, int arrivee, float coefEvaluation) noexcept {
     return path;
 }
 
-// Calcule le coût et le chemin de chaque tiles accessibles pour un npc. Le cout et le chemin sont stockés dans la tile. Renvoie un vector des identifiants des tuiles accessibles.
-//map<int, float> Map::floodfill(Npc& npc) {
-//    map<int, float> coutCasesAccessibles;
-//    vector<Noeud> closedList{};
-//    vector<Noeud> openList{};
-//    Noeud noeudCourant;
-//
-//    // On ajoute le noeud initial
-//    int depart = npc.tileId;
-//    openList.push_back(Noeud(tiles[depart], 0, 0, depart));
-//
-//    // Tant qu'il reste des noeuds à traiter ...
-//    while (!openList.empty()) {
-//        // On récupère le premier noeud de notre liste
-//        noeudCourant = openList.back();
-//        openList.pop_back();
-//
-//        // Pour tous les voisins du noeud courant ...
-//        for (auto voisin : noeudCourant.tile.voisinsAccessibles) {
-//            // On vérifie que le voisin existe ...
-//            if (tiles[voisin].statut != MapTile::Statut::INCONNU) {
-//                // On construit le nouveau noeud
-//                Noeud nouveauNoeud = Noeud(tiles[voisin], noeudCourant.cout + 1, 0, noeudCourant.tile.id);
-//                // On vérifie s'il existe dans closedList avec un cout inférieur ou dans openList avec un cout inférieur
-//                auto itClose = find(closedList.begin(), closedList.end(), nouveauNoeud);
-//                auto itOpen = find(openList.begin(), openList.end(), nouveauNoeud);
-//
-//                if (itClose == closedList.end() && itOpen == openList.end()) {
-//                    openList.push_back(nouveauNoeud);
-//                } else {
-//                    //GameManager::Log("Le noeud est déjà dans open ou closed.");
-//                }
-//            }
-//        }
-//
-//        // Pas besoin de priotariser car on veut juste tout parcourir en largeur !
-//        // On trie notre openList pour que le dernier soit le plus court !
-//        // Donc celui qui minimise le coût !
-//        sort(openList.begin(), openList.end(), [](const Noeud a, const Noeud b) {
-//            return a.cout > b.cout; // Par ordre décroissant
-//        });
-//
-//        // On ferme notre noeud
-//        closedList.push_back(noeudCourant);
-//        // Et on enregistre son cout dans la map
-//        coutCasesAccessibles[noeudCourant.tile.id] = noeudCourant.cout;
-//    }
-//
-//    // On renvoie la map
-//    return coutCasesAccessibles;
-//}
-
-map<int, float> Map::floodfill(Npc& npc) {
-
+void Map::floodfill(Npc& npc) {
+   auto pre = std::chrono::high_resolution_clock::now();
    vector<int> Open;
    vector<int> oldOpen;
    vector<int> newOpen;
-   map<int, float> coutCasesAccessibles;
+   map<int, int> coutCasesAccessibles;
 
 
    // On ajoute le noeud initial
@@ -224,7 +173,12 @@ map<int, float> Map::floodfill(Npc& npc) {
       }
       ++cout; 
    }
-   return coutCasesAccessibles;
+   // On met à jour l'ensemble accessible d'un NPC
+   npc.ensembleAccessible = Open;
+   npc.distancesEnsembleAccessible = coutCasesAccessibles;
+   auto post = std::chrono::high_resolution_clock::now();
+   GameManager::Log("Durée FloodFill = " + to_string(std::chrono::duration_cast<std::chrono::microseconds>(post - pre).count() / 1000.f) + "ms");
+
 }
 
 // AStar doit prendre en compte l'heuristique (la distance supposée à l'arrivée) et le coût (la distance réelle au départ)
