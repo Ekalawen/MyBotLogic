@@ -34,6 +34,11 @@ Map::Map(const LevelInfo levelInfo) :
     for (auto object : levelInfo.objects) {
         addObject(object.second);
     }
+
+    // Mettre à visiter les cases initiales des NPCs
+    for (auto pair_npc : levelInfo.npcs) {
+       tiles[pair_npc.second.tileID].statut = MapTile::Statut::VISITE;
+    }
 }
 
 bool Map::isInMap(int idTile) const noexcept {

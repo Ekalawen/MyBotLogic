@@ -50,64 +50,6 @@ void GameManager::InitializeBehaviorTree() noexcept {
 }
 
 
-void GameManager::associateNpcsWithObjectiv() noexcept {
-    // Pour chaque npc, on calcul l'ensemble de ses chemins possibles !
-    for (auto& pair_npc : npcs) {
-        Npc& npc = pair_npc.second;
-        npc.resetChemins();
-
-        for (auto objectif : m.objectifs) {
-            Chemin chemin = m.aStar(npc.tileId, objectif);
-            npc.addChemin(chemin);
-        }
-    }
-
-    // Tant qu'il reste des Npcs qui n'ont pas de chemins
-    vector<int> npcAffectes;
-    vector<int> objectifsPris; // Les objectifs ayant déjà été affectés
-    while (npcAffectes.size() < npcs.size()) {
-        // On récupère le npc qui a le chemin minimal le plus long
-        Npc* lastNpc;
-        int distMax = -1;
-        Chemin cheminMin;
-        for (auto& pair_npc : npcs) {
-            Npc& npc = pair_npc.second;
-            if (find(npcAffectes.begin(), npcAffectes.end(), npc.id) == npcAffectes.end()) { // Si on a pas déjà affecté cet npc !
-                Chemin chemin = npc.getCheminMinNonPris(objectifsPris, m.tailleCheminMax());
-                if (chemin.isAccessible() && chemin.distance() > distMax) {
-                    lastNpc = &npc;
-                    distMax = chemin.distance();
-                    cheminMin = chemin;
-                }
-            }
-        }
-
-        // Puis on lui affecte son chemin le plus court !
-        lastNpc->chemin = cheminMin;
-        if (!cheminMin.empty()) {
-            lastNpc->tileObjectif = cheminMin.destination();
-            objectifsPris.push_back(cheminMin.destination());
-        } else {
-            lastNpc->tileObjectif = lastNpc->tileId;
-            objectifsPris.push_back(lastNpc->tileId);
-        }
-
-        npcAffectes.push_back(lastNpc->id);
-    }
-
-    // Puis on affiche les chemins !
-    for (auto npc_pair : npcs) {
-        Npc npc = npc_pair.second;
-        GameManager::Log("NPC = " + to_string(npc.id));
-        GameManager::Log("objectif choisi = " + to_string(npc.chemin.destination()));
-        GameManager::Log("distance = " + to_string(npc.chemin.distance()));
-        GameManager::Log("chemin :");
-        for (auto tile : npc.chemin.chemin) {
-            GameManager::Log(to_string(tile));
-        }
-    }
-}
-
 void GameManager::moveNpcs(vector<Action*>& actionList) noexcept {
     // On va récupérer la liste des mouvements
     vector<Mouvement*> mouvements;

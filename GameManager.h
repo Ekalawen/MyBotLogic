@@ -21,7 +21,6 @@ public:
 
     GameManager() = default;
     GameManager(LevelInfo);
-    void associateNpcsWithObjectiv() noexcept;
     void moveNpcs(vector<Action*>& actionList) noexcept; // Remplie l'action liste !
     void ordonnerMouvements(vector<Mouvement*>& mouvements) noexcept; // Permet d'ordonner les mouvements pour éviter les collisions et gérer les politesses de priorités =)
     void updateModel(TurnInfo) noexcept; // Met à jour le modèle avec les informations que découvrent les NPCS
