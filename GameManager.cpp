@@ -226,7 +226,7 @@ void GameManager::updateModel(TurnInfo ti) noexcept {
 
     // Mettre à jour nos NPCs
     for (auto &npc : npcs) {
-       (npc.second).floodfill(m);
+       npc.second.floodfill(m);
     }
 }
 

@@ -286,9 +286,9 @@ void Map::sortByDistance(vector<tuple<int, float>>& base, vector<int>& autre1, v
         autre1bis[i] = autre1[index[i]];
         autre2bis[i] = autre2[index[i]];
     }
-    base = basebis;
-    autre1 = autre1bis;
-    autre2 = autre2bis;
+	swap(base, basebis);
+	swap(autre1, autre1bis);
+	swap(autre2, autre2bis);
 }
 
 int Map::tailleCheminMax() const noexcept {

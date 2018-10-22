@@ -21,9 +21,8 @@ void Expedition::saveScore(MapTile tile, Npc& npc, vector<int> tilesAVisiter) no
 
 	// On regarde l'intêret de cette tile
 	float interetTile = interet(tile);
-   if (interetTile == 0) return; // Si pas d'intêret, la tile ne nous intéresse pas !
+    if (interetTile == 0) return; // Si pas d'intêret, la tile ne nous intéresse pas !
 	score += interetTile * COEF_INTERET;
-	
 
     // On enregistre le cout, cad la distance npc-tile
     score += npc.distancesEnsembleAccessible[tile.id] * COEF_DISTANCE_NPC_TILE;
