@@ -29,11 +29,14 @@ BT_Noeud::ETAT_ELEMENT ScoreStrategie::execute() noexcept {
         // Calculer le score de chaque tile pour le npc
         // En même temps on calcul le chemin pour aller à cette tile
         // On stocke ces deux informations dans l'attribut cheminsPossibles du Npc
+        auto preCalcul = std::chrono::high_resolution_clock::now();
         calculerScoresEtCheminsTilesPourNpc(npc, tilesAVisiter);
+        auto postCalcul = std::chrono::high_resolution_clock::now();
+        GameManager::Log("Durée calculerScoresEtCheminsTilesPourNpc = " + to_string(std::chrono::duration_cast<std::chrono::microseconds>(postCalcul - preCalcul).count() / 1000.f) + "ms");
 
 
-        auto preAffect = std::chrono::high_resolution_clock::now();
         // Choisir la meilleure tile pour ce npc et lui affecter son chemin
+        auto preAffect = std::chrono::high_resolution_clock::now();
         int tileChoisi = npc.affecterMeilleurChemin(gm.m);
         auto postAffect = std::chrono::high_resolution_clock::now();
         GameManager::Log("Durée AffectationChemin = " + to_string(std::chrono::duration_cast<std::chrono::microseconds>(postAffect - preAffect).count() / 1000.f) + "ms");
@@ -50,21 +53,20 @@ BT_Noeud::ETAT_ELEMENT ScoreStrategie::execute() noexcept {
     return ETAT_ELEMENT::REUSSI;
 }
 
+void ScoreStrategie::calculerScore1Tile(int tileID, Map& m, Npc& npc, const vector<int> tilesAVisiter) {
+    MapTile tile = m.tiles[tileID];
+    // On ne considère la tile que si on ne la visite pas déjà !
+    if (tile.statut == MapTile::Statut::CONNU && find(tilesAVisiter.begin(), tilesAVisiter.end(), tile.id) == tilesAVisiter.end()) {
+        saveScore(tile, npc, tilesAVisiter);
+    }
+}
+
 // Calcul le score de chaque tiles et son chemin pour un npc
 // On prend en compte les tilesAVisiter des autres npcs pour que les tiles soient loins les unes des autres
 void ScoreStrategie::calculerScoresEtCheminsTilesPourNpc(Npc& npc, vector<int> tilesAVisiter) noexcept {
-
    GameManager::Log("Taille ensemble : " + to_string(npc.ensembleAccessible.size()));
     for (auto tileID : npc.ensembleAccessible) { // parcours toutes les tiles découvertes par l'ensemble des npcs et qui sont accessibles
-       auto preScore = std::chrono::high_resolution_clock::now();
-       MapTile tile = gm.m.tiles[tileID];
-        // On ne considère la tile que si on ne la visite pas déjà !
-        if (tile.statut == MapTile::Statut::CONNU && find(tilesAVisiter.begin(), tilesAVisiter.end(), tile.id) == tilesAVisiter.end()) {
-            saveScore(tile, npc, tilesAVisiter);
-        }
-        auto postScore = std::chrono::high_resolution_clock::now();
-        GameManager::Log("Durée CalculeScoreTile = " + to_string(std::chrono::duration_cast<std::chrono::microseconds>(postScore - preScore).count() / 1000.f) + "ms");
-
+        calculerScore1Tile(tileID, gm.m, npc, tilesAVisiter);
     }
 }
 
