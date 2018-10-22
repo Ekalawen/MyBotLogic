@@ -224,6 +224,7 @@ void GameManager::updateModel(TurnInfo ti) noexcept {
     post = high_resolution_clock::now();
     GameManager::Log("Durée AddObjects = " + to_string(duration_cast<microseconds>(post - pre).count() / 1000.f) + "ms");
 
+    // Mettre à jour nos NPCs
     for (auto &npc : npcs) {
        (npc.second).floodfill(m);
     }

@@ -12,19 +12,21 @@ Expedition::Expedition(GameManager& gm, string nom)
     // La distance moyenne de cette tile à tous les objectifs
     // La distance moyenne de cette tuile aux autres tuiles qui seront visités !
     // Le degré d'intêret de la tuile. 
-void Expedition::saveScore(MapTile tile, int cout, Npc& npc, vector<int> tilesAVisiter) noexcept {
+void Expedition::saveScore(MapTile tile, Npc& npc, vector<int> tilesAVisiter) noexcept {
+    // Précondition : tile.statut == CONNU
     float score = 0;
 
     // Si on a déjà visité cette case, son score est nul
-    if (tile.statut == MapTile::Statut::VISITE) return;
+    //if (tile.statut == MapTile::Statut::VISITE) return;
 
 	// On regarde l'intêret de cette tile
 	float interetTile = interet(tile);
+   if (interetTile == 0) return; // Si pas d'intêret, la tile ne nous intéresse pas !
 	score += interetTile * COEF_INTERET;
-	if (interetTile == 0) return; // Si pas d'intêret, la tile ne nous intéresse pas !
+	
 
     // On enregistre le cout, cad la distance npc-tile
-    score += cout * COEF_DISTANCE_NPC_TILE;
+    score += npc.distancesEnsembleAccessible[tile.id] * COEF_DISTANCE_NPC_TILE;
 
     // On regarde la distance moyenne de cette tile à tous les objectifs
     float distanceMoyenne = 0;

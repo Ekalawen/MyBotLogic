@@ -13,14 +13,14 @@ Exploration::Exploration(GameManager& gm, string nom)
     // La distance du npc à la tuile
     // La distance moyenne de cette tuile aux autres tuiles qui seront visités !
     // Le degré d'intêret de la tuile. 
-void Exploration::saveScore(MapTile tile, int cout, Npc& npc, vector<int> tilesAVisiter) noexcept {
+void Exploration::saveScore(MapTile tile, Npc& npc, vector<int> tilesAVisiter) noexcept {
     float score = 0;
 
     // Si on a déjà visité cette case, son score est nul
-    if (tile.statut == MapTile::Statut::VISITE) return;
+    //if (tile.statut == MapTile::Statut::VISITE) return; // Appelé que si statut CONNU => non nécessaire
 
     // On enregistre le cout, cad la distanc npc-tile
-    score += cout * COEF_DISTANCE_NPC_TILE;
+    score += npc.distancesEnsembleAccessible[tile.id] * COEF_DISTANCE_NPC_TILE;
 
     // On regarde l'intêret de cette tile
     float interetTile = interet(tile);

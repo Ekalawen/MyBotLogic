@@ -60,8 +60,7 @@ void ScoreStrategie::calculerScoresEtCheminsTilesPourNpc(Npc& npc, vector<int> t
        MapTile tile = gm.m.tiles[tileID];
         // On ne considère la tile que si on ne la visite pas déjà !
         if (tile.statut == MapTile::Statut::CONNU && find(tilesAVisiter.begin(), tilesAVisiter.end(), tile.id) == tilesAVisiter.end()) {
-            int cout = npc.distancesEnsembleAccessible[tileID];
-            saveScore(tile, cout, npc, tilesAVisiter);
+            saveScore(tile, npc, tilesAVisiter);
         }
         auto postScore = std::chrono::high_resolution_clock::now();
         GameManager::Log("Durée CalculeScoreTile = " + to_string(std::chrono::duration_cast<std::chrono::microseconds>(postScore - preScore).count() / 1000.f) + "ms");
