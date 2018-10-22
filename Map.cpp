@@ -13,11 +13,11 @@ Map::Map(const LevelInfo levelInfo) :
     colCount{ levelInfo.colCount },
     nbTiles{ rowCount * colCount },
     nbtilesDecouvertes{ 0 },
-    tiles{},
-    murs{},
-    fenetres{},
-    portes{},
-    activateurs{}
+	tiles{ vector<MapTile>{} },
+	murs{ map<unsigned int, ObjectInfo>{} },
+	fenetres{ map<unsigned int, ObjectInfo>{} },
+	portes{ map<unsigned int, ObjectInfo>{} },
+	activateurs{ map<unsigned int, ObjectInfo>{} }
 {
     // Créer toutes les tiles !
     tiles.reserve(nbTiles);
@@ -260,37 +260,6 @@ int Map::distanceHex(int tile1ID, int tile2ID) const noexcept {
    return max(max(abs(x1 - x2), abs(y1 - y2)), abs(z1 - z2));
 }
 
-void Map::sortByDistance(vector<tuple<int, float>>& base, vector<int>& autre1, vector<int>& autre2) noexcept {
-    // On va vouloir trier base dans l'ordre décroissant (la plus petite valeur en dernière)
-    // Puis retenir la permutation
-    // Et l'appliquer aux deux autres vecteurs =)
-
-    // Les index dans l'ordre
-    vector<int> index(base.size(), 0);
-    for (int i = 0; i < index.size(); ++i) {
-        index[i] = i;
-    }
-
-    // La permutation à appliquer à base
-    sort(index.begin(), index.end(),
-        [&](const int& a, const int& b) {
-            return (get<float>(base[a]) > get<float>(base[b])); // décroissant
-    });
-
-    // On applique la permutation à base, autre1 et autre2
-    vector<tuple<int, float>> basebis = base;
-    vector<int> autre1bis = autre1;
-    vector<int> autre2bis = autre2;
-    for (int i = 0; i < index.size(); ++i) {
-        basebis[i] = base[index[i]];
-        autre1bis[i] = autre1[index[i]];
-        autre2bis[i] = autre2[index[i]];
-    }
-	swap(base, basebis);
-	swap(autre1, autre1bis);
-	swap(autre2, autre2bis);
-}
-
 int Map::tailleCheminMax() const noexcept {
     return colCount * rowCount + 1;
 }
@@ -324,7 +293,7 @@ void Map::addTile(TileInfo tile) noexcept {
 // Il ne faut pas ajouter un objet qui est déjà dans la map !
 void Map::addObject(ObjectInfo object) noexcept {
     int voisin1 = object.tileID;
-    int voisin2 = getAdjacentTileAt(object.tileID, object.position);
+	int voisin2 = getAdjacentTileAt(object.tileID, object.position);
 
     // On ajoute notre objet à l'ensemble de nos objets
     if (object.objectTypes.find(Object::ObjectType_Wall) != object.objectTypes.end()) {

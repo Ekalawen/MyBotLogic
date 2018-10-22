@@ -2,7 +2,7 @@
 #include "GameManager.h"
 
 Chemin::Chemin()
-    : chemin{ vector<int>() },
+	: chemin{ vector<int>{} },
     inaccessible{ false }
 {
 }

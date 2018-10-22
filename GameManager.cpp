@@ -23,8 +23,8 @@ Logger GameManager::logger{};
 Logger GameManager::loggerRelease{};
 
 GameManager::GameManager(LevelInfo info) :
-    m{Map(info)},
-    objectifPris{}
+    m{ Map(info) },
+	objectifPris{ vector<int>{} }
 {
     // On récupère l'ensemble des npcs !
     for (auto pair_npc : info.npcs) {

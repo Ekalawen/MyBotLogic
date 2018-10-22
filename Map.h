@@ -13,8 +13,7 @@ using namespace std;
 class MapTile;
 class Npc;
 class Map {
-    void sortByDistance(vector<tuple<int, float>>& base, vector<int>& autre1, vector<int>& autre2) noexcept; // Permet de trier base dans l'ordre décroissant, et autre1 et autre2 dans le même ordre, on prend le poids qui est la somme du coup et de l'heuristique
-public:
+    public:
     int rowCount;
     int colCount;
     int nbTiles;

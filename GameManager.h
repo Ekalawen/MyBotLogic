@@ -24,7 +24,7 @@ public:
     void moveNpcs(vector<Action*>& actionList) noexcept; // Remplie l'action liste !
     void ordonnerMouvements(vector<Mouvement*>& mouvements) noexcept; // Permet d'ordonner les mouvements pour éviter les collisions et gérer les politesses de priorités =)
     void updateModel(const TurnInfo&) noexcept; // Met à jour le modèle avec les informations que découvrent les NPCS
-    void GameManager::InitializeBehaviorTree() noexcept; // Permet d'initialiser le BT
+    void InitializeBehaviorTree() noexcept; // Permet d'initialiser le BT
     void execute() noexcept { behaviorTreeManager.execute(); };
 
     static void Log(string str) noexcept { // Permet de débugger ! :D

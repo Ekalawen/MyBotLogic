@@ -8,8 +8,8 @@ MapTile::MapTile(unsigned int id, Map &m) :
     id{ static_cast<int>(id) },
     x{ static_cast<int>(id) % m.colCount },
     y{ static_cast<int>(id) / m.colCount },
-    voisins{ vector<int>() },
-    type{},
+	voisins{ vector<int>{} },
+    type{ Tile::ETileType::TileAttribute_Default },
     NE{ -1 },
     E{ -1 },
     SE{ -1 },
@@ -18,6 +18,7 @@ MapTile::MapTile(unsigned int id, Map &m) :
     SW{ -1 },
     statut{ INCONNU }
 {
+	voisins.reserve(6);
     // On regarde sur quelle ligne on est, car ça change les indices
     int indice;
     if (y % 2 == 0) { // Ligne paire
