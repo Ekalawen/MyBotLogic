@@ -109,13 +109,15 @@ void Npc::floodfill(Map &m) {
                }
             }
          }
-         // On définit les dernières tuiles ajoutés avec leur coût corant
-         Open.push_back(tileID);
-         coutCasesAccessibles[tileID] = cout;
+         // On définit les dernières tuiles ajoutés avec leur coût courant
+         if (find(Open.begin(), Open.end(), tileID) == Open.end()) {
+            Open.push_back(tileID);
+            coutCasesAccessibles[tileID] = cout;
+         }       
       }
       ++cout;
    }
-   // On met à jour l'ensemble accessible d'un NPC
+   // On met à jour l'ensemble et les distances accessible d'un NPC
    ensembleAccessible = Open;
    distancesEnsembleAccessible = coutCasesAccessibles;
    auto post = std::chrono::high_resolution_clock::now();
