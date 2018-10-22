@@ -12,7 +12,7 @@
 #include <map>
 
 class GameManager {
-    static Logger logger;
+    static Logger logger, loggerRelease;
 public:
     Map m;
     map<int, Npc> npcs; // Les npcs sont stockés par leurs ids
@@ -23,7 +23,7 @@ public:
     GameManager(LevelInfo);
     void moveNpcs(vector<Action*>& actionList) noexcept; // Remplie l'action liste !
     void ordonnerMouvements(vector<Mouvement*>& mouvements) noexcept; // Permet d'ordonner les mouvements pour éviter les collisions et gérer les politesses de priorités =)
-    void updateModel(TurnInfo) noexcept; // Met à jour le modèle avec les informations que découvrent les NPCS
+    void updateModel(const TurnInfo&) noexcept; // Met à jour le modèle avec les informations que découvrent les NPCS
     void GameManager::InitializeBehaviorTree() noexcept; // Permet d'initialiser le BT
     void execute() noexcept { behaviorTreeManager.execute(); };
 
@@ -31,13 +31,23 @@ public:
         #ifndef _DEBUG
             return;
         #endif
-        logger.Log(str);
+        #ifdef _DEBUG
+            logger.Log(str);
+        #endif
+    }
+    static void LogRelease(string str) noexcept { // Permet de débugger ! :D
+        loggerRelease.Log(str);
     }
     static void SetLog(string path, string fileName) noexcept { // Permet d'initialiser le logger =)
         #ifndef _DEBUG
             return;
         #endif
-        logger.Init(path, fileName);
+        #ifdef _DEBUG
+            logger.Init(path, fileName);
+        #endif
+    }
+    static void SetLogRelease(string path, string fileName) noexcept { // Permet d'initialiser le logger =)
+        loggerRelease.Init(path, fileName);
     }
 
 private:

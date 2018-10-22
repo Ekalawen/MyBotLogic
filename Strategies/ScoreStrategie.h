@@ -9,11 +9,12 @@ protected:
     GameManager &gm;
     string nom;
     void calculerScoresEtCheminsTilesPourNpc(Npc& npc, vector<int> tilesAVisiter) noexcept;
-    virtual void saveScore(MapTile tile, Npc& npc, vector<int> tilesAVisiter) noexcept = 0;
+    void calculerScore1Tile(int tileID, Map& m, Npc& npc, const vector<int> tilesAVisiter);
 
 public:
     ScoreStrategie(GameManager&, string nom);
     virtual ETAT_ELEMENT execute() noexcept override;
+    virtual void saveScore(MapTile tile, Npc& npc, vector<int> tilesAVisiter) noexcept = 0;
 };
 
 #endif

@@ -20,6 +20,7 @@ using namespace std::chrono;
 
 // On initialise notre attribut statique ...
 Logger GameManager::logger{};
+Logger GameManager::loggerRelease{};
 
 GameManager::GameManager(LevelInfo info) :
     m{Map(info)},
@@ -211,22 +212,26 @@ void GameManager::addNewObjects(TurnInfo ti) noexcept {
     }
 }
 
-void GameManager::updateModel(TurnInfo ti) noexcept {
-    // On essaye de rajouter les nouveaux objectifs et les nouvelles tiles !
+void GameManager::updateModel(const TurnInfo &ti) noexcept {
    
+    // On essaye de rajouter les nouvelles tiles !
     auto pre = high_resolution_clock::now();
     addNewTiles(ti);
     auto post = high_resolution_clock::now();
     GameManager::Log("Durée AddTile = " + to_string(duration_cast<microseconds>(post - pre).count() / 1000.f) + "ms");
 
+    // On essaye de rajouter les nouvelles tiles !
     pre = high_resolution_clock::now();
     addNewObjects(ti);
     post = high_resolution_clock::now();
     GameManager::Log("Durée AddObjects = " + to_string(duration_cast<microseconds>(post - pre).count() / 1000.f) + "ms");
 
     // Mettre à jour nos NPCs
+    pre = std::chrono::high_resolution_clock::now();
     for (auto &npc : npcs) {
        npc.second.floodfill(m);
     }
+    post = std::chrono::high_resolution_clock::now();
+    GameManager::Log("Durée FloodFill = " + to_string(std::chrono::duration_cast<std::chrono::microseconds>(post - pre).count() / 1000.f) + "ms");
 }
 

@@ -328,50 +328,53 @@ void Map::addObject(ObjectInfo object) noexcept {
 
     // On ajoute notre objet à l'ensemble de nos objets
     if (object.objectTypes.find(Object::ObjectType_Wall) != object.objectTypes.end()) {
-        murs[object.objectID] = object;
-        if (isInMap(voisin1)) {
-            tiles[voisin1].removeMysterieux(voisin2);
-            tiles[voisin1].removeAccessible(voisin2);
-            tiles[voisin1].removeVisible(voisin2);
-        }
-        if (isInMap(voisin2)) {
-            tiles[voisin2].removeMysterieux(voisin1);
-            tiles[voisin2].removeAccessible(voisin1);
-            tiles[voisin2].removeVisible(voisin1);
-        }
+       // Fenetre
+       if (object.objectTypes.find(Object::ObjectType_Window) != object.objectTypes.end()) {
+          fenetres[object.objectID] = object;
+          if (isInMap(voisin1))
+             tiles[voisin1].removeAccessible(voisin2);
+          if (isInMap(voisin2))
+             tiles[voisin2].removeAccessible(voisin1);
+       // Mur
+       } else {
+          murs[object.objectID] = object;
+          if (isInMap(voisin1)) {
+             tiles[voisin1].removeMysterieux(voisin2);
+             tiles[voisin1].removeAccessible(voisin2);
+             tiles[voisin1].removeVisible(voisin2);
+          }
+          if (isInMap(voisin2)) {
+             tiles[voisin2].removeMysterieux(voisin1);
+             tiles[voisin2].removeAccessible(voisin1);
+             tiles[voisin2].removeVisible(voisin1);
+          }
+       }
     }
     if (object.objectTypes.find(Object::ObjectType_Door) != object.objectTypes.end()) {
         portes[object.objectID] = object;
-        if (object.objectTypes.find(Object::ObjectType_Window) != object.objectTypes.end()) { // c'est une porte fenetre
-            if (object.objectStates.find(Object::ObjectState_Closed) != object.objectStates.end()) {
-                if (isInMap(voisin1))
-                    tiles[voisin1].removeAccessible(voisin2);
-                if (isInMap(voisin2))
-                    tiles[voisin2].removeAccessible(voisin1);
-            } else {
-                // Si la porte est ouverte on est accessible ET visible ! =)
-            }
-        } else { // C'est une porte point.
-            if (object.objectStates.find(Object::ObjectState_Closed) != object.objectStates.end()) {
-                if (isInMap(voisin1)) {
-                    tiles[voisin1].removeAccessible(voisin2);
-                    tiles[voisin1].removeVisible(voisin2);
-                }
-                if (isInMap(voisin2)) {
-                    tiles[voisin2].removeAccessible(voisin1);
-                    tiles[voisin2].removeVisible(voisin1);
-                }
-            } else {
-                // Si la porte est ouverte on est accessible ET visible ! =)
-            }
+        //Porte Ferme
+        if (object.objectStates.find(Object::ObjectState_Closed) != object.objectStates.end()) {
+           // Porte Fenetre
+           if (object.objectTypes.find(Object::ObjectType_Window) != object.objectTypes.end()) {
+              if (isInMap(voisin1))
+                 tiles[voisin1].removeAccessible(voisin2);
+              if (isInMap(voisin2))
+                 tiles[voisin2].removeAccessible(voisin1);
+            // Porte
+           } else {
+              if (isInMap(voisin1)) {
+                 tiles[voisin1].removeAccessible(voisin2);
+                 tiles[voisin1].removeVisible(voisin2);
+              }
+              if (isInMap(voisin2)) {
+                 tiles[voisin2].removeAccessible(voisin1);
+                 tiles[voisin2].removeVisible(voisin1);
+              }
+           }
+           // Porte ouverte
+        } else {
+           // Si la porte est ouverte on est accessible ET visible ! =)
         }
-    }
-    if (object.objectTypes.find(Object::ObjectType_Window) != object.objectTypes.end()) {
-        fenetres[object.objectID] = object;
-        if (isInMap(voisin1))
-            tiles[voisin1].removeAccessible(voisin2);
-        if (isInMap(voisin2))
-            tiles[voisin2].removeAccessible(voisin1);
     }
     if (object.objectTypes.find(Object::ObjectType_PressurePlate) != object.objectTypes.end()) {
         activateurs[object.objectID] = object;

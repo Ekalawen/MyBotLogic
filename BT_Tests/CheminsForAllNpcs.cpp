@@ -22,7 +22,7 @@ BT_Noeud::ETAT_ELEMENT CheminsForAllNpcs::execute() noexcept {
 		  }
 		  else {
 			  ++it;
-		  }		  
+		  }
 	  }
 
       // Si c'est le cas, on enlève cet objectif de ceux attribuables et on continue
