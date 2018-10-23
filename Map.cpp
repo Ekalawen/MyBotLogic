@@ -102,7 +102,9 @@ Chemin Map::aStar(int depart, int arrivee, float coefEvaluation) noexcept {
                 } else if (itClose != closedList.end() && itOpen == openList.end()) {
                     // Do nothing
                 } else if (itClose == closedList.end() && itOpen != openList.end()) {
-                    (*itOpen) = nouveauNoeud;
+                   if ((*itOpen).heuristique > nouveauNoeud.heuristique) {
+                      (*itOpen) = nouveauNoeud;
+                   }
                 } else {
                     GameManager::Log("OMG On a fait n'imp !");
                 }
