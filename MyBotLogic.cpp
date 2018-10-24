@@ -50,7 +50,6 @@ MyBotLogic::MyBotLogic() :
     gm = GameManager(_levelInfo);
     gm.InitializeBehaviorTree();
 
-
     // On associe à chaque npc son objectif !
     //gm.associateNpcsWithObjectiv();
     auto post = high_resolution_clock::now();

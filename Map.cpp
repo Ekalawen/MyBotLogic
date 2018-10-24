@@ -75,18 +75,16 @@ Chemin Map::aStar(int depart, int arrivee, float coefEvaluation) noexcept {
     // On crée nos liste et notre noeud courrant
     vector<Noeud> closedList{};
     vector<Noeud> openList{};
-    Noeud noeudCourant;
+    Noeud noeudCourant = Noeud(tiles[depart], 0, distanceL2(depart, arrivee), depart);
     Chemin path;
 
     // On ajoute le noeud initial
-    openList.push_back(Noeud(tiles[depart], 0, distanceL2(depart, arrivee), depart));
-
+    openList.push_back(noeudCourant);
     // Tant qu'il reste des noeuds à traiter ...
     while (!openList.empty() && noeudCourant.tile.id != arrivee) {
         // On récupère le premier noeud de notre liste
         noeudCourant = openList.back();
         openList.pop_back();
-
         // Pour tous les voisins du noeud courant ...
         for (auto voisin : noeudCourant.tile.voisinsAccessibles) {
             // On vérifie que le voisin existe ...
@@ -110,7 +108,6 @@ Chemin Map::aStar(int depart, int arrivee, float coefEvaluation) noexcept {
                 }
             }
         }
-
         // On trie notre openList pour que le dernier soit le meilleur !
         // Donc celui qui minimise et le cout, et l'évaluation !
         sort(openList.begin(), openList.end(), [](const Noeud a, const Noeud b) {
@@ -127,7 +124,6 @@ Chemin Map::aStar(int depart, int arrivee, float coefEvaluation) noexcept {
         while (noeudCourant.tile.id != depart) {
             // On enregistre dans le path ...
             path.chemin.push_back(noeudCourant.tile.id);
-
             // On cherche l'antécédant ...
             for (auto n : closedList) {
                 if (n.tile.id == noeudCourant.idPrecedant) {
