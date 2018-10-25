@@ -32,11 +32,9 @@ public:
     void removeVisible(int id);
 
     int getVoisinByDirection(Tile::ETilePosition direction) const noexcept; // Permet de récupérer le voisin dans une certaine direction d'une tile
-	bool isVoisinAccessible(Tile::ETilePosition direction) const noexcept;
 	bool isVoisinAccessible(int id) const noexcept;
 	bool isVoisinVisible(int id) const noexcept;
 	bool isVoisinMysterious(int id) const noexcept;
-	vector<int> getVoisinFenetres() const noexcept;
 
    bool existe();
 

@@ -30,7 +30,7 @@ BT_Noeud::ETAT_ELEMENT ScoreStrategie::execute() noexcept {
         // En même temps on calcul le chemin pour aller à cette tile
         // On stocke ces deux informations dans l'attribut cheminsPossibles du Npc
         auto preCalcul = std::chrono::high_resolution_clock::now();
-        calculerScoresEtCheminsTilesPourNpc(npc, tilesAVisiter);
+        calculerScoresTilesPourNpc(npc, tilesAVisiter);
         auto postCalcul = std::chrono::high_resolution_clock::now();
         GameManager::Log("Durée calculerScoresEtCheminsTilesPourNpc = " + to_string(std::chrono::duration_cast<std::chrono::microseconds>(postCalcul - preCalcul).count() / 1000.f) + "ms");
 
@@ -63,7 +63,7 @@ void ScoreStrategie::calculerScore1Tile(int tileID, Map& m, Npc& npc, const vect
 
 // Calcul le score de chaque tiles et son chemin pour un npc
 // On prend en compte les tilesAVisiter des autres npcs pour que les tiles soient loins les unes des autres
-void ScoreStrategie::calculerScoresEtCheminsTilesPourNpc(Npc& npc, vector<int> tilesAVisiter) noexcept {
+void ScoreStrategie::calculerScoresTilesPourNpc(Npc& npc, vector<int> tilesAVisiter) noexcept {
    GameManager::Log("Taille ensemble : " + to_string(npc.ensembleAccessible.size()));
     for (auto tileID : npc.ensembleAccessible) { // parcours toutes les tiles découvertes par l'ensemble des npcs et qui sont accessibles
         calculerScore1Tile(tileID, gm.m, npc, tilesAVisiter);
