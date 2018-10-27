@@ -108,37 +108,6 @@ void MapTile::setTileDecouverte(const TileInfo tile) {
    statut = CONNU;
 }
 
-bool MapTile::isVoisinAccessible(Tile::ETilePosition direction) const noexcept {
-	int id{};
-	switch (direction)
-	{
-	case Tile::NE:
-		id = NE;
-		break;
-	case Tile::E:
-		id = E;
-		break;
-	case Tile::SE:
-		id = SE;
-		break;
-	case Tile::SW:
-		id = SW;
-		break;
-	case Tile::W:
-		id = W;
-		break;
-	case Tile::NW:
-		id = NW;
-		break;
-	default:
-		GameManager::Log("Tentative d'obtenir un voisin n'existant pas ! id = " + to_string(id) + " direction = " + to_string(direction));
-		return false;
-		break;
-	}
-
-	return std::find(voisinsAccessibles.begin(), voisinsAccessibles.end(), id) != voisinsAccessibles.end();
-}
-
 bool MapTile::isVoisinAccessible(int id) const noexcept {
 	return std::find(voisinsAccessibles.begin(), voisinsAccessibles.end(), id) != voisinsAccessibles.end();
 }
@@ -149,16 +118,6 @@ bool MapTile::isVoisinVisible(int id) const noexcept {
 
 bool MapTile::isVoisinMysterious(int id) const noexcept {
 	return std::find(voisinsMysterious.begin(), voisinsMysterious.end(), id) != voisinsMysterious.end();
-}
-
-vector<int> MapTile::getVoisinFenetres() const noexcept {
-	vector<int> voisinsFenetres{};
-	for (auto idTile : voisinsVisibles) {
-		if (std::find(voisinsAccessibles.begin(), voisinsAccessibles.end(), idTile) == voisinsAccessibles.end()) {
-			voisinsFenetres.push_back(idTile);
-		}
-	}
-	return voisinsFenetres;
 }
 
 int MapTile::getVoisinByDirection(Tile::ETilePosition direction) const noexcept {

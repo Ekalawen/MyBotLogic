@@ -269,9 +269,11 @@ void Map::addTile(TileInfo tile) noexcept {
 
     // On la rajoute aux tiles
     tiles[tile.tileID].setTileDecouverte(tile);
+
     if (tiles[tile.tileID].type == Tile::TileAttribute_Goal) {
         objectifs.push_back(tile.tileID);
     }
+
     if (tiles[tile.tileID].type == Tile::TileAttribute_Forbidden) {
         for (auto voisin : tiles[tile.tileID].voisins) {
             tiles[voisin].removeAccessible(tile.tileID);
