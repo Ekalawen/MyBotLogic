@@ -22,7 +22,7 @@ BT_Noeud::ETAT_ELEMENT ScoreStrategie::execute() noexcept {
     // L'ensemble des tiles que l'on va visiter
     vector<int> tilesAVisiter;
 
-    for (auto& pair : gm.npcs) {
+    for (auto& pair : gm.getNpcs()) {
         Npc& npc = pair.second;
         npc.resetChemins();
 
@@ -54,9 +54,9 @@ BT_Noeud::ETAT_ELEMENT ScoreStrategie::execute() noexcept {
 }
 
 void ScoreStrategie::calculerScore1Tile(int tileID, Map& m, Npc& npc, const vector<int> tilesAVisiter) {
-    MapTile tile = m.tiles[tileID];
+    MapTile tile = m.getTile(tileID);
     // On ne considère la tile que si on ne la visite pas déjà !
-    if (tile.statut == MapTile::Statut::CONNU && find(tilesAVisiter.begin(), tilesAVisiter.end(), tile.id) == tilesAVisiter.end()) {
+    if (tile.getStatut() == MapTile::Statut::CONNU && find(tilesAVisiter.begin(), tilesAVisiter.end(), tile.getId()) == tilesAVisiter.end()) {
         saveScore(tile, npc, tilesAVisiter);
     }
 }
@@ -64,8 +64,8 @@ void ScoreStrategie::calculerScore1Tile(int tileID, Map& m, Npc& npc, const vect
 // Calcul le score de chaque tiles et son chemin pour un npc
 // On prend en compte les tilesAVisiter des autres npcs pour que les tiles soient loins les unes des autres
 void ScoreStrategie::calculerScoresTilesPourNpc(Npc& npc, vector<int> tilesAVisiter) noexcept {
-   GameManager::Log("Taille ensemble : " + to_string(npc.ensembleAccessible.size()));
-    for (auto tileID : npc.ensembleAccessible) { // parcours toutes les tiles découvertes par l'ensemble des npcs et qui sont accessibles
+   GameManager::Log("Taille ensemble : " + to_string(npc.getEnsembleAccessible().size()));
+    for (auto tileID : npc.getEnsembleAccessible()) { // parcours toutes les tiles découvertes par l'ensemble des npcs et qui sont accessibles
         calculerScore1Tile(tileID, gm.m, npc, tilesAVisiter);
     }
 }

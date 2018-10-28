@@ -12,6 +12,7 @@ class MapTile {
 public:
     enum Statut{INCONNU,CONNU,VISITE};
 
+private:
     int id;
     int x, y; // La position de la tile. x est l'indice de colonne, y est l'indice de ligne.
     Tile::ETileType type;
@@ -22,7 +23,7 @@ public:
 	vector<int> voisinsMysterious; // les voisins sur lequel on a pas encore d'information
     Statut statut;
 
-
+public:
     MapTile() = default; // Constructeur par défaut obligatoire pour pouvoir utiliser tuple ...
     MapTile(unsigned int id, Map &m); // Appelé dès le début et uniquement là !
 
@@ -36,8 +37,22 @@ public:
 	bool isVoisinVisible(int id) const noexcept;
 	bool isVoisinMysterious(int id) const noexcept;
 
-   bool existe();
+    bool existe();
 
+    int getId() const noexcept;
+    int getX() const noexcept;
+    int getY() const noexcept;
+    Tile::ETileType getType() const noexcept;
+    vector<int> getVoisins() const noexcept;
+    vector<int> getVoisinsAccessibles() const noexcept;
+    vector<int> getVoisinsVisibles() const noexcept;
+    vector<int> getVoisinsMysterieux() const noexcept;
+    bool isInVoisins(int id) const noexcept;
+    bool isInVoisinsAccessibles(int id) const noexcept;
+    bool isInVoisinsVisibles(int id) const noexcept;
+    bool isInVoisinsMysterieux(int id) const noexcept;
+    Statut getStatut() const noexcept;
+    void setStatut(Statut new_statut);
 };
 
 #endif

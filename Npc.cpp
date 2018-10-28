@@ -16,7 +16,7 @@ Npc::Npc(const NPCInfo info) :
 
 void Npc::move(Tile::ETilePosition direction, Map &m) noexcept {
     tileId = m.getAdjacentTileAt(tileId, direction);
-    m.tiles[tileId].statut = MapTile::Statut::VISITE;
+    m.getTile(tileId).setStatut(MapTile::Statut::VISITE);
 }
 
 void Npc::resetChemins() noexcept {
@@ -93,7 +93,7 @@ int Npc::affecterMeilleurChemin(Map &m) noexcept {
 
 void ajoutIfUnkown(Map &m, int voisin, const vector<int>& oldOpen, const vector<int>& Open, vector<int>& newOpen) {
     // Si elle est connu
-    if (m.tiles[voisin].existe()) {
+    if (m.getTile(voisin).existe()) {
        // Si elle n'est pas déjà ajouté
        if (find(oldOpen.begin(), oldOpen.end(), voisin) == oldOpen.end() && find(Open.begin(), Open.end(), voisin) == Open.end()) {
           // On l'ajoute comme nouvelle tuile ouverte
@@ -103,7 +103,7 @@ void ajoutIfUnkown(Map &m, int voisin, const vector<int>& oldOpen, const vector<
 }
 
 void addNewVoisins(Map &m, int tileID, const vector<int>& oldOpen, vector<int>& Open, vector<int>& newOpen, map<int, int>& coutCasesAccessibles, int cout) {
-     for (auto voisin : m.tiles[tileID].voisinsAccessibles) {
+     for (auto voisin : m.getTile(tileID).getVoisinsAccessibles()) {
          ajoutIfUnkown(m, voisin, oldOpen, Open, newOpen);
      }
      // On définit les dernières tuiles ajoutés avec leur coût courant
@@ -142,3 +142,48 @@ void Npc::floodfill(Map &m) {
    distancesEnsembleAccessible = coutCasesAccessibles;
 }
 
+int Npc::getId() {
+    return id;
+}
+
+int Npc::getTileId() {
+    return tileId;
+}
+
+int Npc::getTileObjectif() {
+    return tileObjectif;
+}
+
+void Npc::setTileObjectif(int idTile) {
+    tileObjectif = idTile;
+}
+
+Chemin& Npc::getChemin() {
+    return chemin;
+}
+
+vector<int> Npc::getEnsembleAccessible() {
+    return ensembleAccessible;
+}
+
+bool Npc::isAccessibleTile(int tileId) {
+    return find(ensembleAccessible.begin(), ensembleAccessible.end(), tileId) != ensembleAccessible.end();
+}
+
+int Npc::distanceToTile(int tileId) {
+    if (!isAccessibleTile(tileId))
+        throw tile_inaccessible{};
+    return distancesEnsembleAccessible[tileId];
+}
+
+map<int, int> Npc::getDistancesEnsembleAccessible() {
+    return distancesEnsembleAccessible;
+}
+
+bool Npc::isArrived() {
+    return estArrive;
+}
+
+void Npc::setArrived(bool etat) {
+    estArrive = etat;
+}

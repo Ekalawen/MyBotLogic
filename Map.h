@@ -10,21 +10,22 @@
 #include <map>
 using namespace std;
 
+class tile_inexistante {};
+
 class MapTile;
 class Npc;
 class Map {
-    public:
     int rowCount;
     int colCount;
-    int nbTiles;
-    int nbtilesDecouvertes;
+    int nbTilesDecouvertes;
     vector<MapTile> tiles;
-
     vector<unsigned int> objectifs;
     map<unsigned int, ObjectInfo> murs;
     map<unsigned int, ObjectInfo> portes;
     map<unsigned int, ObjectInfo> fenetres;
     map<unsigned int, ObjectInfo> activateurs;
+
+public:
 
     Map() = default;
     Map(const LevelInfo);
@@ -45,6 +46,20 @@ class Map {
     int getX(int id) const noexcept; // Permet de récupérer x et y à partir d'un indice
     int getY(int id) const noexcept;
     vector<int> getVoisins(int id) const noexcept;
+
+    int getRowCount() const noexcept;
+    int getColCount() const noexcept;
+    int getNbTiles() const noexcept;
+    int getNbTilesDecouvertes() const noexcept;
+    MapTile& getTile(int id);
+
+    vector<unsigned int> getObjectifs();
+    map<unsigned int, ObjectInfo> getMurs();
+    map<unsigned int, ObjectInfo> getPortes();
+    map<unsigned int, ObjectInfo> getFenetres();
+    map<unsigned int, ObjectInfo> getActivateurs();
+
+    bool objectExist(int id); // Permet de savoir si un objet existe déjà ou pas
 };
 
 

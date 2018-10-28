@@ -1,13 +1,18 @@
 #pragma once
 #include "Globals.h"
 
-class Mouvement
-{
-public:
-	Mouvement(int npcID, int tileSource, int tileDestination, Tile::ETilePosition direction);
-
+class Mouvement {
 	int npcID;
 	int tileSource;
 	int tileDestination;
 	Tile::ETilePosition direction;
+public:
+	Mouvement(int npcID, int tileSource, int tileDestination, Tile::ETilePosition direction);
+
+    void stop(); // Arrête le mouvement
+
+    int getNpcId();
+    int getTileSource();
+    int getTileDestination();
+    Tile::ETilePosition getDirection();
 };
