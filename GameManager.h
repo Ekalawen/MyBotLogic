@@ -25,7 +25,8 @@ public:
     GameManager() = default;
     GameManager(LevelInfo);
     void moveNpcs(vector<Action*>& actionList) noexcept; // Remplie l'action liste !
-    void ordonnerMouvements(vector<Mouvement*>& mouvements) noexcept; // Permet d'ordonner les mouvements pour éviter les collisions et gérer les politesses de priorités =)
+    void reafecterObjectifsSelonDistance(); // Réaffecte les objectifs des Npcs entre
+    void ordonnerMouvements(vector<Mouvement>& mouvements) noexcept; // Permet d'ordonner les mouvements pour éviter les collisions et gérer les politesses de priorités =)
     void updateModel(const TurnInfo&) noexcept; // Met à jour le modèle avec les informations que découvrent les NPCS
     void InitializeBehaviorTree() noexcept; // Permet d'initialiser le BT
     void execute() noexcept { behaviorTreeManager.execute(); };
@@ -60,6 +61,10 @@ public:
 private:
     void addNewTiles(TurnInfo ti) noexcept;
     void addNewObjects(TurnInfo ti) noexcept;
+    vector<Mouvement> getAllMouvements();
+    int getIndiceMouvementPrioritaire(vector<Mouvement>& mouvements, vector<int> indicesAConsiderer);
+    void gererCollisionsMemeCaseCible(vector<Mouvement>& mouvements);
+    void stopNonPrioritaireMouvements(vector<Mouvement>& mouvements, vector<int> indicesMouvementsSurMemeCaseCible, int indiceMouvementPrioritaire, bool& continuer);
 };
 
 #endif

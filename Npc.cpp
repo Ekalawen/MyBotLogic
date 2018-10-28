@@ -118,8 +118,9 @@ void parcourirNewVoisins(Map &m, int tileID, vector<int>& oldOpen, vector<int>& 
     newOpen = vector<int>();
     // On regarde les voisins des dernieres tuiles ajoutées
     for (int tileID : oldOpen) {
-     addNewVoisins(m, tileID, oldOpen, Open, newOpen, coutCasesAccessibles, cout++);
+        addNewVoisins(m, tileID, oldOpen, Open, newOpen, coutCasesAccessibles, cout);
     }
+    cout++;
 }
 
 void Npc::floodfill(Map &m) {

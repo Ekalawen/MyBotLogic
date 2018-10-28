@@ -9,6 +9,11 @@ Mouvement::Mouvement(int npcID, int tileSource, int tileDestination, Tile::ETile
 
 void Mouvement::stop() {
     direction = Tile::CENTER;
+    tileDestination = tileSource;
+}
+
+bool Mouvement::isNotStopped() {
+    return direction != Tile::CENTER;
 }
 
 int Mouvement::getNpcId() {

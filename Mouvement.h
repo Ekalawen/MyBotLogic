@@ -10,6 +10,7 @@ public:
 	Mouvement(int npcID, int tileSource, int tileDestination, Tile::ETilePosition direction);
 
     void stop(); // Arrête le mouvement
+    bool isNotStopped();
 
     int getNpcId();
     int getTileSource();
