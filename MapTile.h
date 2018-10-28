@@ -16,7 +16,7 @@ private:
     int id;
     int x, y; // La position de la tile. x est l'indice de colonne, y est l'indice de ligne.
     Tile::ETileType type;
-	int NE, E, SE, SW, W, NW;
+   int voisinsDirection[6] = { -1,-1,-1,-1,-1,-1 };
     vector<int> voisins; // les identifiants des voisins de la tuile
 	vector<int> voisinsAccessibles; // les voisins connus et accessible (pas de murs ni de fenêtres) y compris les voisinsMysterious
 	vector<int> voisinsVisibles; // les voisins visibles (contient les voisins accessibles et les voisins fenetres)
