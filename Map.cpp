@@ -37,7 +37,25 @@ Map::Map(const LevelInfo levelInfo) :
     // Mettre à visiter les cases initiales des NPCs
     for (auto pair_npc : levelInfo.npcs) {
         tiles[pair_npc.second.tileID].setStatut(MapTile::Statut::VISITE);
+        // Mettre a visitable les voisins accesible connu d'une case visité
+        for (auto voisinID : tiles[pair_npc.second.tileID].getVoisinsAccessibles()) {
+           if (tiles[voisinID].getStatut() == MapTile::Statut::CONNU) {
+              tiles[voisinID].setStatut(MapTile::Statut::VISITABLE);
+           }
+        }
     }
+
+    // Creer matrice distance
+    distances.reserve(getNbTiles());
+    for (int i = 0; i < getNbTiles(); ++i) {
+       vector<int> v;
+       v.reserve(getNbTiles());
+       for (int j = 0; j < getNbTiles(); ++j) {
+          v.push_back(distanceHex(i, j));
+       }
+       distances.push_back(v);
+    }
+
 }
 
 bool Map::isInMap(int idTile) const noexcept {
@@ -473,6 +491,10 @@ map<unsigned int, ObjectInfo> Map::getFenetres() {
 
 map<unsigned int, ObjectInfo> Map::getActivateurs() {
     return activateurs;
+}
+
+int Map::getDistance(int tile1, int tile2) {
+   return (distances[tile1])[tile2];
 }
 
 bool Map::objectExist(int objet) {

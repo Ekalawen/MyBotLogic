@@ -9,6 +9,7 @@ Npc::Npc(const NPCInfo info) :
 	tileId{ static_cast<int>(info.tileID) },
 	tileObjectif{ -1 },
 	chemin{ Chemin{} },
+   ensembleAccessible{ static_cast<int>(info.tileID) },
 	estArrive{ false }
 {
 }
@@ -123,14 +124,18 @@ void parcourirNewVoisins(Map &m, int tileID, vector<int>& oldOpen, vector<int>& 
     cout++;
 }
 
-void Npc::floodfill(Map &m) {
+vector<int> Npc::floodfill(Map &m) {
    vector<int> Open;
    vector<int> oldOpen;
    vector<int> newOpen;
    map<int, int> coutCasesAccessibles;
 
-   // On ajoute le noeud initial
-   newOpen.push_back(tileId);
+   // Initialisation newOpen aux cases Visite et Visitable
+   for (auto tileID : ensembleAccessible) {
+      if (m.getTile(tileID).getStatut() == MapTile::VISITE || m.getTile(tileID).getStatut() == MapTile::VISITABLE) {
+         newOpen.push_back(tileID);
+      }
+   }
 
    int cout = 0;
    // Tant qu'il reste des noeuds à traiter ...
@@ -140,7 +145,7 @@ void Npc::floodfill(Map &m) {
 
    // On met à jour l'ensemble et les distances accessible d'un NPC
    ensembleAccessible = Open;
-   distancesEnsembleAccessible = coutCasesAccessibles;
+   return Open;
 }
 
 int Npc::getId() {
@@ -171,20 +176,14 @@ bool Npc::isAccessibleTile(int tileId) {
     return find(ensembleAccessible.begin(), ensembleAccessible.end(), tileId) != ensembleAccessible.end();
 }
 
-int Npc::distanceToTile(int tileId) {
-    if (!isAccessibleTile(tileId))
-        throw tile_inaccessible{};
-    return distancesEnsembleAccessible[tileId];
-}
-
-map<int, int> Npc::getDistancesEnsembleAccessible() {
-    return distancesEnsembleAccessible;
-}
-
 bool Npc::isArrived() {
     return estArrive;
 }
 
 void Npc::setArrived(bool etat) {
     estArrive = etat;
+}
+
+void Npc::setEnsembleAccessible(vector<int> newEnsembleAccessible) {
+   ensembleAccessible = newEnsembleAccessible;
 }

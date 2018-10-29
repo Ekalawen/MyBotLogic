@@ -25,7 +25,7 @@ void Expedition::saveScore(MapTile tile, Npc& npc, vector<int> tilesAVisiter) no
 	score += interetTile * COEF_INTERET;
 
     // On enregistre le cout, cad la distance npc-tile
-    score += npc.distanceToTile(tile.getId()) * COEF_DISTANCE_NPC_TILE;
+    score += gm.m.getDistance(npc.getTileId(),tile.getId()) * COEF_DISTANCE_NPC_TILE;
 
     // On regarde la distance moyenne de cette tile à tous les objectifs
     float distanceMoyenne = 0;

@@ -21,6 +21,7 @@ public:
     Map m;
     Selecteur behaviorTreeManager; // Arbre de comportement du GameManager pour déterminer la stratégie à suivre
     vector<int> objectifPris; // Permet de savoir quels sont les objectifs actuellement assignés à des npcs
+    vector<vector<unsigned int>> flux;
 
     GameManager() = default;
     GameManager(LevelInfo);
@@ -28,6 +29,7 @@ public:
     void reafecterObjectifsSelonDistance(); // Réaffecte les objectifs des Npcs entre
     void ordonnerMouvements(vector<Mouvement>& mouvements) noexcept; // Permet d'ordonner les mouvements pour éviter les collisions et gérer les politesses de priorités =)
     void updateModel(const TurnInfo&) noexcept; // Met à jour le modèle avec les informations que découvrent les NPCS
+    void updateFlux() noexcept;
     void InitializeBehaviorTree() noexcept; // Permet d'initialiser le BT
     void execute() noexcept { behaviorTreeManager.execute(); };
 

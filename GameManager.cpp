@@ -30,7 +30,11 @@ GameManager::GameManager(LevelInfo info) :
     for (auto pair_npc : info.npcs) {
         NPCInfo npc = pair_npc.second;
         npcs[npc.npcID] = Npc(npc);
+        flux.push_back({ npc.npcID }); // Initialisation flux
     }
+
+    updateFlux();
+
 }
 
 void GameManager::InitializeBehaviorTree() noexcept {
@@ -299,11 +303,14 @@ void GameManager::updateModel(const TurnInfo &ti) noexcept {
     post = high_resolution_clock::now();
     GameManager::Log("Durée AddObjects = " + to_string(duration_cast<microseconds>(post - pre).count() / 1000.f) + "ms");
 
-    // Mettre à jour nos NPCs
-    pre = std::chrono::high_resolution_clock::now();
-    for (auto &npc : npcs) {
-       npc.second.floodfill(m);
-    }
+    //// Mettre à jour nos NPCs
+    //pre = std::chrono::high_resolution_clock::now();
+    //for (auto &npc : npcs) {
+    //   npc.second.floodfill(m);
+    //}
+
+    updateFlux();
+
     post = std::chrono::high_resolution_clock::now();
     GameManager::Log("Durée FloodFill = " + to_string(std::chrono::duration_cast<std::chrono::microseconds>(post - pre).count() / 1000.f) + "ms");
 }
@@ -328,29 +335,68 @@ void GameManager::reafecterObjectifsSelonDistance() {
     bool continuer = true;
     while (continuer) {
         continuer = false;
-
-        // Pour tous les npcs ...
-        for (auto& npcPair : npcs) {
-            Npc& npc = npcPair.second;
-            for (auto& autreNpcPair : npcs) {
-                Npc& autreNpc = autreNpcPair.second;
-                int objectifNpc = npc.getChemin().empty() ? npc.getTileId() : npc.getChemin().destination();
-                int objectifAutreNpc = autreNpc.getChemin().empty() ? autreNpc.getTileId() : autreNpc.getChemin().destination();
-                int tempsMaxChemins = max(npc.getChemin().distance(), autreNpc.getChemin().distance());
-                if (npc.getId() != autreNpc.getId()) {
+        if (npcs.size() > 1) {
+           // Pour tous les npcs ...
+           for (auto& npcPair : npcs) {
+              Npc& npc = npcPair.second;
+              for (auto& autreNpcPair : npcs) {
+                 Npc& autreNpc = autreNpcPair.second;
+                 int objectifNpc = npc.getChemin().empty() ? npc.getTileId() : npc.getChemin().destination();
+                 int objectifAutreNpc = autreNpc.getChemin().empty() ? autreNpc.getTileId() : autreNpc.getChemin().destination();
+                 //int tempsMaxChemins = max(npc.getChemin().distance(), autreNpc.getChemin().distance());
+                 int tempsMaxChemins = max(m.getDistance(npc.getTileId(), objectifNpc), m.distanceHex(autreNpc.getTileId(), objectifAutreNpc));
+                 if (npc.getId() != autreNpc.getId()) {
                     // Si l'interversion des objectifs est bénéfique pour l'un deux et ne coûte rien à l'autre (ou lui est aussi bénéfique)
                     if (npc.isAccessibleTile(objectifAutreNpc) // Déjà on vérifie que l'intervertion est "possible"
-                        && autreNpc.isAccessibleTile(objectifNpc)) {
-                        if (max(npc.distanceToTile(objectifAutreNpc), autreNpc.distanceToTile(objectifNpc)) < tempsMaxChemins) {// Ensuite que c'est rentable
-                            // Alors on intervertit !
-                            GameManager::Log("Npc " + to_string(npc.getId()) + " et Npc " + to_string(autreNpc.getId()) + " échangent leurs objectifs !");
-                            npc.getChemin() = m.aStar(npc.getTileId(), objectifAutreNpc);
-                            autreNpc.getChemin() = m.aStar(autreNpc.getTileId(), objectifNpc);
-                            continuer = true; // Et on devra continuer pour vérifier que cette intervertion n'en a pas entrainé de nouvelles !
-                        }
+                       && autreNpc.isAccessibleTile(objectifNpc)) {
+                       if (max(m.getDistance(npc.getTileId(), objectifAutreNpc), m.getDistance(autreNpc.getTileId(), objectifNpc)) < tempsMaxChemins) {// Ensuite que c'est rentable
+                       //if (max(npc.distanceToTile(objectifAutreNpc), autreNpc.distanceToTile(objectifNpc)) < tempsMaxChemins) {// Ensuite que c'est rentable
+                           // Alors on intervertit !
+                          GameManager::Log("Npc " + to_string(npc.getId()) + " et Npc " + to_string(autreNpc.getId()) + " échangent leurs objectifs !");
+                          npc.getChemin() = m.aStar(npc.getTileId(), objectifAutreNpc);
+                          autreNpc.getChemin() = m.aStar(autreNpc.getTileId(), objectifNpc);
+                          continuer = true; // Et on devra continuer pour vérifier que cette intervertion n'en a pas entrainé de nouvelles !
+                       }
                     }
-                }
-            }
+                 }
+              }
+           }
         }
     }
+}
+
+void GameManager::updateFlux() noexcept {
+
+   // Mettre à jour nos Flux
+   for (auto npcsID : flux) {
+      // On calcule le flux pour le premier npc
+      vector<int> flood = npcs[npcsID[0]].floodfill(m);
+      // On copie ce flux pour tous ceux partageant le même flux
+      for (auto npcID : npcsID) {
+         npcs[npcID].setEnsembleAccessible(flood);
+      }
+   }
+
+   // Trouver les flux communs
+   vector<int> toErase = {};
+   for (int i = 0; i < flux.size() - 1; ++i) {
+      if (find(toErase.begin(), toErase.end(), i) == toErase.end()) {
+         for (int j = i + 1; j < flux.size(); ++j) {
+            // non 0 mais indice de tuile visite ou visitable !!! A FAIRE
+            vector<int> ensembleAccessible_i = npcs[flux[i][0]].getEnsembleAccessible();
+            if (find(ensembleAccessible_i.begin(), ensembleAccessible_i.end(), npcs[flux[j][0]].getEnsembleAccessible()[0]) != ensembleAccessible_i.end()) {
+               toErase.push_back(j);
+               // Rejoindre un flux partagé
+               for (auto f : flux[j]) {
+                  flux[i].push_back(f);
+               }
+            }
+         }
+      }
+   }
+   // Supprimer les flux n'existant plus
+   std::reverse(toErase.begin(), toErase.end());
+   for (auto i : toErase) {
+      flux.erase(flux.begin() + i);
+   }
 }

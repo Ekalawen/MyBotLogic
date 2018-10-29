@@ -21,7 +21,6 @@ private:
     int tileObjectif; // Là où il doit aller !
     Chemin chemin; // Utilisé pour savoir quel chemin suivre pour se rendre à l'objectif
     vector<int> ensembleAccessible; // ensemble des tuiles auquel un npc à accès
-    map<int, int> distancesEnsembleAccessible;
 	bool estArrive; // indique si le npc a atteind son objectif
 
 public:
@@ -36,7 +35,7 @@ public:
     void addScore(int tileIndice, float score) noexcept;
     Chemin getCheminMinNonPris(vector<int> objectifsPris, int tailleCheminMax) const noexcept; // Permet de trouver le chemin le plus court qui ne soit pas déjà pris
     int affecterMeilleurChemin(Map &m) noexcept; // Affecte au npc le chemin avec le meilleur score et renvoie la destination de ce chemin !
-    void floodfill(Map &m); // Calcule le coût et l'ensemble des tiles accessibles pour un npcs, et MAJ ses attributs.
+    vector<int> floodfill(Map &m); // Calcule le coût et l'ensemble des tiles accessibles pour un npcs, et MAJ ses attributs.
 
     int getId();
     int getTileId();
@@ -45,10 +44,9 @@ public:
     Chemin& getChemin();
     vector<int> getEnsembleAccessible();
     bool isAccessibleTile(int tileId);
-    int distanceToTile(int tileId);
-    map<int, int> getDistancesEnsembleAccessible();
     bool isArrived();
     void setArrived(bool etat);
+    void setEnsembleAccessible(vector<int> newEnsembleAccessible);
 };
 
 #endif

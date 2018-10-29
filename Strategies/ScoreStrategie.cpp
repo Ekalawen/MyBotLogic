@@ -56,7 +56,7 @@ BT_Noeud::ETAT_ELEMENT ScoreStrategie::execute() noexcept {
 void ScoreStrategie::calculerScore1Tile(int tileID, Map& m, Npc& npc, const vector<int> tilesAVisiter) {
     MapTile tile = m.getTile(tileID);
     // On ne considère la tile que si on ne la visite pas déjà !
-    if (tile.getStatut() == MapTile::Statut::CONNU && find(tilesAVisiter.begin(), tilesAVisiter.end(), tile.getId()) == tilesAVisiter.end()) {
+    if ((tile.getStatut() == MapTile::Statut::CONNU || tile.getStatut() == MapTile::Statut::VISITABLE) && find(tilesAVisiter.begin(), tilesAVisiter.end(), tile.getId()) == tilesAVisiter.end()) {
         saveScore(tile, npc, tilesAVisiter);
     }
 }

@@ -20,7 +20,7 @@ void Exploration::saveScore(MapTile tile, Npc& npc, vector<int> tilesAVisiter) n
     //if (tile.statut == MapTile::Statut::VISITE) return; // Appelé que si statut CONNU => non nécessaire
 
     // On enregistre le cout, cad la distanc npc-tile
-    score += npc.distanceToTile(tile.getId()) * COEF_DISTANCE_NPC_TILE;
+    score += gm.m.getDistance(npc.getTileId(), tile.getId()) * COEF_DISTANCE_NPC_TILE;
 
     // On regarde l'intêret de cette tile
     float interetTile = interet(tile);

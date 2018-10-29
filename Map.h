@@ -24,6 +24,7 @@ class Map {
     map<unsigned int, ObjectInfo> portes;
     map<unsigned int, ObjectInfo> fenetres;
     map<unsigned int, ObjectInfo> activateurs;
+    vector<vector<int>> distances; // ensemble des distances cases à cases
 
 public:
 
@@ -52,6 +53,7 @@ public:
     int getNbTiles() const noexcept;
     int getNbTilesDecouvertes() const noexcept;
     MapTile& getTile(int id);
+    int getDistance(int tile1,int tile2);
 
     vector<unsigned int> getObjectifs();
     map<unsigned int, ObjectInfo> getMurs();
