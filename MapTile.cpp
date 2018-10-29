@@ -100,7 +100,7 @@ MapTile::MapTile(unsigned int id, Map &m) :
 
     voisinsVisibles = voisins;
     voisinsAccessibles = voisins;
-    voisinsMysterious = voisins;
+    voisinsMysterieux = voisins;
 }
 
 void MapTile::setTileDecouverte(const TileInfo tile) {
@@ -117,7 +117,7 @@ bool MapTile::isVoisinVisible(int id) const noexcept {
 }
 
 bool MapTile::isVoisinMysterious(int id) const noexcept {
-	return std::find(voisinsMysterious.begin(), voisinsMysterious.end(), id) != voisinsMysterious.end();
+	return std::find(voisinsMysterieux.begin(), voisinsMysterieux.end(), id) != voisinsMysterieux.end();
 }
 
 int MapTile::getVoisinByDirection(Tile::ETilePosition direction) const noexcept {
@@ -149,9 +149,9 @@ int MapTile::getVoisinByDirection(Tile::ETilePosition direction) const noexcept 
 }
 
 void MapTile::removeMysterieux(int id) {
-    auto it = find(voisinsMysterious.begin(), voisinsMysterious.end(), id);
-    if (it != voisinsMysterious.end()) {
-        voisinsMysterious.erase(it);
+    auto it = find(voisinsMysterieux.begin(), voisinsMysterieux.end(), id);
+    if (it != voisinsMysterieux.end()) {
+        voisinsMysterieux.erase(it);
     }
 }
 

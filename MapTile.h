@@ -17,9 +17,9 @@ public:
     Tile::ETileType type;
 	int NE, E, SE, SW, W, NW;
     vector<int> voisins; // les identifiants des voisins de la tuile
-	vector<int> voisinsAccessibles; // les voisins connus et accessible (pas de murs ni de fenêtres) y compris les voisinsMysterious
+	vector<int> voisinsAccessibles; // les voisins connus et accessible (pas de murs ni de fenêtres) y compris les voisinsMysterieux
 	vector<int> voisinsVisibles; // les voisins visibles (contient les voisins accessibles et les voisins fenetres)
-	vector<int> voisinsMysterious; // les voisins sur lequel on a pas encore d'information
+	vector<int> voisinsMysterieux; // les voisins sur lequel on a pas encore d'information
     Statut statut;
 
 
