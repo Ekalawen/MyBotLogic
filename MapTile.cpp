@@ -172,7 +172,7 @@ vector<int> MapTile::getVoisinsVisibles() const noexcept {
 }
 
 vector<int> MapTile::getVoisinsMysterieux() const noexcept {
-    return voisinsMysterious;
+    return voisinsMysterieux;
 }
 
 bool MapTile::isInVoisins(int id) const noexcept {
@@ -188,7 +188,7 @@ bool MapTile::isInVoisinsVisibles(int id) const noexcept {
 }
 
 bool MapTile::isInVoisinsMysterieux(int id) const noexcept {
-    return find(voisinsMysterious.begin(), voisinsMysterious.end(), id) != voisinsMysterious.end();
+    return find(voisinsMysterieux.begin(), voisinsMysterieux.end(), id) != voisinsMysterieux.end();
 }
 
 
