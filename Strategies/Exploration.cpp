@@ -20,7 +20,7 @@ void Exploration::saveScore(MapTile tile, Npc& npc, vector<int> tilesAVisiter) n
     //if (tile.statut == MapTile::Statut::VISITE) return; // Appelé que si statut CONNU => non nécessaire
 
     // On enregistre le cout, cad la distanc npc-tile
-    score += npc.distancesEnsembleAccessible[tile.id] * COEF_DISTANCE_NPC_TILE;
+    score += npc.distanceToTile(tile.getId()) * COEF_DISTANCE_NPC_TILE;
 
     // On regarde l'intêret de cette tile
     float interetTile = interet(tile);
@@ -31,14 +31,14 @@ void Exploration::saveScore(MapTile tile, Npc& npc, vector<int> tilesAVisiter) n
     if (!tilesAVisiter.empty()) {
         float distanceMoyenneTiles = 0;
         for (auto autre : tilesAVisiter) {
-            distanceMoyenneTiles += gm.m.distanceHex(tile.id, autre);
+            distanceMoyenneTiles += gm.m.distanceHex(tile.getId(), autre);
         }
         distanceMoyenneTiles /= tilesAVisiter.size();
         score += distanceMoyenneTiles * COEF_DISTANCE_TILE_AUTRE_TILES;
     }
 
     // Il reste à affecter le score et le chemin au npc
-    npc.addScore(tile.id, score);
+    npc.addScore(tile.getId(), score);
 }
 
 // L'intérêt est définit par :
@@ -49,14 +49,14 @@ float Exploration::interet(MapTile tile) noexcept {
 
     int nbInconnuesAccessibles = 0;
     int nbInconnuesNonAccessiblesMaisVisibles = 0;
-    for (auto autre : tile.voisinsMysterieux) {
+    for (auto autre : tile.getVoisinsMysterieux()) {
         // Si autre est accessible ...
-        if (find(tile.voisinsAccessibles.begin(), tile.voisinsAccessibles.end(), autre) != tile.voisinsAccessibles.end()) {
+        if(tile.isInVoisinsAccessibles(autre)) {
             ++nbInconnuesAccessibles;
         // Si autre est inaccessible ...
         } else {
             // Mais visible ...
-            if (find(tile.voisinsVisibles.begin(), tile.voisinsVisibles.end(), autre) != tile.voisinsVisibles.end()) {
+            if(tile.isInVoisinsVisibles(autre)) {
                 ++nbInconnuesNonAccessiblesMaisVisibles;
             }
         }

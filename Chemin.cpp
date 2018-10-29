@@ -50,3 +50,26 @@ string Chemin::toString() const noexcept {
     return str;
 }
 
+
+void Chemin::removeFirst() {
+    if (empty())
+        throw chemin_vide{};
+    else
+        chemin.pop_back();
+}
+
+void Chemin::addFirst(int elem) {
+    chemin.push_back(elem);
+}
+
+int Chemin::getFirst() {
+    if (empty())
+        throw chemin_vide{};
+    else
+        return chemin.back();
+}
+
+void Chemin::resetChemin() {
+    chemin.clear();
+    inaccessible = false;
+}

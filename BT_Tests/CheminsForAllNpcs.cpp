@@ -8,16 +8,16 @@ BT_Noeud::ETAT_ELEMENT CheminsForAllNpcs::execute() noexcept {
    GameManager::Log("CheminsForAllNpcs");
    
    // Indices des objectfs découverts
-   vector<unsigned int> objectifNonDonne = gm.m.objectifs;
+   vector<unsigned int> objectifNonDonne = gm.m.getObjectifs();
 
    // On parcours chaque NPC
-   for (auto& pair : gm.npcs) {
+   for (auto& pair : gm.getNpcs()) {
       Npc& npc = pair.second;
       bool objFound = false;
       // On regarde si on pourra lui assigner un objectif
 	  vector<unsigned int>::iterator it = objectifNonDonne.begin();
 	  while (!objFound && it != objectifNonDonne.end()) {
-		  if (find(npc.ensembleAccessible.begin(), npc.ensembleAccessible.end(), (*it)) != npc.ensembleAccessible.end()) {
+          if(npc.isAccessibleTile(*it)) {
 			  objFound = true;
 		  }
 		  else {

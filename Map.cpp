@@ -11,8 +11,7 @@ using namespace std;
 Map::Map(const LevelInfo levelInfo) :
     rowCount{ levelInfo.rowCount },
     colCount{ levelInfo.colCount },
-    nbTiles{ rowCount * colCount },
-    nbtilesDecouvertes{ 0 },
+    nbTilesDecouvertes{ 0 },
 	tiles{ vector<MapTile>{} },
 	murs{ map<unsigned int, ObjectInfo>{} },
 	fenetres{ map<unsigned int, ObjectInfo>{} },
@@ -20,8 +19,8 @@ Map::Map(const LevelInfo levelInfo) :
 	activateurs{ map<unsigned int, ObjectInfo>{} }
 {
     // Créer toutes les tiles !
-    tiles.reserve(nbTiles);
-    for (int id = 0; id < nbTiles; ++id) {
+    tiles.reserve(getNbTiles());
+    for (int id = 0; id < getNbTiles(); ++id) {
        tiles.push_back(MapTile(id, *this));
     }
 
@@ -37,7 +36,7 @@ Map::Map(const LevelInfo levelInfo) :
 
     // Mettre à visiter les cases initiales des NPCs
     for (auto pair_npc : levelInfo.npcs) {
-       tiles[pair_npc.second.tileID].statut = MapTile::Statut::VISITE;
+        tiles[pair_npc.second.tileID].setStatut(MapTile::Statut::VISITE);
     }
 }
 
@@ -62,7 +61,7 @@ struct Noeud {
         heuristique = cout + evaluation * coefEvaluation;
     }
     friend bool operator==(const Noeud& g, const Noeud& d) {
-        return g.tile.id == d.tile.id;
+        return g.tile.getId() == d.tile.getId();
     }
 };
 float Noeud::coefEvaluation = 1;
@@ -81,16 +80,16 @@ Chemin Map::aStar(int depart, int arrivee, float coefEvaluation) noexcept {
     // On ajoute le noeud initial
     openList.push_back(noeudCourant);
     // Tant qu'il reste des noeuds à traiter ...
-    while (!openList.empty() && noeudCourant.tile.id != arrivee) {
+    while (!openList.empty() && noeudCourant.tile.getId() != arrivee) {
         // On récupère le premier noeud de notre liste
         noeudCourant = openList.back();
         openList.pop_back();
         // Pour tous les voisins du noeud courant ...
-        for (auto voisin : noeudCourant.tile.voisinsAccessibles) {
+        for (auto voisin : noeudCourant.tile.getVoisinsAccessibles()) {
             // On vérifie que le voisin existe ...
             if (tiles[voisin].existe()) {
                 // On construit le nouveau noeud
-                Noeud nouveauNoeud = Noeud(tiles[voisin], noeudCourant.cout + 1, distanceL2(voisin, arrivee), noeudCourant.tile.id);
+                Noeud nouveauNoeud = Noeud(tiles[voisin], noeudCourant.cout + 1, distanceL2(voisin, arrivee), noeudCourant.tile.getId());
                 // On vérifie s'il existe dans closedList avec un cout inférieur ou dans openList avec un cout inférieur
                 auto itClose = find(closedList.begin(), closedList.end(), nouveauNoeud);
                 auto itOpen = find(openList.begin(), openList.end(), nouveauNoeud);
@@ -119,14 +118,14 @@ Chemin Map::aStar(int depart, int arrivee, float coefEvaluation) noexcept {
     }
 
     // On test si on a atteint l'objectif ou pas
-    if (noeudCourant.tile.id == arrivee) {
+    if (noeudCourant.tile.getId() == arrivee) {
         // Si oui on reconstruit le path !
-        while (noeudCourant.tile.id != depart) {
+        while (noeudCourant.tile.getId() != depart) {
             // On enregistre dans le path ...
-            path.chemin.push_back(noeudCourant.tile.id);
+            path.addFirst(noeudCourant.tile.getId());
             // On cherche l'antécédant ...
             for (auto n : closedList) {
-                if (n.tile.id == noeudCourant.idPrecedant) {
+                if (n.tile.getId() == noeudCourant.idPrecedant) {
                     // On remet à jour le noeud ...
                     noeudCourant = n;
                     break;
@@ -265,23 +264,23 @@ int Map::tailleCheminMax() const noexcept {
 // Il ne faut pas ajouter une tile qui est déjà dans la map !
 void Map::addTile(TileInfo tile) noexcept {
     // On met à jour le nombre de tiles
-    ++nbtilesDecouvertes;
+    ++nbTilesDecouvertes;
 
     // On la rajoute aux tiles
     tiles[tile.tileID].setTileDecouverte(tile);
 
-    if (tiles[tile.tileID].type == Tile::TileAttribute_Goal) {
+    if (tiles[tile.tileID].getType() == Tile::TileAttribute_Goal) {
         objectifs.push_back(tile.tileID);
     }
 
-    if (tiles[tile.tileID].type == Tile::TileAttribute_Forbidden) {
-        for (auto voisin : tiles[tile.tileID].voisins) {
+    if (tiles[tile.tileID].getType() == Tile::TileAttribute_Forbidden) {
+        for (auto voisin : tiles[tile.tileID].getVoisins()) {
             tiles[voisin].removeAccessible(tile.tileID);
         }
     }
 
     // Puis on met à jour les voisins de ses voisins ! :D
-    for (auto voisin : tiles[tile.tileID].voisins) { // On pourrait parcourir les voisinsVisibles
+    for (auto voisin : tiles[tile.tileID].getVoisins()) { // On pourrait parcourir les voisinsVisibles
         // Si ce voisin l'a en voisin mystérieux, on le lui enlève
         tiles[voisin].removeMysterieux(tile.tileID);
     }
@@ -432,4 +431,53 @@ vector<int> Map::getVoisins(int id) const noexcept {
     }
 
     return voisins;
+}
+
+int Map::getRowCount() const noexcept {
+    return rowCount;
+}
+
+int Map::getColCount() const noexcept {
+    return colCount;
+}
+
+int Map::getNbTiles() const noexcept {
+    return getRowCount() * getColCount();
+}
+
+int Map::getNbTilesDecouvertes() const noexcept {
+    return nbTilesDecouvertes;
+}
+
+MapTile& Map::getTile(int id) {
+    if (id < 0 || id >= getNbTiles())
+        throw tile_inexistante{};
+    return tiles[id];
+}
+
+vector<unsigned int> Map::getObjectifs() {
+    return objectifs;
+}
+
+map<unsigned int, ObjectInfo> Map::getMurs() {
+    return murs;
+}
+
+map<unsigned int, ObjectInfo> Map::getPortes() {
+    return portes;
+}
+
+map<unsigned int, ObjectInfo> Map::getFenetres() {
+    return fenetres;
+}
+
+map<unsigned int, ObjectInfo> Map::getActivateurs() {
+    return activateurs;
+}
+
+bool Map::objectExist(int objet) {
+    return murs.find(objet) != murs.end()
+        || portes.find(objet) != portes.end()
+        || fenetres.find(objet) != fenetres.end()
+        || activateurs.find(objet) != activateurs.end();
 }

@@ -11,21 +11,29 @@
 
 #include <map>
 
+class npc_inexistant {};
+class npc_deja_existant {};
+
 class GameManager {
     static Logger logger, loggerRelease;
+    map<int, Npc> npcs; // Les npcs sont stockés par leurs ids
 public:
     Map m;
-    map<int, Npc> npcs; // Les npcs sont stockés par leurs ids
     Selecteur behaviorTreeManager; // Arbre de comportement du GameManager pour déterminer la stratégie à suivre
     vector<int> objectifPris; // Permet de savoir quels sont les objectifs actuellement assignés à des npcs
 
     GameManager() = default;
     GameManager(LevelInfo);
     void moveNpcs(vector<Action*>& actionList) noexcept; // Remplie l'action liste !
-    void ordonnerMouvements(vector<Mouvement*>& mouvements) noexcept; // Permet d'ordonner les mouvements pour éviter les collisions et gérer les politesses de priorités =)
+    void reafecterObjectifsSelonDistance(); // Réaffecte les objectifs des Npcs entre
+    void ordonnerMouvements(vector<Mouvement>& mouvements) noexcept; // Permet d'ordonner les mouvements pour éviter les collisions et gérer les politesses de priorités =)
     void updateModel(const TurnInfo&) noexcept; // Met à jour le modèle avec les informations que découvrent les NPCS
     void InitializeBehaviorTree() noexcept; // Permet d'initialiser le BT
     void execute() noexcept { behaviorTreeManager.execute(); };
+
+    Npc& getNpcById(int id);
+    map<int, Npc>& getNpcs();
+    void addNpc(Npc npc);
 
     static void Log(string str) noexcept { // Permet de débugger ! :D
         #ifndef _DEBUG
@@ -53,6 +61,10 @@ public:
 private:
     void addNewTiles(TurnInfo ti) noexcept;
     void addNewObjects(TurnInfo ti) noexcept;
+    vector<Mouvement> getAllMouvements();
+    int getIndiceMouvementPrioritaire(vector<Mouvement>& mouvements, vector<int> indicesAConsiderer);
+    void gererCollisionsMemeCaseCible(vector<Mouvement>& mouvements);
+    void stopNonPrioritaireMouvements(vector<Mouvement>& mouvements, vector<int> indicesMouvementsSurMemeCaseCible, int indiceMouvementPrioritaire, bool& continuer);
 };
 
 #endif

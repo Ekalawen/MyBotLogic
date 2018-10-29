@@ -8,12 +8,14 @@
 #include <vector>
 using namespace std;
 
-class Map;
+class tile_inaccessible {};
 
+class Map;
 class Npc {
+private:
     vector<Chemin> cheminsPossibles; // Ceci est une variable temporaire permettant de stocker les chemins parmis lesquelles choisirs un objectif
     map<int, float> scoresAssocies; // Les scores associés aux tiles !
-public:
+
     int id;
     int tileId; // Sa position sur la carte
     int tileObjectif; // Là où il doit aller !
@@ -21,6 +23,8 @@ public:
     vector<int> ensembleAccessible; // ensemble des tuiles auquel un npc à accès
     map<int, int> distancesEnsembleAccessible;
 	bool estArrive; // indique si le npc a atteind son objectif
+
+public:
 
     Npc() = default;
     Npc(const NPCInfo);
@@ -33,6 +37,18 @@ public:
     Chemin getCheminMinNonPris(vector<int> objectifsPris, int tailleCheminMax) const noexcept; // Permet de trouver le chemin le plus court qui ne soit pas déjà pris
     int affecterMeilleurChemin(Map &m) noexcept; // Affecte au npc le chemin avec le meilleur score et renvoie la destination de ce chemin !
     void floodfill(Map &m); // Calcule le coût et l'ensemble des tiles accessibles pour un npcs, et MAJ ses attributs.
+
+    int getId();
+    int getTileId();
+    int getTileObjectif();
+    void setTileObjectif(int idTile);
+    Chemin& getChemin();
+    vector<int> getEnsembleAccessible();
+    bool isAccessibleTile(int tileId);
+    int distanceToTile(int tileId);
+    map<int, int> getDistancesEnsembleAccessible();
+    bool isArrived();
+    void setArrived(bool etat);
 };
 
 #endif
