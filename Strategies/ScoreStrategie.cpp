@@ -4,25 +4,25 @@
 #include "MyBotLogic/GameManager.h"
 #include <chrono>
 
-ScoreStrategie::ScoreStrategie(GameManager& gm, string nom)
-    : gm{ gm },
-    nom{ nom }
+ScoreStrategie::ScoreStrategie(GameManager& _manager, std::string _nom)
+    : manager{ _manager },
+    nom{ _nom }
 {
 }
 
 BT_Noeud::ETAT_ELEMENT ScoreStrategie::execute() noexcept {
    auto pre = std::chrono::high_resolution_clock::now();
 
-    GameManager::Log(nom);
+    GameManager::log(nom);
     // On ne sait pas où se trouvent les objectifs !
     // On va les chercher !
 
     // Pour ça chaque npc va visiter en premier les tuiles avec le plus haut score
 
     // L'ensemble des tiles que l'on va visiter
-    vector<int> tilesAVisiter;
+    std::vector<int> tilesAVisiter;
 
-    for (auto& pair : gm.getNpcs()) {
+    for (auto& pair : manager.getNpcs()) {
         Npc& npc = pair.second;
         npc.resetChemins();
 
@@ -32,14 +32,14 @@ BT_Noeud::ETAT_ELEMENT ScoreStrategie::execute() noexcept {
         auto preCalcul = std::chrono::high_resolution_clock::now();
         calculerScoresTilesPourNpc(npc, tilesAVisiter);
         auto postCalcul = std::chrono::high_resolution_clock::now();
-        GameManager::Log("Durée calculerScoresEtCheminsTilesPourNpc = " + to_string(std::chrono::duration_cast<std::chrono::microseconds>(postCalcul - preCalcul).count() / 1000.f) + "ms");
+        GameManager::log("Durée calculerScoresEtCheminsTilesPourNpc = " + std::to_string(std::chrono::duration_cast<std::chrono::microseconds>(postCalcul - preCalcul).count() / 1000.f) + "ms");
 
 
         // Choisir la meilleure tile pour ce npc et lui affecter son chemin
         auto preAffect = std::chrono::high_resolution_clock::now();
-        int tileChoisi = npc.affecterMeilleurChemin(gm.m);
+        int tileChoisi = npc.affecterMeilleurChemin(manager.map);
         auto postAffect = std::chrono::high_resolution_clock::now();
-        GameManager::Log("Durée AffectationChemin = " + to_string(std::chrono::duration_cast<std::chrono::microseconds>(postAffect - preAffect).count() / 1000.f) + "ms");
+        GameManager::log("Durée AffectationChemin = " + std::to_string(std::chrono::duration_cast<std::chrono::microseconds>(postAffect - preAffect).count() / 1000.f) + "ms");
 
 
         // Mettre à jour les tilesAVisiter
@@ -48,25 +48,25 @@ BT_Noeud::ETAT_ELEMENT ScoreStrategie::execute() noexcept {
 
     // Temps d'execution
     auto post = std::chrono::high_resolution_clock::now();
-    GameManager::Log("Durée " + nom + " = " + to_string(std::chrono::duration_cast<std::chrono::microseconds>(post - pre).count() / 1000.f) + "ms");
+    GameManager::log("Durée " + nom + " = " + std::to_string(std::chrono::duration_cast<std::chrono::microseconds>(post - pre).count() / 1000.f) + "ms");
     
     return ETAT_ELEMENT::REUSSI;
 }
 
-void ScoreStrategie::calculerScore1Tile(int tileID, Map& m, Npc& npc, const vector<int> tilesAVisiter) {
-    MapTile tile = m.getTile(tileID);
+void ScoreStrategie::calculerScore1Tile(int _tileID, Carte& _map, Npc& _npc, const std::vector<int> _tilesAVisiter) {
+    MapTile tile = _map.getTile(_tileID);
     // On ne considère la tile que si on ne la visite pas déjà !
-    if (tile.getStatut() == MapTile::Statut::CONNU && find(tilesAVisiter.begin(), tilesAVisiter.end(), tile.getId()) == tilesAVisiter.end()) {
-        saveScore(tile, npc, tilesAVisiter);
+    if (tile.getStatut() == MapTile::Statut::CONNU && std::find(_tilesAVisiter.begin(), _tilesAVisiter.end(), tile.getId()) == _tilesAVisiter.end()) {
+        saveScore(tile, _npc, _tilesAVisiter);
     }
 }
 
 // Calcul le score de chaque tiles et son chemin pour un npc
 // On prend en compte les tilesAVisiter des autres npcs pour que les tiles soient loins les unes des autres
-void ScoreStrategie::calculerScoresTilesPourNpc(Npc& npc, vector<int> tilesAVisiter) noexcept {
-   GameManager::Log("Taille ensemble : " + to_string(npc.getEnsembleAccessible().size()));
-    for (auto tileID : npc.getEnsembleAccessible()) { // parcours toutes les tiles découvertes par l'ensemble des npcs et qui sont accessibles
-        calculerScore1Tile(tileID, gm.m, npc, tilesAVisiter);
+void ScoreStrategie::calculerScoresTilesPourNpc(Npc& _npc, std::vector<int> _tilesAVisiter) noexcept {
+   GameManager::log("Taille ensemble : " + std::to_string(_npc.getEnsembleAccessible().size()));
+    for (auto tileID : _npc.getEnsembleAccessible()) { // parcours toutes les tiles découvertes par l'ensemble des npcs et qui sont accessibles
+        calculerScore1Tile(tileID, manager.map, _npc, _tilesAVisiter);
     }
 }
 

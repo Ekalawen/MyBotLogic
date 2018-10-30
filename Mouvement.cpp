@@ -1,9 +1,7 @@
 #include "Mouvement.h"
 
-
-
-Mouvement::Mouvement(int npcID, int tileSource, int tileDestination, Tile::ETilePosition direction)
-: npcID(npcID), tileSource(tileSource), tileDestination(tileDestination), direction(direction)
+Mouvement::Mouvement(int _npcID, int _tileSource, int _tileDestination, Tile::ETilePosition _direction)
+: npcID(_npcID), tileSource(_tileSource), tileDestination(_tileDestination), direction(_direction)
 {
 }
 

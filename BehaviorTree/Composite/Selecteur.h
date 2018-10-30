@@ -7,15 +7,15 @@ class Selecteur : public BT_Composite {
 
 public:
    Selecteur() = default;
-   Selecteur(vector<BT_Noeud*> noeuds) : BT_Composite(noeuds) {
+   Selecteur(std::vector<BT_Noeud*> _noeuds) : BT_Composite(_noeuds) {
    }
 
    BT_Noeud::ETAT_ELEMENT execute() noexcept override {
-	   int ind = 0;
+	   int index = 0;
 	   BT_Noeud::ETAT_ELEMENT res;
 	   do {
-		   res = noeuds[ind]->execute();
-	   } while (++ind < noeuds.size() && res == BT_Noeud::ETAT_ELEMENT::ECHEC);
+		   res = noeuds[index]->execute();
+	   } while (++index < noeuds.size() && res == BT_Noeud::ETAT_ELEMENT::ECHEC);
 
       return res;
    }

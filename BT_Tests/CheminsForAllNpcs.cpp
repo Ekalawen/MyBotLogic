@@ -5,17 +5,17 @@
 // Vérifier si un objectif est accessible pour tous nos NPCs
 BT_Noeud::ETAT_ELEMENT CheminsForAllNpcs::execute() noexcept {
    auto pre = std::chrono::high_resolution_clock::now();
-   GameManager::Log("CheminsForAllNpcs");
+   GameManager::log("CheminsForAllNpcs");
    
    // Indices des objectfs découverts
-   vector<unsigned int> objectifNonDonne = gm.m.getObjectifs();
+   std::vector<unsigned int> objectifNonDonne = manager.map.getObjectifs();
 
    // On parcours chaque NPC
-   for (auto& pair : gm.getNpcs()) {
+   for (auto& pair : manager.getNpcs()) {
       Npc& npc = pair.second;
       bool objFound = false;
       // On regarde si on pourra lui assigner un objectif
-	  vector<unsigned int>::iterator it = objectifNonDonne.begin();
+      std::vector<unsigned int>::iterator it = objectifNonDonne.begin();
 	  while (!objFound && it != objectifNonDonne.end()) {
           if(npc.isAccessibleTile(*it)) {
 			  objFound = true;
@@ -31,9 +31,9 @@ BT_Noeud::ETAT_ELEMENT CheminsForAllNpcs::execute() noexcept {
       // Sinon on retourne ECHEC
       } else {
          auto post = std::chrono::high_resolution_clock::now();
-         GameManager::Log("Durée CheminsForAll = " + to_string(std::chrono::duration_cast<std::chrono::microseconds>(post - pre).count() / 1000.f) + "ms");
+         GameManager::log("Durée CheminsForAll = " + std::to_string(std::chrono::duration_cast<std::chrono::microseconds>(post - pre).count() / 1000.f) + "ms");
          // Si le cheminMin n'a pas été initialisé, c'est qu'il n'y a pas de chemins pour tous les npcs !
-         GameManager::Log("Il n'y a pas de chemins pour tous les npcs !");
+         GameManager::log("Il n'y a pas de chemins pour tous les npcs !");
          return ETAT_ELEMENT::ECHEC;
       }
    }

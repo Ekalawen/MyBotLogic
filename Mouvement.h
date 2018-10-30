@@ -7,7 +7,7 @@ class Mouvement {
 	int tileDestination;
 	Tile::ETilePosition direction;
 public:
-	Mouvement(int npcID, int tileSource, int tileDestination, Tile::ETilePosition direction);
+	Mouvement(int _npcID, int _tileSource, int _tileDestination, Tile::ETilePosition _direction);
 
     void stop(); // Arrête le mouvement
     bool isNotStopped();
