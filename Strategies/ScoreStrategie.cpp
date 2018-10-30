@@ -2,7 +2,7 @@
 #include "ScoreStrategie.h"
 #include "MyBotLogic/BehaviorTree/BT_Noeud.h"
 #include "MyBotLogic/GameManager.h"
-#include <chrono>
+#include "MyBotLogic/Tools/Minuteur.h"
 
 ScoreStrategie::ScoreStrategie(GameManager& _manager, std::string _nom)
     : manager{ _manager },
@@ -11,7 +11,7 @@ ScoreStrategie::ScoreStrategie(GameManager& _manager, std::string _nom)
 }
 
 BT_Noeud::ETAT_ELEMENT ScoreStrategie::execute() noexcept {
-   auto pre = std::chrono::high_resolution_clock::now();
+   auto pre = Minuteur::now();
 
     GameManager::log(nom);
     // On ne sait pas où se trouvent les objectifs !
@@ -29,17 +29,17 @@ BT_Noeud::ETAT_ELEMENT ScoreStrategie::execute() noexcept {
         // Calculer le score de chaque tile pour le npc
         // En même temps on calcul le chemin pour aller à cette tile
         // On stocke ces deux informations dans l'attribut cheminsPossibles du Npc
-        auto preCalcul = std::chrono::high_resolution_clock::now();
+        auto preCalcul = Minuteur::now();
         calculerScoresTilesPourNpc(npc, tilesAVisiter);
-        auto postCalcul = std::chrono::high_resolution_clock::now();
-        GameManager::log("Durée calculerScoresEtCheminsTilesPourNpc = " + std::to_string(std::chrono::duration_cast<std::chrono::microseconds>(postCalcul - preCalcul).count() / 1000.f) + "ms");
+        auto postCalcul = Minuteur::now();
+        GameManager::log("Durée calculerScoresEtCheminsTilesPourNpc = " + std::to_string(Minuteur::dureeMicroseconds(preCalcul, postCalcul) / 1000.f) + "ms");
 
 
         // Choisir la meilleure tile pour ce npc et lui affecter son chemin
-        auto preAffect = std::chrono::high_resolution_clock::now();
+        auto preAffect = Minuteur::now();
         int tileChoisi = npc.affecterMeilleurChemin(manager.map);
-        auto postAffect = std::chrono::high_resolution_clock::now();
-        GameManager::log("Durée AffectationChemin = " + std::to_string(std::chrono::duration_cast<std::chrono::microseconds>(postAffect - preAffect).count() / 1000.f) + "ms");
+        auto postAffect = Minuteur::now();
+        GameManager::log("Durée AffectationChemin = " + std::to_string(Minuteur::dureeMicroseconds(preAffect, postAffect) / 1000.f) + "ms");
 
 
         // Mettre à jour les tilesAVisiter
@@ -47,8 +47,8 @@ BT_Noeud::ETAT_ELEMENT ScoreStrategie::execute() noexcept {
     }
 
     // Temps d'execution
-    auto post = std::chrono::high_resolution_clock::now();
-    GameManager::log("Durée " + nom + " = " + std::to_string(std::chrono::duration_cast<std::chrono::microseconds>(post - pre).count() / 1000.f) + "ms");
+    auto post = Minuteur::now();
+    GameManager::log("Durée " + nom + " = " + std::to_string(Minuteur::dureeMicroseconds(pre, post) / 1000.f) + "ms");
     
     return ETAT_ELEMENT::REUSSI;
 }

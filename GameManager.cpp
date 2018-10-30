@@ -13,9 +13,7 @@
 
 #include <algorithm>
 #include <tuple>
-#include<chrono>
-
-using namespace std::chrono;
+#include "MyBotLogic/Tools/Minuteur.h"
 
 // On initialise notre attribut statique ...
 Logger GameManager::logger{};
@@ -287,24 +285,24 @@ void GameManager::addNewObjects(TurnInfo _tile) noexcept {
 void GameManager::updateModel(const TurnInfo &_tile) noexcept {
    
     // On essaye de rajouter les nouvelles tiles !
-    auto pre = high_resolution_clock::now();
+    auto pre = Minuteur::now();
     addNewTiles(_tile);
-    auto post = high_resolution_clock::now();
-    GameManager::log("Durée AddTile = " + std::to_string(duration_cast<microseconds>(post - pre).count() / 1000.f) + "ms");
+    auto post = Minuteur::now();
+    GameManager::log("Durée AddTile = " + std::to_string(Minuteur::dureeMicroseconds(pre, post) / 1000.f) + "ms");
 
     // On essaye de rajouter les nouvelles tiles !
-    pre = high_resolution_clock::now();
+    pre = Minuteur::now();
     addNewObjects(_tile);
-    post = high_resolution_clock::now();
-    GameManager::log("Durée AddObjects = " + std::to_string(duration_cast<microseconds>(post - pre).count() / 1000.f) + "ms");
+    post = Minuteur::now();
+    GameManager::log("Durée AddObjects = " + std::to_string(Minuteur::dureeMicroseconds(pre, post) / 1000.f) + "ms");
 
     // Mettre à jour nos NPCs
-    pre = std::chrono::high_resolution_clock::now();
+    pre = Minuteur::now();
     for (auto &npc : npcs) {
        npc.second.floodfill(map);
     }
-    post = std::chrono::high_resolution_clock::now();
-    GameManager::log("Durée FloodFill = " + std::to_string(std::chrono::duration_cast<std::chrono::microseconds>(post - pre).count() / 1000.f) + "ms");
+    post = Minuteur::now();
+    GameManager::log("Durée FloodFill = " + std::to_string(Minuteur::dureeMicroseconds(pre, post) / 1000.f) + "ms");
 }
 
 

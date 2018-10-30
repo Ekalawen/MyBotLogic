@@ -5,7 +5,6 @@
 #include "Globals.h"
 #include <map>
 #include <algorithm>
-#include <chrono>
 
 Carte::Carte(const LevelInfo _levelInfo) :
     rowCount{ _levelInfo.rowCount },

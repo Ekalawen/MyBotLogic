@@ -1,7 +1,7 @@
 #include "Npc.h"
 #include "Globals.h"
 #include "GameManager.h"
-#include <chrono>
+#include"MyBotLogic/Tools/Minuteur.h"
 
 Npc::Npc(const NPCInfo _info) :
 	id{ static_cast<int>(_info.npcID) },
@@ -70,21 +70,21 @@ int Npc::affecterMeilleurChemin(Carte &_map) noexcept {
     }
 	
     // On cherche le meilleur score
-    auto preScore = std::chrono::high_resolution_clock::now();
+    auto preScore = Minuteur::now();
     float bestScore = scoresAssocies.begin()->second;
     int bestScoreIndice = scoresAssocies.begin()->first;
     for (auto pair : scoresAssocies) {
         testBestScore(pair, bestScore, bestScoreIndice);
     }
-    auto postScore = std::chrono::high_resolution_clock::now();
-    GameManager::log("Durée chercher meilleur score = " + std::to_string(std::chrono::duration_cast<std::chrono::microseconds>(postScore - preScore).count() / 1000.f) + "ms");
+    auto postScore = Minuteur::now();
+    GameManager::log("Durée chercher meilleur score = " + std::to_string(Minuteur::dureeMicroseconds(preScore, postScore) / 1000.f) + "ms");
 
     // On affecte son chemin, mais il nous faut le calculer ! =)
-    auto preAStar = std::chrono::high_resolution_clock::now();
+    auto preAStar = Minuteur::now();
     chemin = _map.aStar(tileId, bestScoreIndice);
-    auto postAStar = std::chrono::high_resolution_clock::now();
+    auto postAStar = Minuteur::now();
     GameManager::log("Le Npc " + std::to_string(id) + " va rechercher la tile " + std::to_string(chemin.destination()));
-    GameManager::log("Durée a* = " + std::to_string(std::chrono::duration_cast<std::chrono::microseconds>(postAStar - preAStar).count() / 1000.f) + "ms");
+    GameManager::log("Durée a* = " + std::to_string(Minuteur::dureeMicroseconds(preAStar, postAStar) / 1000.f) + "ms");
 
     // On renvoie la destination
     return chemin.destination();
