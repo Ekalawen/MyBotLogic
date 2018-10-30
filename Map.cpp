@@ -85,11 +85,11 @@ Chemin Map::aStar(int depart, int arrivee, float coefEvaluation) noexcept {
         noeudCourant = openList.back();
         openList.pop_back();
         // Pour tous les voisins du noeud courant ...
-        for (auto voisin : noeudCourant.tile.getVoisinsAccessibles()) {
+        for (auto voisin : noeudCourant.tile.getVoisins()) {
             // On vérifie que le voisin existe ...
-            if (tiles[voisin].existe()) {
+            if (voisin.estAccessible && tiles[voisin.getTuileIndex()].existe()) {
                 // On construit le nouveau noeud
-                Noeud nouveauNoeud = Noeud(tiles[voisin], noeudCourant.cout + 1, distanceL2(voisin, arrivee), noeudCourant.tile.getId());
+                Noeud nouveauNoeud = Noeud(tiles[voisin.getTuileIndex()], noeudCourant.cout + 1, distanceL2(voisin.getTuileIndex(), arrivee), noeudCourant.tile.getId());
                 // On vérifie s'il existe dans closedList avec un cout inférieur ou dans openList avec un cout inférieur
                 auto itClose = find(closedList.begin(), closedList.end(), nouveauNoeud);
                 auto itOpen = find(openList.begin(), openList.end(), nouveauNoeud);
@@ -275,14 +275,14 @@ void Map::addTile(TileInfo tile) noexcept {
 
     if (tiles[tile.tileID].getType() == Tile::TileAttribute_Forbidden) {
         for (auto voisin : tiles[tile.tileID].getVoisins()) {
-            tiles[voisin].removeAccessible(tile.tileID);
+            tiles[voisin.getTuileIndex()].removeAccessible(tile.tileID);
         }
     }
 
     // Puis on met à jour les voisins de ses voisins ! :D
     for (auto voisin : tiles[tile.tileID].getVoisins()) { // On pourrait parcourir les voisinsVisibles
         // Si ce voisin l'a en voisin mystérieux, on le lui enlève
-        tiles[voisin].removeMysterieux(tile.tileID);
+        tiles[voisin.getTuileIndex()].removeMysterieux(tile.tileID);
     }
 
     // On le note !

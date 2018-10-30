@@ -49,15 +49,18 @@ float Exploration::interet(MapTile tile) noexcept {
 
     int nbInconnuesAccessibles = 0;
     int nbInconnuesNonAccessiblesMaisVisibles = 0;
-    for (auto autre : tile.getVoisinsMysterieux()) {
+    for (auto autre : tile.getVoisins()) {
         // Si autre est accessible ...
-        if(tile.isInVoisinsAccessibles(autre)) {
-            ++nbInconnuesAccessibles;
-        // Si autre est inaccessible ...
-        } else {
-            // Mais visible ...
-            if(tile.isInVoisinsVisibles(autre)) {
-                ++nbInconnuesNonAccessiblesMaisVisibles;
+        if (autre.estMysterieux) {
+            if (tile.isVoisinAccessible(autre.getTuileIndex())) {
+                ++nbInconnuesAccessibles;
+                // Si autre est inaccessible ...
+            }
+            else {
+                // Mais visible ...
+                if (tile.isVoisinVisible(autre.getTuileIndex())) {
+                    ++nbInconnuesNonAccessiblesMaisVisibles;
+                }
             }
         }
     }
