@@ -29,7 +29,7 @@ void Npc::addChemin(Chemin& chemin) noexcept {
     cheminsPossibles.push_back(chemin);
 }
 
-void Npc::addScore(Score _score) noexcept {
+void Npc::addScore(ScoreType _score) noexcept {
     scoresAssocies.emplace_back(std::move(_score));
 }
 
@@ -64,7 +64,7 @@ int Npc::affecterMeilleurChemin(Map &m) noexcept {
     // On cherche le meilleur score
     auto preScore = std::chrono::high_resolution_clock::now();
     auto bestIter = std::max_element(begin(scoresAssocies), end(scoresAssocies),
-        [](const Score& scoreDroite, const Score& scoreGauche){
+        [](const ScoreType& scoreDroite, const ScoreType& scoreGauche){
             return scoreDroite.score < scoreGauche.score;
         });
     auto postScore = std::chrono::high_resolution_clock::now();
@@ -114,7 +114,7 @@ void Npc::floodfill(Map &m) {
            // On définit les dernières tuiles ajoutés avec leur coût courant
            if (find(ensembleAccessible.begin(), ensembleAccessible.end(), tileID) == ensembleAccessible.end()) {
                ensembleAccessible.push_back(tileID);
-               distancesEnsembleAccessible[tileID] = cout;
+               distancesEnsembleAccessible.emplace_back(tileID, cout);
            }
        }
        cout++;
@@ -150,10 +150,13 @@ bool Npc::isAccessibleTile(int tileId) {
     return find(ensembleAccessible.begin(), ensembleAccessible.end(), tileId) != ensembleAccessible.end();
 }
 
-int Npc::distanceToTile(int tileId) {
-    if (!isAccessibleTile(tileId))
+int Npc::distanceToTile(int _tuileID) {
+    if (!isAccessibleTile(_tuileID))
         throw tile_inaccessible{};
-    return distancesEnsembleAccessible[tileId];
+
+    return std::find_if(begin(distancesEnsembleAccessible), end(distancesEnsembleAccessible), [&_tuileID](const DistanceType& type) {
+        return type.tuileID == _tuileID;
+    })->score;
 }
 
 bool Npc::isArrived() {
