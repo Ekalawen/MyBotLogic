@@ -85,9 +85,9 @@ Chemin Map::aStar(int depart, int arrivee, float coefEvaluation) noexcept {
         noeudCourant = openList.back();
         openList.pop_back();
         // Pour tous les voisins du noeud courant ...
-        for (auto voisin : noeudCourant.tile.getVoisins()) {
+        for (auto voisin : noeudCourant.tile.getVoisinsParEtat(Etats::ACCESSIBLE)) {
             // On vérifie que le voisin existe ...
-            if (voisin.estAccessible && tiles[voisin.getTuileIndex()].existe()) {
+            if (tiles[voisin.getTuileIndex()].existe()) {
                 // On construit le nouveau noeud
                 Noeud nouveauNoeud = Noeud(tiles[voisin.getTuileIndex()], noeudCourant.cout + 1, distanceL2(voisin.getTuileIndex(), arrivee), noeudCourant.tile.getId());
                 // On vérifie s'il existe dans closedList avec un cout inférieur ou dans openList avec un cout inférieur
@@ -275,14 +275,14 @@ void Map::addTile(TileInfo tile) noexcept {
 
     if (tiles[tile.tileID].getType() == Tile::TileAttribute_Forbidden) {
         for (auto voisin : tiles[tile.tileID].getVoisins()) {
-            tiles[voisin.getTuileIndex()].removeAccessible(tile.tileID);
+            tiles[voisin.getTuileIndex()].removeEtat(Etats::ACCESSIBLE, tile.tileID);
         }
     }
 
     // Puis on met à jour les voisins de ses voisins ! :D
     for (auto voisin : tiles[tile.tileID].getVoisins()) { // On pourrait parcourir les voisinsVisibles
         // Si ce voisin l'a en voisin mystérieux, on le lui enlève
-        tiles[voisin.getTuileIndex()].removeMysterieux(tile.tileID);
+        tiles[voisin.getTuileIndex()].removeEtat(Etats::MYSTERIEUX, tile.tileID);
     }
 
     // On le note !
@@ -300,21 +300,21 @@ void Map::addObject(ObjectInfo object) noexcept {
        if (object.objectTypes.find(Object::ObjectType_Window) != object.objectTypes.end()) {
           fenetres[object.objectID] = object;
           if (isInMap(voisin1))
-             tiles[voisin1].removeAccessible(voisin2);
+             tiles[voisin1].removeEtat(Etats::ACCESSIBLE, voisin2);
           if (isInMap(voisin2))
-             tiles[voisin2].removeAccessible(voisin1);
+             tiles[voisin2].removeEtat(Etats::ACCESSIBLE, voisin1);
        // Mur
        } else {
           murs[object.objectID] = object;
           if (isInMap(voisin1)) {
-             tiles[voisin1].removeMysterieux(voisin2);
-             tiles[voisin1].removeAccessible(voisin2);
-             tiles[voisin1].removeVisible(voisin2);
+             tiles[voisin1].removeEtat(Etats::MYSTERIEUX, voisin2);
+             tiles[voisin1].removeEtat(Etats::ACCESSIBLE, voisin2);
+             tiles[voisin1].removeEtat(Etats::VISIBLE, voisin2);
           }
           if (isInMap(voisin2)) {
-             tiles[voisin2].removeMysterieux(voisin1);
-             tiles[voisin2].removeAccessible(voisin1);
-             tiles[voisin2].removeVisible(voisin1);
+             tiles[voisin2].removeEtat(Etats::MYSTERIEUX, voisin1);
+             tiles[voisin2].removeEtat(Etats::ACCESSIBLE, voisin1);
+             tiles[voisin2].removeEtat(Etats::VISIBLE, voisin1);
           }
        }
     }
@@ -325,18 +325,18 @@ void Map::addObject(ObjectInfo object) noexcept {
            // Porte Fenetre
            if (object.objectTypes.find(Object::ObjectType_Window) != object.objectTypes.end()) {
               if (isInMap(voisin1))
-                 tiles[voisin1].removeAccessible(voisin2);
+                 tiles[voisin1].removeEtat(Etats::ACCESSIBLE, voisin2);
               if (isInMap(voisin2))
-                 tiles[voisin2].removeAccessible(voisin1);
+                 tiles[voisin2].removeEtat(Etats::ACCESSIBLE, voisin1);
             // Porte
            } else {
               if (isInMap(voisin1)) {
-                 tiles[voisin1].removeAccessible(voisin2);
-                 tiles[voisin1].removeVisible(voisin2);
+                 tiles[voisin1].removeEtat(Etats::ACCESSIBLE, voisin2);
+                 tiles[voisin1].removeEtat(Etats::VISIBLE, voisin2);
               }
               if (isInMap(voisin2)) {
-                 tiles[voisin2].removeAccessible(voisin1);
-                 tiles[voisin2].removeVisible(voisin1);
+                 tiles[voisin2].removeEtat(Etats::ACCESSIBLE, voisin1);
+                 tiles[voisin2].removeEtat(Etats::VISIBLE, voisin1);
               }
            }
            // Porte ouverte

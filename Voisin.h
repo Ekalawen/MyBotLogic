@@ -1,19 +1,25 @@
 #ifndef VOISIN_H
 #define VOISIN_H
 
-#include <vector>
+#include <bitset>
+
+class EtatNonDefini {};
+enum Etats { VISIBLE, ACCESSIBLE, MYSTERIEUX, TOTAL };
 
 class Voisin {
+    std::bitset<Etats::TOTAL> etats;
     int tuileIndex;
 
 public:
-    bool estVisible;
-    bool estAccessible;
-    bool estMysterieux;
+    Voisin(const int voisinIndex);
+    ~Voisin() = default;
 
-    Voisin(const int _tuileIndex);
-
-    int getTuileIndex() const noexcept;
+    int getTuileIndex() const;
+    void setEtat(const Etats etat, const bool val);
+    bool estEtat(const Etats etat) const;
 };
 
 #endif
+
+
+

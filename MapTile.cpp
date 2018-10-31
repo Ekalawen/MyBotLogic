@@ -99,21 +99,9 @@ void MapTile::setTileDecouverte(const TileInfo tile) {
    statut = CONNU;
 }
 
-bool MapTile::isVoisinAccessible(int id) const noexcept {
-    return std::find_if(voisins.begin(), voisins.end(), [&id](const Voisin& v) {
-        return v.getTuileIndex() == id && v.estAccessible;
-    }) != voisins.end();
-}
-
-bool MapTile::isVoisinVisible(int id) const noexcept {
-    return std::find_if(voisins.begin(), voisins.end(), [&id](const Voisin& v) {
-        return v.getTuileIndex() == id && v.estVisible;
-    }) != voisins.end();
-}
-
-bool MapTile::isVoisinMysterious(int id) const noexcept {
-    return std::find_if(voisins.begin(), voisins.end(), [&id](const Voisin& v) {
-        return v.getTuileIndex() == id && v.estMysterieux;
+bool MapTile::isVoisinAvecEtat(const Etats etat, const int id) const noexcept {
+    return std::find_if(voisins.begin(), voisins.end(), [&](const Voisin& v) {
+        return v.getTuileIndex() == id && v.estEtat(etat);
     }) != voisins.end();
 }
 
@@ -121,33 +109,13 @@ int MapTile::getVoisinByDirection(Tile::ETilePosition direction) const noexcept 
    return voisinsDirection[direction];
 }
 
-void MapTile::removeMysterieux(int id) {
+void MapTile::removeEtat(const Etats etat, const int id) {
     auto it = std::find_if(voisins.begin(), voisins.end(), [&id](const Voisin& v) {
-        return v.getTuileIndex() == id && v.estMysterieux;
+        return v.getTuileIndex() == id;
     });
 
     if (it != voisins.end()) {
-        it->estMysterieux = false;
-    }
-}
-
-void MapTile::removeAccessible(int id) {
-    auto it = std::find_if(voisins.begin(), voisins.end(), [&id](const Voisin& v) {
-        return v.getTuileIndex() == id && v.estAccessible;
-    });
-
-    if (it != voisins.end()) {
-        it->estAccessible = false;
-    }
-}
-
-void MapTile::removeVisible(int id) {
-    auto it = std::find_if(voisins.begin(), voisins.end(), [&id](const Voisin& v) {
-        return v.getTuileIndex() == id && v.estVisible;
-    });
-
-    if (it != voisins.end()) {
-        it->estVisible = false;
+        it->setEtat(etat, false);
     }
 }
 
@@ -173,6 +141,17 @@ Tile::ETileType MapTile::getType() const noexcept {
 
 vector<Voisin> MapTile::getVoisins() const noexcept {
     return voisins;
+}
+
+vector<Voisin> MapTile::getVoisinsParEtat(const Etats etat) const noexcept {
+
+    vector<Voisin> resultat;
+
+    std::copy_if(begin(voisins), end(voisins), back_inserter(resultat),[&etat](const Voisin& v) {
+        return v.estEtat(etat);
+    });
+
+    return resultat;
 }
 
 MapTile::Statut MapTile::getStatut() const noexcept {

@@ -57,18 +57,15 @@ float Expedition::interet(MapTile tile) noexcept {
 
     int nbInconnuesAccessibles = 0;
     int nbInconnuesNonAccessiblesMaisVisibles = 0;
-    for (auto autre : tile.getVoisins()) {
-        // Si autre est accessible ...
-        if (autre.estMysterieux) {
-            if (tile.isVoisinAccessible(autre.getTuileIndex())) {
-                ++nbInconnuesAccessibles;
-                // Si autre est inaccessible ...
-            }
-            else {
-                // Mais visible ...
-                if (tile.isVoisinVisible(autre.getTuileIndex())) {
-                    ++nbInconnuesNonAccessiblesMaisVisibles;
-                }
+    for (auto autre : tile.getVoisinsParEtat(Etats::MYSTERIEUX)) {
+        if (tile.isVoisinAvecEtat(Etats::ACCESSIBLE, autre.getTuileIndex())) {
+            ++nbInconnuesAccessibles;
+            // Si autre est inaccessible ...
+        }
+        else {
+            // Mais visible ...
+            if (tile.isVoisinAvecEtat(Etats::VISIBLE, autre.getTuileIndex())) {
+                ++nbInconnuesNonAccessiblesMaisVisibles;
             }
         }
     }

@@ -1,6 +1,7 @@
 
 #include "Npc.h"
 #include "Globals.h"
+#include "Voisin.h"
 #include "GameManager.h"
 #include <chrono>
 
@@ -104,7 +105,7 @@ void ajoutIfUnkown(Map &m, int voisin, const vector<int>& oldOpen, const vector<
 
 void addNewVoisins(Map &m, int tileID, const vector<int>& oldOpen, vector<int>& Open, vector<int>& newOpen, map<int, int>& coutCasesAccessibles, int cout) {
      for (auto voisin : m.getTile(tileID).getVoisins()) {
-         if (voisin.estAccessible) {
+         if (voisin.estEtat(Etats::ACCESSIBLE)) {
              ajoutIfUnkown(m, voisin.getTuileIndex(), oldOpen, Open, newOpen);
          }
      }
