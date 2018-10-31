@@ -20,76 +20,64 @@ MapTile::MapTile(unsigned int id, Map &m) :
                       // NE
         indice = id - m.getColCount();
         if (m.isInMap(indice) && y > 0) {
-            voisinsDirection[Tile::NE] = indice;
-            voisins.emplace_back(indice);
+            voisins.emplace_back(indice, Tile::NE);
         }
         // E
         indice = id + 1;
         if (m.isInMap(indice) && x < m.getColCount() - 1) {
-           voisinsDirection[Tile::E] = indice;
-           voisins.emplace_back(indice);
+           voisins.emplace_back(indice, Tile::E);
         }
         // SE
         indice = id + m.getColCount();
         if (m.isInMap(indice) && y < m.getRowCount() - 1) {
-           voisinsDirection[Tile::SE] = indice;
-           voisins.emplace_back(indice);
+           voisins.emplace_back(indice, Tile::SE);
         }
         // SW 
         indice = id + m.getColCount() - 1;
         if (m.isInMap(indice) && y < m.getRowCount() - 1 && x > 0) {
-           voisinsDirection[Tile::SW] = indice;
-           voisins.emplace_back(indice);
+           voisins.emplace_back(indice, Tile::SW);
         }
         // W
         indice = id - 1;
         if (m.isInMap(indice) && x > 0) {
-           voisinsDirection[Tile::W] = indice;
-           voisins.emplace_back(indice);
+           voisins.emplace_back(indice, Tile::W);
         }
         // NW
         indice = id - m.getColCount() - 1;
         if (m.isInMap(indice) && y > 0 && x > 0) {
-           voisinsDirection[Tile::NW] = indice;
-           voisins.emplace_back(indice);
+           voisins.emplace_back(indice, Tile::NW);
         }
     }
     else { // Ligne impaire !
            // NE
         indice = id - m.getColCount() + 1;
         if (m.isInMap(indice) && x < m.getColCount() - 1) {
-           voisinsDirection[Tile::NE] = indice;
-           voisins.emplace_back(indice);
+           voisins.emplace_back(indice, Tile::NE);
         }
         // E
         indice = id + 1;
         if (m.isInMap(indice) && x < m.getColCount() - 1) {
-           voisinsDirection[Tile::E] = indice;
-           voisins.emplace_back(indice);
+           voisins.emplace_back(indice, Tile::E);
         }
         // SE
         indice = id + m.getColCount() + 1;
         if (m.isInMap(indice) && x < m.getColCount() - 1 && y < m.getRowCount() - 1) {
-           voisinsDirection[Tile::SE] = indice;
-           voisins.emplace_back(indice);
+           voisins.emplace_back(indice, Tile::SE);
         }
         // SW
         indice = id + m.getColCount();
         if (m.isInMap(indice) && y < m.getRowCount() - 1) {
-           voisinsDirection[Tile::SW] = indice;
-           voisins.emplace_back(indice);
+           voisins.emplace_back(indice, Tile::SW);
         }
         // W
         indice = id - 1;
         if (m.isInMap(indice) && x > 0) {
-           voisinsDirection[Tile::W] = indice;
-           voisins.emplace_back(indice);
+           voisins.emplace_back(indice, Tile::W);
         }
         // NW
         indice = id - m.getColCount();
         if (m.isInMap(indice)) { // Pas de conditions, c'est marrant ! :smiley:
-           voisinsDirection[Tile::NW] = indice;
-           voisins.emplace_back(indice);
+           voisins.emplace_back(indice, Tile::NW);
         }
     }
 }
@@ -103,10 +91,6 @@ bool MapTile::isVoisinAvecEtat(const Etats etat, const int id) const noexcept {
     return std::find_if(voisins.begin(), voisins.end(), [&](const Voisin& v) {
         return v.getTuileIndex() == id && v.estEtat(etat);
     }) != voisins.end();
-}
-
-int MapTile::getVoisinByDirection(Tile::ETilePosition direction) const noexcept {
-   return voisinsDirection[direction];
 }
 
 void MapTile::removeEtat(const Etats etat, const int id) {
