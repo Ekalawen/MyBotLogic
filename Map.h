@@ -45,7 +45,6 @@ public:
 
     int getX(int id) const noexcept; // Permet de récupérer x et y à partir d'un indice
     int getY(int id) const noexcept;
-    vector<int> getVoisins(int id) const noexcept;
 
     int getRowCount() const noexcept;
     int getColCount() const noexcept;
