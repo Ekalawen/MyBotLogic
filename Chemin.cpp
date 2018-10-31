@@ -58,18 +58,18 @@ void Chemin::removeFirst() {
         chemin.pop_back();
 }
 
-void Chemin::addFirst(int elem) {
+void Chemin::addFirst(const int elem) {
     chemin.push_back(elem);
 }
 
-int Chemin::getFirst() {
+int Chemin::getFirst() const {
     if (empty())
         throw chemin_vide{};
     else
         return chemin.back();
 }
 
-void Chemin::resetChemin() {
+void Chemin::resetChemin() noexcept {
     chemin.clear();
     inaccessible = false;
 }

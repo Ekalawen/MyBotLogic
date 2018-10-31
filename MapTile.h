@@ -25,12 +25,12 @@ public:
     MapTile() = default; // Constructeur par défaut obligatoire pour pouvoir utiliser tuple ...
     MapTile(unsigned int id, Map &m); // Appelé dès le début et uniquement là !
 
-    void setTileDecouverte(const TileInfo ti);
+    void setTileDecouverte(const TileInfo& ti) noexcept;
 
     void removeEtat(const Etats etat, const int id);
 	bool isVoisinAvecEtat(const Etats etat, const int id) const noexcept;
 
-    bool existe();
+    bool existe() const noexcept;
 
     int getId() const noexcept;
     int getX() const noexcept;

@@ -48,25 +48,25 @@ public:
     Npc() = default;
     Npc(const NPCInfo);
 
-    void move(Tile::ETilePosition, Map&) noexcept; // Permet de faire bouger notre npc dans notre modèle =)
+    void move(const Tile::ETilePosition, Map&) noexcept; // Permet de faire bouger notre npc dans notre modèle =)
 
     void resetChemins() noexcept;
     void addChemin(Chemin& chemin) noexcept;
     void addScore(ScoreType score) noexcept;
-    Chemin getCheminMinNonPris(vector<int> objectifsPris, int tailleCheminMax) const noexcept; // Permet de trouver le chemin le plus court qui ne soit pas déjà pris
-    int affecterMeilleurChemin(Map &m) noexcept; // Affecte au npc le chemin avec le meilleur score et renvoie la destination de ce chemin !
-    void floodfill(Map &m); // Calcule le coût et l'ensemble des tiles accessibles pour un npcs, et MAJ ses attributs.
+    Chemin getCheminMinNonPris(const vector<int>& objectifsPris, const int tailleCheminMax) const noexcept; // Permet de trouver le chemin le plus court qui ne soit pas déjà pris
+    int affecterMeilleurChemin(const Map &m) noexcept; // Affecte au npc le chemin avec le meilleur score et renvoie la destination de ce chemin !
+    void floodfill(const Map &m); // Calcule le coût et l'ensemble des tiles accessibles pour un npcs, et MAJ ses attributs.
 
-    int getId();
-    int getTileId();
-    int getTileObjectif();
-    void setTileObjectif(int idTile);
-    Chemin& getChemin();
-    Distances& getEnsembleAccessible();
-    bool isAccessibleTile(int tileId);
-    int distanceToTile(int tileId);
-    bool isArrived();
-    void setArrived(bool etat);
+    int getId() const noexcept;
+    int getTileId() const noexcept;
+    int getTileObjectif() const noexcept;
+    void setTileObjectif(const int idTile) noexcept;
+    Chemin& getChemin() noexcept;
+    Distances& getEnsembleAccessible() noexcept;
+    bool isAccessibleTile(const int tileId) const noexcept;
+    int distanceToTile(const int tileId);
+    bool isArrived() const noexcept;
+    void setArrived(const bool etat) noexcept;
 };
 
 #endif

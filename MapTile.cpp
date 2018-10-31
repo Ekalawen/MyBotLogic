@@ -82,7 +82,7 @@ MapTile::MapTile(unsigned int id, Map &m) :
     }
 }
 
-void MapTile::setTileDecouverte(const TileInfo tile) {
+void MapTile::setTileDecouverte(const TileInfo& tile) noexcept {
    type = tile.tileType;
    statut = CONNU;
 }
@@ -103,7 +103,7 @@ void MapTile::removeEtat(const Etats etat, const int id) {
     }
 }
 
-bool MapTile::existe() {
+bool MapTile::existe() const noexcept {
    return statut != MapTile::Statut::INCONNU;
 }
 

@@ -7,8 +7,8 @@
 
 class Exploration : public ScoreStrategie {
 public:
-    void saveScore(MapTile tile, Npc& npc, vector<int> tilesAVisiter) noexcept;
-    float interet(MapTile tile) noexcept;
+    void saveScore(const MapTile& tile, Npc& npc, const vector<int>& tilesAVisiter) const noexcept;
+    float interet(const MapTile& tile) const noexcept;
 
     enum { COEF_DISTANCE_NPC_TILE = -12 }; // Il faut que ce soit négatif
     enum { COEF_DISTANCE_TILE_AUTRE_TILES = 12 };

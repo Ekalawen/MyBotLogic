@@ -16,7 +16,7 @@ Npc::Npc(const NPCInfo info) :
 {
 }
 
-void Npc::move(Tile::ETilePosition direction, Map &m) noexcept {
+void Npc::move(const Tile::ETilePosition direction, Map &m) noexcept {
     tileId = m.getAdjacentTileAt(tileId, direction);
     m.getTile(tileId).setStatut(MapTile::Statut::VISITE);
 }
@@ -34,7 +34,7 @@ void Npc::addScore(ScoreType _score) noexcept {
     scoresAssocies.emplace_back(std::move(_score));
 }
 
-Chemin Npc::getCheminMinNonPris(vector<int> objectifsPris, int tailleCheminMax) const noexcept {
+Chemin Npc::getCheminMinNonPris(const vector<int>& objectifsPris, const int tailleCheminMax) const noexcept {
     Chemin cheminMin;
     cheminMin.setInaccessible();
     int distMin = tailleCheminMax;
@@ -54,7 +54,7 @@ Chemin Npc::getCheminMinNonPris(vector<int> objectifsPris, int tailleCheminMax) 
     return cheminMin;
 }
 
-int Npc::affecterMeilleurChemin(Map &m) noexcept {
+int Npc::affecterMeilleurChemin(const Map &m) noexcept {
     stringstream ss;
 
     if (scoresAssocies.empty()) {
@@ -87,7 +87,7 @@ int Npc::affecterMeilleurChemin(Map &m) noexcept {
     return chemin.destination();
 }
 
-void Npc::floodfill(Map &m) {
+void Npc::floodfill(const Map &m) {
     ensembleAccessible.clear();
 
     vector<int> oldOpen;
@@ -123,38 +123,37 @@ void Npc::floodfill(Map &m) {
     }
 }
 
-
-int Npc::getId() {
+int Npc::getId() const noexcept {
     return id;
 }
 
-int Npc::getTileId() {
+int Npc::getTileId() const noexcept {
     return tileId;
 }
 
-int Npc::getTileObjectif() {
+int Npc::getTileObjectif() const noexcept {
     return tileObjectif;
 }
 
-void Npc::setTileObjectif(int idTile) {
+void Npc::setTileObjectif(const int idTile) noexcept {
     tileObjectif = idTile;
 }
 
-Chemin& Npc::getChemin() {
+Chemin& Npc::getChemin() noexcept {
     return chemin;
 }
 
-Distances& Npc::getEnsembleAccessible() {
+Distances& Npc::getEnsembleAccessible() noexcept {
     return ensembleAccessible;
 }
 
-bool Npc::isAccessibleTile(int _tuileID) {
+bool Npc::isAccessibleTile(const int _tuileID) const noexcept {
     return std::find_if(begin(ensembleAccessible), end(ensembleAccessible), [&_tuileID](const DistanceType& type) {
         return type.tuileID == _tuileID;
     }) != end(ensembleAccessible);
 }
 
-int Npc::distanceToTile(int _tuileID) {
+int Npc::distanceToTile(const int _tuileID) {
     if (!isAccessibleTile(_tuileID))
         throw tile_inaccessible{};
 
@@ -163,10 +162,10 @@ int Npc::distanceToTile(int _tuileID) {
     })->score;
 }
 
-bool Npc::isArrived() {
+bool Npc::isArrived() const noexcept {
     return estArrive;
 }
 
-void Npc::setArrived(bool etat) {
+void Npc::setArrived(const bool etat) noexcept {
     estArrive = etat;
 }

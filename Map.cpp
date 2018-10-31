@@ -4,21 +4,17 @@
 #include "GameManager.h"
 #include "Globals.h"
 #include "Voisin.h"
-#include <map>
+
 #include <algorithm>
 #include <chrono>
 #include <sstream>
+
 using namespace std;
 
-Map::Map(const LevelInfo levelInfo) :
-    rowCount{ levelInfo.rowCount },
-    colCount{ levelInfo.colCount },
-    nbTilesDecouvertes{ 0 },
-	tiles{ vector<MapTile>{} },
-	murs{ map<unsigned int, ObjectInfo>{} },
-	fenetres{ map<unsigned int, ObjectInfo>{} },
-	portes{ map<unsigned int, ObjectInfo>{} },
-	activateurs{ map<unsigned int, ObjectInfo>{} }
+Map::Map(const LevelInfo& _levelInfo) :
+    rowCount{ _levelInfo.rowCount },
+    colCount{ _levelInfo.colCount },
+    nbTilesDecouvertes{ 0 }
 {
     // Créer toutes les tiles !
     tiles.reserve(getNbTiles());
@@ -27,23 +23,23 @@ Map::Map(const LevelInfo levelInfo) :
     }
 
     // Mettre à jour les tiles connues
-    for (auto tile : levelInfo.tiles) {
+    for (auto tile : _levelInfo.tiles) {
         addTile(tile.second);
     }
 
     // Enregistrer les objets
-    for (auto object : levelInfo.objects) {
+    for (auto object : _levelInfo.objects) {
         addObject(object.second);
     }
 
     // Mettre à visiter les cases initiales des NPCs
-    for (auto pair_npc : levelInfo.npcs) {
+    for (auto pair_npc : _levelInfo.npcs) {
         tiles[pair_npc.second.tileID].setStatut(MapTile::Statut::VISITE);
     }
 }
 
-bool Map::isInMap(int idTile) const noexcept {
-    return idTile >= 0 && idTile < rowCount * colCount;
+bool Map::isInMap(const int idTile) const noexcept {
+    return idTile > -1 && idTile < rowCount * colCount;
 }
 
 vector<unsigned int> Map::getObjectifs() const noexcept {
@@ -58,7 +54,7 @@ struct Noeud {
     float heuristique; // La somme du cout et de l'evaluation
     int idPrecedant;
     Noeud() = default;
-    Noeud(MapTile tile, float cout, float evaluation, int idPrecedant)
+    Noeud(const MapTile& tile, const float cout, const float evaluation, const int idPrecedant)
         : tile{ tile }, cout{ cout }, evaluation{ evaluation }, idPrecedant{ idPrecedant } {
         heuristique = cout + evaluation * coefEvaluation;
     }
@@ -71,7 +67,7 @@ float Noeud::coefEvaluation = 1;
 // Il s'agit de l'algorithme AStar auquel on peut rajouter un coefficiant à l'évaluation pour modifier l'heuristique.
 // Par défaut sa valeur est 1. Si on l'augmente l'algorithme ira plus vite au détriment de trouver un chemin optimal.
 // Si on le diminue l'algorithme se rapproche de plus en plus d'un parcours en largeur.
-Chemin Map::aStar(int depart, int arrivee, float coefEvaluation) noexcept {
+Chemin Map::aStar(const int depart, const int arrivee, const float coefEvaluation) const noexcept {
     Noeud::coefEvaluation = coefEvaluation;
     // On crée nos liste et notre noeud courrant
     vector<Noeud> closedList{};
@@ -143,7 +139,7 @@ Chemin Map::aStar(int depart, int arrivee, float coefEvaluation) noexcept {
     return path;
 }
 
-Tile::ETilePosition Map::getDirection(int ind1, int ind2) const noexcept {
+Tile::ETilePosition Map::getDirection(const int ind1, const int ind2) const noexcept {
     int y = getY(ind1);
     bool pair = (y % 2 == 0);
     if (pair) {
@@ -180,7 +176,7 @@ Tile::ETilePosition Map::getDirection(int ind1, int ind2) const noexcept {
     return Tile::CENTER;
 }
 
-int Map::getAdjacentTileAt(int tileSource, Tile::ETilePosition direction) const noexcept {
+int Map::getAdjacentTileAt(const int tileSource, const Tile::ETilePosition direction) const noexcept {
     int y = getY(tileSource);
     bool pair = (y % 2 == 0);
     int res;
@@ -235,7 +231,7 @@ int Map::getAdjacentTileAt(int tileSource, Tile::ETilePosition direction) const 
     }
 }
 
-float Map::distanceL2(int depart, int arrivee) const noexcept {
+float Map::distanceL2(const int depart, const int arrivee) const noexcept {
     int xd = depart % colCount;
     int yd = depart / colCount;
     int xa = arrivee % colCount;
@@ -243,7 +239,7 @@ float Map::distanceL2(int depart, int arrivee) const noexcept {
     return (float)sqrt(pow(xd - xa, 2) + pow(yd - ya, 2));
 }
 
-int Map::distanceHex(int tile1ID, int tile2ID) const noexcept {
+int Map::distanceHex(const int tile1ID, const int tile2ID) const noexcept {
    int ligne1 = tile1ID / colCount;
    int colonne1 = tile1ID % colCount;
    int ligne2 = tile2ID / colCount;
@@ -262,7 +258,7 @@ int Map::tailleCheminMax() const noexcept {
 }
 
 // Il ne faut pas ajouter une tile qui est déjà dans la map !
-void Map::addTile(TileInfo tile) noexcept {
+void Map::addTile(const TileInfo& tile) noexcept {
     // On met à jour le nombre de tiles
     ++nbTilesDecouvertes;
 
@@ -292,7 +288,7 @@ void Map::addTile(TileInfo tile) noexcept {
 }
 
 // Il ne faut pas ajouter un objet qui est déjà dans la map !
-void Map::addObject(ObjectInfo object) noexcept {
+void Map::addObject(const ObjectInfo& object) noexcept {
     int voisin1 = object.tileID;
 	int voisin2 = getAdjacentTileAt(object.tileID, object.position);
 
@@ -358,10 +354,10 @@ void Map::addObject(ObjectInfo object) noexcept {
     GameManager::Log(ss.str());
 }
 
-int Map::getX(int id) const noexcept {
+int Map::getX(const int id) const noexcept {
     return id % colCount;
 }
-int Map::getY(int id) const noexcept {
+int Map::getY(const int id) const noexcept {
     return id / colCount;
 }
 int Map::getRowCount() const noexcept {
@@ -380,7 +376,13 @@ int Map::getNbTilesDecouvertes() const noexcept {
     return nbTilesDecouvertes;
 }
 
-MapTile& Map::getTile(int id) {
+MapTile& Map::getTile(const int id) {
+    if (id < 0 || id >= getNbTiles())
+        throw tile_inexistante{};
+    return tiles[id];
+}
+
+const MapTile& Map::getTile(const int id) const {
     if (id < 0 || id >= getNbTiles())
         throw tile_inexistante{};
     return tiles[id];
@@ -406,7 +408,7 @@ map<unsigned int, ObjectInfo> Map::getActivateurs() {
     return activateurs;
 }
 
-bool Map::objectExist(int objet) {
+bool Map::objectExist(const int objet) const noexcept {
     return murs.find(objet) != murs.end()
         || portes.find(objet) != portes.end()
         || fenetres.find(objet) != fenetres.end()

@@ -21,9 +21,9 @@ public:
     string toString() const noexcept;
 
     void removeFirst(); // Enlève la première case du chemin, utile pour mettre le chemin à jour
-    void addFirst(int); // Inverse de removeFirst, place une case supplémentaire au début du chemin
-    void resetChemin(); // Réinitialise le chemin
-    int getFirst(); // Renvoie la première case du chemin
+    void addFirst(const int); // Inverse de removeFirst, place une case supplémentaire au début du chemin
+    void resetChemin() noexcept; // Réinitialise le chemin
+    int getFirst() const; // Renvoie la première case du chemin
 };
 
 

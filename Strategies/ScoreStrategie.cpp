@@ -55,7 +55,7 @@ BT_Noeud::ETAT_ELEMENT ScoreStrategie::execute() noexcept {
     return ETAT_ELEMENT::REUSSI;
 }
 
-void ScoreStrategie::calculerScore1Tile(int tileID, Map& m, Npc& npc, const vector<int> tilesAVisiter) {
+void ScoreStrategie::calculerScore1Tile(int tileID, Map& m, Npc& npc, const vector<int>& tilesAVisiter) {
     MapTile tile = m.getTile(tileID);
     // On ne considère la tile que si on ne la visite pas déjà !
     if (tile.getStatut() == MapTile::Statut::CONNU && find(tilesAVisiter.begin(), tilesAVisiter.end(), tile.getId()) == tilesAVisiter.end()) {
@@ -65,7 +65,7 @@ void ScoreStrategie::calculerScore1Tile(int tileID, Map& m, Npc& npc, const vect
 
 // Calcul le score de chaque tiles et son chemin pour un npc
 // On prend en compte les tilesAVisiter des autres npcs pour que les tiles soient loins les unes des autres
-void ScoreStrategie::calculerScoresTilesPourNpc(Npc& npc, vector<int> tilesAVisiter) noexcept {
+void ScoreStrategie::calculerScoresTilesPourNpc(Npc& npc, const vector<int>& tilesAVisiter) noexcept {
     stringstream ss;
     ss << "Taille ensemble : " << npc.getEnsembleAccessible().size();
     GameManager::Log(ss.str());

@@ -129,7 +129,7 @@ vector<int> getIndicesMouvementsSurMemeCaseCible(vector<Mouvement>& mouvements, 
     return indices;
 }
 
-int GameManager::getIndiceMouvementPrioritaire(vector<Mouvement>& mouvements, vector<int> indicesAConsiderer) {
+int GameManager::getIndiceMouvementPrioritaire(vector<Mouvement>& mouvements, const vector<int>& indicesAConsiderer) {
     int indiceMax = indicesAConsiderer[0];
     int distanceMax = getNpcById(mouvements[indicesAConsiderer[0]].getNpcId()).getChemin().distance();
     for (int i = 0; i < indicesAConsiderer.size(); ++i) {
@@ -145,7 +145,7 @@ int GameManager::getIndiceMouvementPrioritaire(vector<Mouvement>& mouvements, ve
     return indiceMax;
 }
 
-void GameManager::stopNonPrioritaireMouvements(vector<Mouvement>& mouvements, vector<int> indicesMouvementsSurMemeCaseCible, int indiceMouvementPrioritaire, bool& continuer) {
+void GameManager::stopNonPrioritaireMouvements(vector<Mouvement>& mouvements, const vector<int>& indicesMouvementsSurMemeCaseCible, const int indiceMouvementPrioritaire, bool& continuer) {
     stringstream ss;
 
     for (int i = 0; i < indicesMouvementsSurMemeCaseCible.size(); ++i) {
@@ -195,7 +195,7 @@ void GameManager::ordonnerMouvements(vector<Mouvement>& mouvements) noexcept {
     gererCollisionsMemeCaseCible(mouvements);
 }
 
-void GameManager::addNewTiles(TurnInfo ti) noexcept {
+void GameManager::addNewTiles(const TurnInfo& ti) noexcept {
     if (m.getNbTilesDecouvertes() < m.getNbTiles()) {
         // pour tous les npcs
         for (auto& npc : ti.npcs) {
@@ -204,20 +204,20 @@ void GameManager::addNewTiles(TurnInfo ti) noexcept {
                 // Si ces tuiles n'ont pas été découvertes
                 if (m.getTile(tileId).getStatut() == MapTile::INCONNU) {
                     // On les setDecouverte
-                    m.addTile(ti.tiles[tileId]);
+                    m.addTile(ti.tiles.at(tileId));
                 }
             }
         }
     }
 }
 
-void GameManager::addNewObjects(TurnInfo ti) noexcept {
+void GameManager::addNewObjects(const TurnInfo& ti) noexcept {
     // Tous les objets visibles par tous les npcs ...
     for (auto npc : ti.npcs) {
         for (auto objet : npc.second.visibleObjects) {
             // Si on ne connaît pas cet objet on l'ajoute
             if(!m.objectExist(objet)) {
-                m.addObject(ti.objects[objet]);
+                m.addObject(ti.objects.at(objet));
             }
         }
     }

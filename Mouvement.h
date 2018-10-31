@@ -7,13 +7,13 @@ class Mouvement {
 	int tileDestination;
 	Tile::ETilePosition direction;
 public:
-	Mouvement(int npcID, int tileSource, int tileDestination, Tile::ETilePosition direction);
+	Mouvement(const int npcID, const int tileSource, const int tileDestination, const Tile::ETilePosition direction);
 
-    void stop(); // Arrête le mouvement
-    bool isNotStopped();
+    void stop() noexcept; // Arrête le mouvement
+    bool isNotStopped() const noexcept;
 
-    int getNpcId();
-    int getTileSource();
-    int getTileDestination();
-    Tile::ETilePosition getDirection();
+    int getNpcId() const noexcept;
+    int getTileSource() const noexcept;
+    int getTileDestination() const noexcept;
+    Tile::ETilePosition getDirection() const noexcept;
 };
