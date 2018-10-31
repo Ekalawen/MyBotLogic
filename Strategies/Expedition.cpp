@@ -46,7 +46,7 @@ void Expedition::saveScore(MapTile tile, Npc& npc, vector<int> tilesAVisiter) no
     }
 
     // Il reste à affecter le score et le chemin au npc
-    npc.addScore(tile.getId(), score);
+    npc.addScore({ tile.getId(), score });
 }
 
 // L'intérêt est définit par :

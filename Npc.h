@@ -10,11 +10,21 @@ using namespace std;
 
 class tile_inaccessible {};
 
+struct Score {
+    int tuileID;
+    float score;
+
+    Score(const int _tuileID, const float _score)
+        :tuileID{ _tuileID }, score{ _score }
+    {}
+    ~Score() = default;
+};
+
 class Map;
 class Npc {
 private:
     vector<Chemin> cheminsPossibles; // Ceci est une variable temporaire permettant de stocker les chemins parmis lesquelles choisirs un objectif
-    map<int, float> scoresAssocies; // Les scores associés aux tiles !
+    vector<Score> scoresAssocies; // Les scores associés aux tiles !
 
     int id;
     int tileId; // Sa position sur la carte
@@ -33,7 +43,7 @@ public:
 
     void resetChemins() noexcept;
     void addChemin(Chemin& chemin) noexcept;
-    void addScore(int tileIndice, float score) noexcept;
+    void addScore(Score score) noexcept;
     Chemin getCheminMinNonPris(vector<int> objectifsPris, int tailleCheminMax) const noexcept; // Permet de trouver le chemin le plus court qui ne soit pas déjà pris
     int affecterMeilleurChemin(Map &m) noexcept; // Affecte au npc le chemin avec le meilleur score et renvoie la destination de ce chemin !
     void floodfill(Map &m); // Calcule le coût et l'ensemble des tiles accessibles pour un npcs, et MAJ ses attributs.

@@ -4,6 +4,7 @@
 #include "Voisin.h"
 #include "GameManager.h"
 #include <chrono>
+#include <algorithm>
 
 Npc::Npc(const NPCInfo info) :
 	id{ static_cast<int>(info.npcID) },
@@ -13,7 +14,6 @@ Npc::Npc(const NPCInfo info) :
 	estArrive{ false }
 {
 }
-
 
 void Npc::move(Tile::ETilePosition direction, Map &m) noexcept {
     tileId = m.getAdjacentTileAt(tileId, direction);
@@ -29,8 +29,8 @@ void Npc::addChemin(Chemin& chemin) noexcept {
     cheminsPossibles.push_back(chemin);
 }
 
-void Npc::addScore(int tileIndice, float score) noexcept {
-    scoresAssocies[tileIndice] = score;
+void Npc::addScore(Score _score) noexcept {
+    scoresAssocies.emplace_back(std::move(_score));
 }
 
 Chemin Npc::getCheminMinNonPris(vector<int> objectifsPris, int tailleCheminMax) const noexcept {
@@ -53,16 +53,6 @@ Chemin Npc::getCheminMinNonPris(vector<int> objectifsPris, int tailleCheminMax) 
     return cheminMin;
 }
 
-void testBestScore(pair<const int, float> pair, float& bestScore, int& bestScoreIndice) {
-    int tileId = pair.first;
-    float score = pair.second;
-    GameManager::Log("Case potentielle à explorer : " + to_string(tileId) + " de score " + to_string(score));
-    if (score > bestScore) {
-        bestScore = score;
-        bestScoreIndice = tileId;
-    }
-}
-
 int Npc::affecterMeilleurChemin(Map &m) noexcept {
     if (scoresAssocies.empty()) {
         // Dans ce cas-là on reste sur place !
@@ -73,17 +63,16 @@ int Npc::affecterMeilleurChemin(Map &m) noexcept {
 	
     // On cherche le meilleur score
     auto preScore = std::chrono::high_resolution_clock::now();
-    float bestScore = scoresAssocies.begin()->second;
-    int bestScoreIndice = scoresAssocies.begin()->first;
-    for (auto pair : scoresAssocies) {
-        testBestScore(pair, bestScore, bestScoreIndice);
-    }
+    auto bestIter = std::max_element(begin(scoresAssocies), end(scoresAssocies),
+        [](const Score& scoreDroite, const Score& scoreGauche){
+            return scoreDroite.score < scoreGauche.score;
+        });
     auto postScore = std::chrono::high_resolution_clock::now();
     GameManager::Log("Durée chercher meilleur score = " + to_string(std::chrono::duration_cast<std::chrono::microseconds>(postScore - preScore).count() / 1000.f) + "ms");
 
     // On affecte son chemin, mais il nous faut le calculer ! =)
     auto preAStar = std::chrono::high_resolution_clock::now();
-    chemin = m.aStar(tileId, bestScoreIndice);
+    chemin = m.aStar(tileId, bestIter->tuileID);
     auto postAStar = std::chrono::high_resolution_clock::now();
     GameManager::Log("Le Npc " + to_string(id) + " va rechercher la tile " + to_string(chemin.destination()));
     GameManager::Log("Durée a* = " + to_string(std::chrono::duration_cast<std::chrono::microseconds>(postAStar - preAStar).count() / 1000.f) + "ms");
