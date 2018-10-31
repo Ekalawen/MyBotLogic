@@ -46,7 +46,6 @@ public:
     vector<int> getEnsembleAccessible();
     bool isAccessibleTile(int tileId);
     int distanceToTile(int tileId);
-    map<int, int> getDistancesEnsembleAccessible();
     bool isArrived();
     void setArrived(bool etat);
 };

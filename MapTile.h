@@ -12,7 +12,7 @@ class Map;
 
 class MapTile {
 public:
-    enum Statut{INCONNU,CONNU,VISITE};
+    enum Statut{ INCONNU, CONNU, VISITE };
 
 private:
     int id;
