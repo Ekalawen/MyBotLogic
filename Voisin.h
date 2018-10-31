@@ -3,10 +3,10 @@
 
 #include <bitset>
 
-class EtatNonDefini {};
 enum Etats { VISIBLE, ACCESSIBLE, MYSTERIEUX, TOTAL };
 
 class Voisin {
+    //chaque bit représente un booléan, les états commencent a 1
     std::bitset<Etats::TOTAL> etats;
     int tuileIndex;
 
@@ -14,9 +14,9 @@ public:
     Voisin(const int voisinIndex);
     ~Voisin() = default;
 
-    int getTuileIndex() const;
-    void setEtat(const Etats etat, const bool val);
-    bool estEtat(const Etats etat) const;
+    int getTuileIndex() const noexcept;
+    void setEtat(const Etats etat, const bool val) noexcept;
+    bool estEtat(const Etats etat) const noexcept;
 };
 
 #endif

@@ -3,6 +3,7 @@
 #include "MapTile.h"
 #include "GameManager.h"
 #include "Globals.h"
+#include "Voisin.h"
 #include <map>
 #include <algorithm>
 #include <chrono>
@@ -85,11 +86,11 @@ Chemin Map::aStar(int depart, int arrivee, float coefEvaluation) noexcept {
         noeudCourant = openList.back();
         openList.pop_back();
         // Pour tous les voisins du noeud courant ...
-        for (auto voisin : noeudCourant.tile.getVoisinsParEtat(Etats::ACCESSIBLE)) {
+        for (auto voisinID : noeudCourant.tile.getVoisinsIDParEtat(Etats::ACCESSIBLE)) {
             // On vérifie que le voisin existe ...
-            if (tiles[voisin.getTuileIndex()].existe()) {
+            if (tiles[voisinID].existe()) {
                 // On construit le nouveau noeud
-                Noeud nouveauNoeud = Noeud(tiles[voisin.getTuileIndex()], noeudCourant.cout + 1, distanceL2(voisin.getTuileIndex(), arrivee), noeudCourant.tile.getId());
+                Noeud nouveauNoeud = Noeud(tiles[voisinID], noeudCourant.cout + 1, distanceL2(voisinID, arrivee), noeudCourant.tile.getId());
                 // On vérifie s'il existe dans closedList avec un cout inférieur ou dans openList avec un cout inférieur
                 auto itClose = find(closedList.begin(), closedList.end(), nouveauNoeud);
                 auto itOpen = find(openList.begin(), openList.end(), nouveauNoeud);
@@ -280,9 +281,9 @@ void Map::addTile(TileInfo tile) noexcept {
     }
 
     // Puis on met à jour les voisins de ses voisins ! :D
-    for (auto voisin : tiles[tile.tileID].getVoisins()) { // On pourrait parcourir les voisinsVisibles
+    for (auto voisinID : tiles[tile.tileID].getVoisinsIDParEtat(Etats::VISIBLE)) {
         // Si ce voisin l'a en voisin mystérieux, on le lui enlève
-        tiles[voisin.getTuileIndex()].removeEtat(Etats::MYSTERIEUX, tile.tileID);
+        tiles[voisinID].removeEtat(Etats::MYSTERIEUX, tile.tileID);
     }
 
     // On le note !

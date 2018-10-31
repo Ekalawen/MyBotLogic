@@ -39,7 +39,7 @@ public:
     int getY() const noexcept;
     Tile::ETileType getType() const noexcept;
     vector<Voisin> getVoisins() const noexcept;
-    vector<Voisin> getVoisinsParEtat(const Etats etat) const noexcept;
+    vector<int> getVoisinsIDParEtat(const Etats etat) const noexcept;
     Statut getStatut() const noexcept;
     void setStatut(Statut new_statut);
 };

@@ -143,12 +143,13 @@ vector<Voisin> MapTile::getVoisins() const noexcept {
     return voisins;
 }
 
-vector<Voisin> MapTile::getVoisinsParEtat(const Etats etat) const noexcept {
+vector<int> MapTile::getVoisinsIDParEtat(const Etats etat) const noexcept {
 
-    vector<Voisin> resultat;
+    vector<int> resultat;
 
-    std::copy_if(begin(voisins), end(voisins), back_inserter(resultat),[&etat](const Voisin& v) {
-        return v.estEtat(etat);
+    std::for_each(begin(voisins), end(voisins), [&](const Voisin& v) {
+        if (v.estEtat(etat))
+            resultat.emplace_back(v.getTuileIndex());
     });
 
     return resultat;
