@@ -5,6 +5,7 @@
 #include "GameManager.h"
 #include <chrono>
 #include <algorithm>
+#include <sstream>
 
 Npc::Npc(const NPCInfo info) :
 	id{ static_cast<int>(info.npcID) },
@@ -54,10 +55,13 @@ Chemin Npc::getCheminMinNonPris(vector<int> objectifsPris, int tailleCheminMax) 
 }
 
 int Npc::affecterMeilleurChemin(Map &m) noexcept {
+    stringstream ss;
+
     if (scoresAssocies.empty()) {
         // Dans ce cas-là on reste sur place !
         chemin = Chemin{};
-        GameManager::Log("Le Npc " + to_string(id) + " n'a rien a rechercher et reste sur place !");
+        ss << "Le Npc " << id << " n'a rien a rechercher et reste sur place !";
+        GameManager::Log(ss.str());
         return tileId;
     }
 	
@@ -68,14 +72,16 @@ int Npc::affecterMeilleurChemin(Map &m) noexcept {
             return scoreDroite.score < scoreGauche.score;
         });
     auto postScore = std::chrono::high_resolution_clock::now();
-    GameManager::Log("Durée chercher meilleur score = " + to_string(std::chrono::duration_cast<std::chrono::microseconds>(postScore - preScore).count() / 1000.f) + "ms");
+    ss << "Durée chercher meilleur score = " << std::chrono::duration_cast<std::chrono::microseconds>(postScore - preScore).count() / 1000.f << "ms" <<std::endl;
 
     // On affecte son chemin, mais il nous faut le calculer ! =)
     auto preAStar = std::chrono::high_resolution_clock::now();
     chemin = m.aStar(tileId, bestIter->tuileID);
     auto postAStar = std::chrono::high_resolution_clock::now();
-    GameManager::Log("Le Npc " + to_string(id) + " va rechercher la tile " + to_string(chemin.destination()));
-    GameManager::Log("Durée a* = " + to_string(std::chrono::duration_cast<std::chrono::microseconds>(postAStar - preAStar).count() / 1000.f) + "ms");
+
+    ss << "Le Npc " << to_string(id) << " va rechercher la tile " << chemin.destination() << std::endl;
+    ss << "Durée a* = " << std::chrono::duration_cast<std::chrono::microseconds>(postAStar - preAStar).count() / 1000.f << "ms" << std::endl;
+    GameManager::Log(ss.str());
 
     // On renvoie la destination
     return chemin.destination();
@@ -85,11 +91,8 @@ void Npc::floodfill(Map &m) {
     ensembleAccessible.clear();
 
     vector<int> oldOpen;
-    vector<int> newOpen;
-    map<int, int> coutCasesAccessibles;
-
     // On ajoute le noeud initial
-    newOpen.push_back(tileId);
+    vector<int> newOpen { tileId };
 
     int cout = 0;
     // Tant qu'il reste des noeuds à traiter ...

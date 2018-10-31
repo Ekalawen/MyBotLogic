@@ -1,6 +1,7 @@
 #include "CheminsForAllNpcs.h"
 #include "../BehaviorTree/BT_Noeud.h"
 #include <chrono>
+#include <sstream>
 
 // Vérifier si un objectif est accessible pour tous nos NPCs
 BT_Noeud::ETAT_ELEMENT CheminsForAllNpcs::execute() noexcept {
@@ -31,9 +32,12 @@ BT_Noeud::ETAT_ELEMENT CheminsForAllNpcs::execute() noexcept {
       // Sinon on retourne ECHEC
       } else {
          auto post = std::chrono::high_resolution_clock::now();
-         GameManager::Log("Durée CheminsForAll = " + to_string(std::chrono::duration_cast<std::chrono::microseconds>(post - pre).count() / 1000.f) + "ms");
+         stringstream ss;
+         ss << "Durée CheminsForAll = " << std::chrono::duration_cast<std::chrono::microseconds>(post - pre).count() / 1000.f << "ms" << std::endl 
+            << "Il n'y a pas de chemins pour tous les npcs !";
+         GameManager::Log(ss.str());
+      
          // Si le cheminMin n'a pas été initialisé, c'est qu'il n'y a pas de chemins pour tous les npcs !
-         GameManager::Log("Il n'y a pas de chemins pour tous les npcs !");
          return ETAT_ELEMENT::ECHEC;
       }
    }

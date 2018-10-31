@@ -7,6 +7,7 @@
 #include <map>
 #include <algorithm>
 #include <chrono>
+#include <sstream>
 using namespace std;
 
 Map::Map(const LevelInfo levelInfo) :
@@ -230,8 +231,6 @@ int Map::getAdjacentTileAt(int tileSource, Tile::ETilePosition direction) const 
         return res;
     }
     else {
-        //GameManager::Log("La direction demandé dans getAdjacentTileAt n'existe pas !");
-        //GameManager::Log("origin = " + to_string(tileSource) + " direction = " + to_string(direction));
         return -1;
     }
 }
@@ -287,7 +286,9 @@ void Map::addTile(TileInfo tile) noexcept {
     }
 
     // On le note !
-    GameManager::Log("Decouverte de la tile " + to_string(tile.tileID));
+    stringstream ss;
+    ss << "Decouverte de la tile " << tile.tileID;
+    GameManager::Log(ss.str());
 }
 
 // Il ne faut pas ajouter un objet qui est déjà dans la map !
@@ -351,7 +352,10 @@ void Map::addObject(ObjectInfo object) noexcept {
     }
     
     // On le note !
-    GameManager::Log("Decouverte de l'objet " + to_string(object.objectID) + " sur la tuile " + to_string(object.tileID) + " orienté en " + to_string(object.position));
+
+    stringstream ss;
+    ss << "Decouverte de l'objet " << object.objectID << " sur la tuile " << object.tileID << " orienté en " << object.position;
+    GameManager::Log(ss.str());
 }
 
 int Map::getX(int id) const noexcept {
