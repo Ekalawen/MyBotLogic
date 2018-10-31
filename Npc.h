@@ -33,13 +33,14 @@ class Npc {
 private:
     vector<Chemin> cheminsPossibles; // Ceci est une variable temporaire permettant de stocker les chemins parmis lesquelles choisirs un objectif
     Scores scoresAssocies; // Les scores associés aux tiles !
+    Distances ensembleAccessible; // ensemble des tuiles auquel un npc à accès avec la distance
 
     int id;
     int tileId; // Sa position sur la carte
     int tileObjectif; // Là où il doit aller !
     Chemin chemin; // Utilisé pour savoir quel chemin suivre pour se rendre à l'objectif
-    vector<int> ensembleAccessible; // ensemble des tuiles auquel un npc à accès
-    Distances distancesEnsembleAccessible;
+
+    //Distances distancesEnsembleAccessible;
 	bool estArrive; // indique si le npc a atteind son objectif
 
 public:
@@ -61,7 +62,7 @@ public:
     int getTileObjectif();
     void setTileObjectif(int idTile);
     Chemin& getChemin();
-    vector<int> getEnsembleAccessible();
+    Distances& getEnsembleAccessible();
     bool isAccessibleTile(int tileId);
     int distanceToTile(int tileId);
     bool isArrived();

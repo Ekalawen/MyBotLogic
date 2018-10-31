@@ -83,42 +83,41 @@ int Npc::affecterMeilleurChemin(Map &m) noexcept {
 
 void Npc::floodfill(Map &m) {
     ensembleAccessible.clear();
-    distancesEnsembleAccessible.clear();
-    
-   vector<int> oldOpen;
-   vector<int> newOpen;
-   map<int, int> coutCasesAccessibles;
 
-   // On ajoute le noeud initial
-   newOpen.push_back(tileId);
+    vector<int> oldOpen;
+    vector<int> newOpen;
+    map<int, int> coutCasesAccessibles;
 
-   int cout = 0;
-   // Tant qu'il reste des noeuds à traiter ...
-   while (!newOpen.empty()) {
-       oldOpen = newOpen;
-       newOpen = vector<int>();
-       // On regarde les voisins des dernieres tuiles ajoutées
-       for (int tileID : oldOpen) {
-           for (auto voisinID : m.getTile(tileID).getVoisinsIDParEtat(Etats::ACCESSIBLE)) {
-               // Si elle est connu
-               if (m.getTile(voisinID).existe()) {
-                   // Si elle n'est pas déjà ajouté
-                   if (find(oldOpen.begin(), oldOpen.end(), voisinID) == oldOpen.end() && 
-                       find(ensembleAccessible.begin(), ensembleAccessible.end(), voisinID) == ensembleAccessible.end()) {
-                       // On l'ajoute comme nouvelle tuile ouverte
-                       newOpen.push_back(voisinID);
-                   }
-               }
-           }
+    // On ajoute le noeud initial
+    newOpen.push_back(tileId);
 
-           // On définit les dernières tuiles ajoutés avec leur coût courant
-           if (find(ensembleAccessible.begin(), ensembleAccessible.end(), tileID) == ensembleAccessible.end()) {
-               ensembleAccessible.push_back(tileID);
-               distancesEnsembleAccessible.emplace_back(tileID, cout);
-           }
-       }
-       cout++;
-   }
+    int cout = 0;
+    // Tant qu'il reste des noeuds à traiter ...
+    while (!newOpen.empty()) {
+        oldOpen = newOpen;
+        newOpen = vector<int>();
+        // On regarde les voisins des dernieres tuiles ajoutées
+        for (int tileID : oldOpen) {
+            for (auto voisinID : m.getTile(tileID).getVoisinsIDParEtat(Etats::ACCESSIBLE)) {
+                // Si elle est connu
+                if (m.getTile(voisinID).existe()) {
+                    // Si elle n'est pas déjà ajouté
+                    if (find_if(ensembleAccessible.begin(), ensembleAccessible.end(), [&voisinID](const DistanceType& type) {
+                        return type.tuileID == voisinID; }) == ensembleAccessible.end()) {
+                        // On l'ajoute comme nouvelle tuile ouverte
+                        newOpen.push_back(voisinID);
+                    }
+                }
+            }
+
+            // On définit les dernières tuiles ajoutés avec leur coût courant
+            if (find_if(ensembleAccessible.begin(), ensembleAccessible.end(), [&](const DistanceType& type) {
+                return type.tuileID == tileID; }) == ensembleAccessible.end()) {
+                ensembleAccessible.emplace_back(tileID, cout);
+            }
+        }
+        cout++;
+    }
 }
 
 
@@ -142,19 +141,21 @@ Chemin& Npc::getChemin() {
     return chemin;
 }
 
-vector<int> Npc::getEnsembleAccessible() {
+Distances& Npc::getEnsembleAccessible() {
     return ensembleAccessible;
 }
 
-bool Npc::isAccessibleTile(int tileId) {
-    return find(ensembleAccessible.begin(), ensembleAccessible.end(), tileId) != ensembleAccessible.end();
+bool Npc::isAccessibleTile(int _tuileID) {
+    return std::find_if(begin(ensembleAccessible), end(ensembleAccessible), [&_tuileID](const DistanceType& type) {
+        return type.tuileID == _tuileID;
+    }) != end(ensembleAccessible);
 }
 
 int Npc::distanceToTile(int _tuileID) {
     if (!isAccessibleTile(_tuileID))
         throw tile_inaccessible{};
 
-    return std::find_if(begin(distancesEnsembleAccessible), end(distancesEnsembleAccessible), [&_tuileID](const DistanceType& type) {
+    return std::find_if(begin(ensembleAccessible), end(ensembleAccessible), [&_tuileID](const DistanceType& type) {
         return type.tuileID == _tuileID;
     })->score;
 }

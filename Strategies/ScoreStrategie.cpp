@@ -65,8 +65,8 @@ void ScoreStrategie::calculerScore1Tile(int tileID, Map& m, Npc& npc, const vect
 // On prend en compte les tilesAVisiter des autres npcs pour que les tiles soient loins les unes des autres
 void ScoreStrategie::calculerScoresTilesPourNpc(Npc& npc, vector<int> tilesAVisiter) noexcept {
    GameManager::Log("Taille ensemble : " + to_string(npc.getEnsembleAccessible().size()));
-    for (auto tileID : npc.getEnsembleAccessible()) { // parcours toutes les tiles découvertes par l'ensemble des npcs et qui sont accessibles
-        calculerScore1Tile(tileID, gm.m, npc, tilesAVisiter);
+    for (auto score : npc.getEnsembleAccessible()) { // parcours toutes les tiles découvertes par l'ensemble des npcs et qui sont accessibles
+        calculerScore1Tile(score.tuileID, gm.m, npc, tilesAVisiter);
     }
 }
 
