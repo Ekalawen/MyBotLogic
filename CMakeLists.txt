@@ -49,6 +49,7 @@ SET( AIBOT_HEADERS
 	MyBotLogic/Npc.h
 	MyBotLogic/Chemin.h
 	MyBotLogic/Mouvement.h
+	MyBotLogic/Voisin.h
 	MyBotLogic/BehaviorTree/BT_Noeud.h
 	MyBotLogic/BehaviorTree/BT_Composite.h
 	MyBotLogic/BehaviorTree/Composite/Selecteur.h
@@ -78,6 +79,7 @@ SET( AIBOT_SRC
 	MyBotLogic/Npc.cpp
 	MyBotLogic/Chemin.cpp
 	MyBotLogic/Mouvement.cpp
+	MyBotLogic/Voisin.cpp
 	MyBotLogic/BT_Tests/ObjectifsForAllNpcs.cpp
 	MyBotLogic/BT_Tests/CheminsForAllNpcs.cpp
 	MyBotLogic/Strategies/Expedition.cpp
