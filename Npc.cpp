@@ -11,7 +11,6 @@ Npc::Npc(const NPCInfo info) :
 	id{ static_cast<int>(info.npcID) },
 	tileId{ static_cast<int>(info.tileID) },
 	tileObjectif{ -1 },
-	chemin{ Chemin{} },
 	estArrive{ false }
 {
 }

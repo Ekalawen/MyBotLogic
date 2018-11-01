@@ -6,24 +6,23 @@
 #include "Voisin.h"
 #include <vector>
 
-using namespace std;
-
 class Map;
 
 class MapTile {
 public:
     enum Statut{ INCONNU, CONNU, VISITE };
+    const static int NB_VOISINS_TOTAL = 6;
 
 private:
     int id;
-    int x, y; // La position de la tile. x est l'indice de colonne, y est l'indice de ligne.
+    MapPosition position;
     Tile::ETileType type;
     std::vector<Voisin> voisins;
     Statut statut;
 
 public:
     MapTile() = default; // Constructeur par défaut obligatoire pour pouvoir utiliser tuple ...
-    MapTile(unsigned int id, Map &m); // Appelé dès le début et uniquement là !
+    MapTile(const unsigned int _id, MapPosition& _position); // Appelé dès le début et uniquement là !
 
     void setTileDecouverte(const TileInfo& ti) noexcept;
 
@@ -33,11 +32,11 @@ public:
     bool existe() const noexcept;
 
     int getId() const noexcept;
-    int getX() const noexcept;
-    int getY() const noexcept;
+    MapPosition getPosition() const noexcept;
     Tile::ETileType getType() const noexcept;
-    vector<Voisin> getVoisins() const noexcept;
-    vector<int> getVoisinsIDParEtat(const Etats etat) const noexcept;
+    std::vector<Voisin> getVoisins() const noexcept;
+    std::vector<Voisin>& getVoisins() noexcept;
+    std::vector<int> getVoisinsIDParEtat(const Etats etat) const noexcept;
     Statut getStatut() const noexcept;
     void setStatut(Statut new_statut);
 };
