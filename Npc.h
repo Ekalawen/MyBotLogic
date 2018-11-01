@@ -4,8 +4,9 @@
 #include "Globals.h"
 #include "NPCInfo.h"
 #include "Chemin.h"
-#include "Carte.h"
+#include "Map.h"
 #include <vector>
+using namespace std;
 
 class tile_inaccessible {};
 
@@ -27,8 +28,7 @@ using Scores = std::vector<ScoreType>;
 using DistanceType = Score<int>;
 using Distances = std::vector<DistanceType>;
 
-class Carte;
-
+class Map;
 class Npc {
 private:
     std::vector<Chemin> cheminsPossibles; // Ceci est une variable temporaire permettant de stocker les chemins parmis lesquelles choisirs un objectif
@@ -45,8 +45,8 @@ private:
 
 public:
 
-   Npc() = default;
-   Npc(const NPCInfo);
+    Npc() = default;
+    Npc(const NPCInfo);
 
     void move(const Tile::ETilePosition, Carte&) noexcept; // Permet de faire bouger notre npc dans notre mod�le =)
 
@@ -60,13 +60,13 @@ public:
     int getId() const noexcept;
     int getTileId() const noexcept;
     int getTileObjectif() const noexcept;
-    void setTileObjectif(const int _idTile) noexcept;
+    void setTileObjectif(const int idTile) noexcept;
     Chemin& getChemin() noexcept;
     Distances& getEnsembleAccessible() noexcept;
-    bool isAccessibleTile(const int _tileId) const noexcept;
-    int distanceToTile(const int _tileId);
+    bool isAccessibleTile(const int tileId) const noexcept;
+    int distanceToTile(const int tileId);
     bool isArrived() const noexcept;
-    void setArrived(const bool _etat) noexcept;
+    void setArrived(const bool etat) noexcept;
 };
 
 #endif

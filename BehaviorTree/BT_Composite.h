@@ -2,6 +2,7 @@
 #define BT_COMPOSITE_H
 #include "BT_Noeud.h"
 #include <vector>
+using namespace std;
 
 class BT_Composite : public BT_Noeud {
 public:

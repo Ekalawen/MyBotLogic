@@ -4,9 +4,11 @@
 #include "NPCInfo.h"
 #include "LevelInfo.h"
 
-#include "Windows.h"
-#include "MyBotLogic/Tools/Minuteur.h"
+#include "windows.h"
+#include <chrono>
 #include <sstream>
+using namespace std::chrono;
+
 
 MyBotLogic::MyBotLogic() :
     logpath{""}
@@ -41,10 +43,11 @@ MyBotLogic::MyBotLogic() :
 
 /*virtual*/ void MyBotLogic::Init(LevelInfo& _levelInfo)
 {
-    auto pre = Minuteur::now();
+   
+    auto pre = high_resolution_clock::now();
     // Le logger
-	GameManager::setLog(logpath, "MyLog.log");
-	GameManager::setLogRelease(logpath, "MyLogRelease.log");
+	GameManager::SetLog(logpath, "MyLog.log");
+	GameManager::SetLogRelease(logpath, "MyLogRelease.log");
     // On cr�e notre mod�le du jeu en cours !
     manager = GameManager(_levelInfo);
     manager.InitializeBehaviorTree();
@@ -67,7 +70,6 @@ MyBotLogic::MyBotLogic() :
 {
     std::stringstream ss;
     ss << "TURN =========================== " << _turnInfo.turnNb << std::endl;
-    auto preFAL = Minuteur::now();
 
     // On compl�te notre mod�le avec l'information qu'on vient de d�couvrir !
     auto pre = Minuteur::now();

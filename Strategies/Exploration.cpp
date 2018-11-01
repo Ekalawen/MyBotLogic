@@ -3,8 +3,8 @@
 #include "MyBotLogic/BehaviorTree/BT_Noeud.h"
 #include "MyBotLogic/GameManager.h"
 
-Exploration::Exploration(GameManager& _manager, std::string _nom)
-    : ScoreStrategie(_manager, _nom)
+Exploration::Exploration(GameManager& gm, string nom) 
+    : ScoreStrategie(gm, nom)
 {
 }
 
@@ -20,44 +20,44 @@ void Exploration::saveScore(const MapTile& _tile, Npc& _npc, const std::vector<i
     //if (tile.statut == MapTile::Statut::VISITE) return; // Appel� que si statut CONNU => non n�cessaire
 
     // On enregistre le cout, cad la distanc npc-tile
-    score += _npc.distanceToTile(_tile.getId()) * COEF_DISTANCE_NPC_TILE;
+    score += npc.distanceToTile(tile.getId()) * COEF_DISTANCE_NPC_TILE;
 
     // On regarde l'int�ret de cette tile
-    float interetTile = interet(_tile);
+    float interetTile = interet(tile);
     score += interetTile * COEF_INTERET;
     if (interetTile == 0) return; // Si pas d'int�ret, la tile ne nous int�resse pas !
 
     // On regarde la distance moyenne de cette tuile aux autres tuiles d�j� visit�s
-    if (!_tilesAVisiter.empty()) {
+    if (!tilesAVisiter.empty()) {
         float distanceMoyenneTiles = 0;
-        for (auto autre : _tilesAVisiter) {
-            distanceMoyenneTiles += manager.map.distanceHex(_tile.getId(), autre);
+        for (auto autre : tilesAVisiter) {
+            distanceMoyenneTiles += gm.m.distanceNbTuiles(tile.getId(), autre);
         }
-        distanceMoyenneTiles /= _tilesAVisiter.size();
+        distanceMoyenneTiles /= tilesAVisiter.size();
         score += distanceMoyenneTiles * COEF_DISTANCE_TILE_AUTRE_TILES;
     }
 
     // Il reste � affecter le score et le chemin au npc
-    _npc.addScore({ _tile.getId(), score });
+    npc.addScore({ tile.getId(), score });
 }
 
 // L'int�r�t est d�finit par :
     // Le nombre de voisins inconnues accessibles
     // Le nombre de voisins inconnues non accessibles MAIS visibles !
-float Exploration::interet(const MapTile& _tile) const noexcept {
+float Exploration::interet(const MapTile& tile) const noexcept {
     float interet = 0;
 
     int nbInconnuesAccessibles = 0;
     int nbInconnuesNonAccessiblesMaisVisibles = 0;
-    for (auto voisinID : _tile.getVoisinsIDParEtat(Etats::MYSTERIEUX)) {
+    for (auto voisinID : tile.getVoisinsIDParEtat(Etats::MYSTERIEUX)) {
         // Si autre est accessible ...
-        if (_tile.isVoisinAvecEtat(Etats::ACCESSIBLE, voisinID)) {
+        if (tile.isVoisinAvecEtat(Etats::ACCESSIBLE, voisinID)) {
             ++nbInconnuesAccessibles;
             // Si autre est inaccessible ...
         }
         else {
             // Mais visible ...
-            if (_tile.isVoisinAvecEtat(Etats::VISIBLE, voisinID)) {
+            if (tile.isVoisinAvecEtat(Etats::VISIBLE, voisinID)) {
                 ++nbInconnuesNonAccessiblesMaisVisibles;
             }
         }

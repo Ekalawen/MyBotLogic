@@ -11,11 +11,11 @@ public:
    }
 
    BT_Noeud::ETAT_ELEMENT execute() noexcept override {
-	   int index = 0;
+	   int ind = 0;
 	   BT_Noeud::ETAT_ELEMENT res;
 	   do {
-		   res = noeuds[index]->execute();
-	   } while (++index < noeuds.size() && res == BT_Noeud::ETAT_ELEMENT::ECHEC);
+		   res = noeuds[ind]->execute();
+	   } while (++ind < noeuds.size() && res == BT_Noeud::ETAT_ELEMENT::ECHEC);
 
       return res;
    }

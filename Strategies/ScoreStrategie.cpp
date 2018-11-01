@@ -2,17 +2,17 @@
 #include "ScoreStrategie.h"
 #include "MyBotLogic/BehaviorTree/BT_Noeud.h"
 #include "MyBotLogic/GameManager.h"
+#include <chrono>
 #include <sstream>
-#include "MyBotLogic/Tools/Minuteur.h"
 
-ScoreStrategie::ScoreStrategie(GameManager& _manager, std::string _nom)
-    : manager{ _manager },
-    nom{ _nom }
+ScoreStrategie::ScoreStrategie(GameManager& gm, string nom)
+    : gm{ gm },
+    nom{ nom }
 {
 }
 
 BT_Noeud::ETAT_ELEMENT ScoreStrategie::execute() noexcept {
-   auto pre = Minuteur::now();
+    auto pre = std::chrono::high_resolution_clock::now();
 
     std::stringstream ss;
     ss << nom << std::endl;
@@ -23,16 +23,16 @@ BT_Noeud::ETAT_ELEMENT ScoreStrategie::execute() noexcept {
     // Pour �a chaque npc va visiter en premier les tuiles avec le plus haut score
 
     // L'ensemble des tiles que l'on va visiter
-    std::vector<int> tilesAVisiter;
+    vector<int> tilesAVisiter;
 
-    for (auto& pair : manager.getNpcs()) {
+    for (auto& pair : gm.getNpcs()) {
         Npc& npc = pair.second;
         npc.resetChemins();
 
         // Calculer le score de chaque tile pour le npc
         // En m�me temps on calcul le chemin pour aller � cette tile
         // On stocke ces deux informations dans l'attribut cheminsPossibles du Npc
-        auto preCalcul = Minuteur::now();
+        auto preCalcul = std::chrono::high_resolution_clock::now();
         calculerScoresTilesPourNpc(npc, tilesAVisiter);
         auto postCalcul = Minuteur::now();
         ss << "Dur�e calculerScoresEtCheminsTilesPourNpc = " << Minuteur::dureeMicroseconds(preCalcul, postCalcul) / 1000.f << "ms" << std::endl;
@@ -58,8 +58,8 @@ BT_Noeud::ETAT_ELEMENT ScoreStrategie::execute() noexcept {
 void ScoreStrategie::calculerScore1Tile(int _tileID, Carte& _map, Npc& _npc, const std::vector<int>& _tilesAVisiter) {
     MapTile tile = _map.getTile(_tileID);
     // On ne consid�re la tile que si on ne la visite pas d�j� !
-    if (tile.getStatut() == MapTile::Statut::CONNU && std::find(_tilesAVisiter.begin(), _tilesAVisiter.end(), tile.getId()) == _tilesAVisiter.end()) {
-        saveScore(tile, _npc, _tilesAVisiter);
+    if (tile.getStatut() == MapTile::Statut::CONNU && find(tilesAVisiter.begin(), tilesAVisiter.end(), tile.getId()) == tilesAVisiter.end()) {
+        saveScore(tile, npc, tilesAVisiter);
     }
 }
 
