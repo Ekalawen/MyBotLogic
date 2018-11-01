@@ -8,15 +8,15 @@ class Sequenceur : public BT_Composite {
 public:
 
    Sequenceur() = default;
-   Sequenceur(std::vector<BT_Noeud*> _noeuds) : BT_Composite(_noeuds) {
+   Sequenceur(vector<BT_Noeud*> noeuds) : BT_Composite(noeuds) {
    }
   
    BT_Noeud::ETAT_ELEMENT execute() noexcept override {
-      int index = 0;
+      int ind = 0;
       BT_Noeud::ETAT_ELEMENT res;
 	  do {
-		  res = noeuds[index]->execute();
-	  } while (++index < noeuds.size() && res == BT_Noeud::ETAT_ELEMENT::REUSSI);
+		  res = noeuds[ind]->execute();
+	  } while (++ind < noeuds.size() && res == BT_Noeud::ETAT_ELEMENT::REUSSI);
       
       return res;
    }

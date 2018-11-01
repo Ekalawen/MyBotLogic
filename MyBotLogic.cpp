@@ -4,9 +4,11 @@
 #include "NPCInfo.h"
 #include "LevelInfo.h"
 
-#include "Windows.h"
-#include "MyBotLogic/Tools/Minuteur.h"
+#include "windows.h"
+#include <chrono>
 #include <sstream>
+using namespace std::chrono;
+
 
 MyBotLogic::MyBotLogic() :
     logpath{""}
@@ -41,20 +43,21 @@ MyBotLogic::MyBotLogic() :
 
 /*virtual*/ void MyBotLogic::Init(LevelInfo& _levelInfo)
 {
-    auto pre = Minuteur::now();
+   
+    auto pre = high_resolution_clock::now();
     // Le logger
-	GameManager::setLog(logpath, "MyLog.log");
-	GameManager::setLogRelease(logpath, "MyLogRelease.log");
-    // On crï¿½e notre modï¿½le du jeu en cours !
+	GameManager::SetLog(logpath, "MyLog.log");
+	GameManager::SetLogRelease(logpath, "MyLogRelease.log");
+    // On crée notre modèle du jeu en cours !
     gm = GameManager(_levelInfo);
     gm.InitializeBehaviorTree();
 
-    // On associe ï¿½ chaque npc son objectif !
+    // On associe à chaque npc son objectif !
     //gm.associateNpcsWithObjectiv();
+    auto post = high_resolution_clock::now();
     stringstream ss;
-    ss << "Durï¿½e Initialisation = " << duration_cast<microseconds>(post - pre).count() / 1000.f << "ms";
+    ss << "Durée Initialisation = " << duration_cast<microseconds>(post - pre).count() / 1000.f << "ms";
     GameManager::Log(ss.str());
-    auto post = Minuteur::now();
 }
 
 /*virtual*/ void MyBotLogic::OnGameStarted()
@@ -64,35 +67,36 @@ MyBotLogic::MyBotLogic() :
 
 /*virtual*/ void MyBotLogic::FillActionList(TurnInfo& _turnInfo, std::vector<Action*>& _actionList)
 {
+    auto preFAL = high_resolution_clock::now();
     stringstream ss;
     ss << "TURN =========================== " << _turnInfo.turnNb << std::endl;
-    auto preFAL = Minuteur::now();
 
-    // On complï¿½te notre modï¿½le avec l'information qu'on vient de dï¿½couvrir !
-    auto pre = Minuteur::now();
+    // On complète notre modèle avec l'information qu'on vient de découvrir !
+    auto pre = high_resolution_clock::now();
     gm.updateModel(_turnInfo);
-    ss << "Durï¿½e Update = " << duration_cast<microseconds>(post - pre).count() / 1000.f << "ms" << std::endl;
-    auto post = Minuteur::now();
+    auto post = high_resolution_clock::now();
+    ss << "Durée Update = " << duration_cast<microseconds>(post - pre).count() / 1000.f << "ms" << std::endl;
 
-    // On dï¿½finit notre stratï¿½gie en exï¿½cutant notre arbre de comportement
-    pre = Minuteur::now();
+    // On définit notre stratégie en exécutant notre arbre de comportement
+    pre = high_resolution_clock::now();
     gm.execute();
-    ss << "Durï¿½e Execute = " << duration_cast<microseconds>(post - pre).count() / 1000.f << "ms" << std::endl;
-    post = Minuteur::now();
+    post = high_resolution_clock::now();
+    ss << "Durée Execute = " << duration_cast<microseconds>(post - pre).count() / 1000.f << "ms" << std::endl;
 
-    // On fait se dï¿½placer chaque Npc vers son objectif associï¿½ =)
-    pre = Minuteur::now();
+    // On fait se déplacer chaque Npc vers son objectif associé =)
+    pre = high_resolution_clock::now();
     gm.moveNpcs(_actionList);
-    post = Minuteur::now();
-    ss << "Durï¿½e Move = " << duration_cast<microseconds>(post - pre).count() / 1000.f << "ms" << std::endl;
+    post = high_resolution_clock::now();
+    ss << "Durée Move = " << duration_cast<microseconds>(post - pre).count() / 1000.f << "ms" << std::endl;
 
-    ss << "Durï¿½e Tour = " << duration_cast<microseconds>(post - pre).count() / 1000.f << "ms" << std::endl;
+
+    auto postFAL = high_resolution_clock::now();
+    ss << "Durée Tour = " << duration_cast<microseconds>(post - pre).count() / 1000.f << "ms" << std::endl;
     GameManager::Log(ss.str());
     ss.clear();
 
-    ss << "Durï¿½e Tour numï¿½ro " << _turnInfo.turnNb << " = " << duration_cast<microseconds>(postFAL - preFAL).count() / 1000.f << "ms";
+    ss << "Durée Tour numéro " << _turnInfo.turnNb << " = " << duration_cast<microseconds>(postFAL - preFAL).count() / 1000.f << "ms";
     GameManager::LogRelease(ss.str());
-    auto postFAL = Minuteur::now();
 }
 
 /*virtual*/ void MyBotLogic::Exit()
