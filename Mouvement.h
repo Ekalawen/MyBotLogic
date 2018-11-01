@@ -7,9 +7,9 @@ class Mouvement {
 	int tileDestination;
 	Tile::ETilePosition direction;
 public:
-	Mouvement(const int npcID, const int tileSource, const int tileDestination, const Tile::ETilePosition direction);
+	Mouvement(const int _npcID, const int _tileSource, const int _tileDestination, const Tile::ETilePosition _direction);
 
-    void stop() noexcept; // Arrête le mouvement
+    void stop() noexcept; // Arrï¿½te le mouvement
     bool isNotStopped() const noexcept;
 
     int getNpcId() const noexcept;

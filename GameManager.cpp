@@ -1,4 +1,3 @@
-
 #include "GameManager.h"
 #include "Mouvement.h"
 
@@ -14,28 +13,26 @@
 
 #include <algorithm>
 #include <tuple>
-#include <chrono>
+#include "MyBotLogic/Tools/Minuteur.h"
 #include <sstream>
-using namespace std;
-using namespace std::chrono;
 
 // On initialise notre attribut statique ...
 Logger GameManager::logger{};
 Logger GameManager::loggerRelease{};
 
-GameManager::GameManager(LevelInfo info) :
-    m{ Map(info) },
-	objectifPris{ vector<int>{} }
+GameManager::GameManager(LevelInfo _info) :
+    map{ Carte(_info) },
+	objectifPris{ std::vector<int>{} }
 {
-    // On récupère l'ensemble des npcs !
-    for (auto pair_npc : info.npcs) {
+    // On rï¿½cupï¿½re l'ensemble des npcs !
+    for (auto pair_npc : _info.npcs) {
         NPCInfo npc = pair_npc.second;
         npcs[npc.npcID] = Npc(npc);
     }
 }
 
 void GameManager::InitializeBehaviorTree() noexcept {
-    //  Création du behaviorTree Manager
+    //  Crï¿½ation du behaviorTree Manager
     ObjectifsForAllNpcs *objectifs = new ObjectifsForAllNpcs(*this);
     CheminsForAllNpcs *chemins = new CheminsForAllNpcs(*this);
     Exploitation *exploitation = new Exploitation(*this);
@@ -51,9 +48,9 @@ void GameManager::InitializeBehaviorTree() noexcept {
     behaviorTreeManager = Selecteur({ sequenceur2, exploration });
 }
 
-vector<Mouvement> GameManager::getAllMouvements() {
-    // On va récupérer la liste des mouvements
-    vector<Mouvement> mouvements;
+std::vector<Mouvement> GameManager::getAllMouvements() {
+    // On va rï¿½cupï¿½rer la liste des mouvements
+   std::vector<Mouvement> mouvements;
 
     // Pour tous les NPCs, s'il n'y a aucun autre Npc devant eux
     for (auto& npc : npcs) {
@@ -66,11 +63,11 @@ vector<Mouvement> GameManager::getAllMouvements() {
 
         // Si le npc doit aller quelquepart !!!
         if (!npc.second.getChemin().empty()) {
-            // On récupère la case où il doit aller
+            // On rï¿½cupï¿½re la case oï¿½ il doit aller
             int caseCible = npc.second.getChemin().getFirst();
             ss << "case cible = " << caseCible << std::endl;
             
-            Tile::ETilePosition direction = m.getDirection(npc.second.getTileId(), caseCible);
+            Tile::ETilePosition direction = map.getDirection(npc.second.getTileId(), caseCible);
             ss << "direction = " << direction << std::endl;
 
             // On enregistre le mouvement
@@ -79,7 +76,7 @@ vector<Mouvement> GameManager::getAllMouvements() {
 			npc.second.getChemin().removeFirst(); // On peut supprimer le chemin
         } else {
             ss << "case cible = Ne Bouge Pas" << std::endl;
-            // Même si le Npc ne bouge pas, il a quand même un mouvement statique !
+            // Mï¿½me si le Npc ne bouge pas, il a quand mï¿½me un mouvement statique !
             mouvements.push_back(Mouvement(npc.second.getId(), npc.second.getTileId(), npc.second.getTileId(), Tile::ETilePosition::CENTER));
         }
 
@@ -88,16 +85,16 @@ vector<Mouvement> GameManager::getAllMouvements() {
     return mouvements;
 }
 
-void GameManager::moveNpcs(vector<Action*>& actionList) noexcept {
+void GameManager::moveNpcs(std::vector<Action*>& _actionList) noexcept {
     // TODO !
-    // Il faut réordonner les chemins entre les npcs !
-    // Cad que si deux Npcs peuvent échanger leurs objectifs et que cela diminue leurs chemins respectifs, alors il faut le faire !
-    reafecterObjectifsSelonDistance();
+    // Il faut rï¿½ordonner les chemins entre les npcs !
+    // Cad que si deux Npcs peuvent ï¿½changer leurs objectifs et que cela diminue leurs chemins respectifs, alors il faut le faire !
+    reaffecterObjectifsSelonDistance();
 
-    // On récupère tous les mouvements
-    vector<Mouvement> mouvements = getAllMouvements();
+    // On rï¿½cupï¿½re tous les mouvements
+    std::vector<Mouvement> mouvements = getAllMouvements();
 
-    // Puis on va l'ordonner pour laisser la priorité à celui qui va le plus loin !
+    // Puis on va l'ordonner pour laisser la prioritï¿½ ï¿½ celui qui va le plus loin !
 	ordonnerMouvements(mouvements);
 
     // Puis pour chaque mouvement
@@ -105,12 +102,12 @@ void GameManager::moveNpcs(vector<Action*>& actionList) noexcept {
         // On ne prend en compte notre mouvement que s'il compte
         if (mouvement.isNotStopped()) {
             // ET ENFIN ON FAIT BOUGER NOTRE NPC !!!!! <3
-            actionList.push_back(new Move(mouvement.getNpcId(), mouvement.getDirection()));
+            _actionList.push_back(new Move(mouvement.getNpcId(), mouvement.getDirection()));
             // ET ON LE FAIT AUSSI BOUGER DANS NOTRE MODELE !!!
-            npcs[mouvement.getNpcId()].move(mouvement.getDirection(), m);
-            // TEST : pour chaque npc qui se déplace sur son objectif à ce tour, alors mettre estArrive à vrai
+            npcs[mouvement.getNpcId()].move(mouvement.getDirection(), map);
+            // TEST : pour chaque npc qui se dï¿½place sur son objectif ï¿½ ce tour, alors mettre estArrive ï¿½ vrai
             if (mouvement.getDirection() != Tile::ETilePosition::CENTER && npcs[mouvement.getNpcId()].getTileObjectif() == mouvement.getTileDestination())
-                // il faut aussi vérifier si tous les NPC ont un objectif atteignable, donc si on est en mode Exploitation
+                // il faut aussi vï¿½rifier si tous les NPC ont un objectif atteignable, donc si on est en mode Exploitation
             {
                 npcs[mouvement.getNpcId()].setArrived(true);
             }
@@ -121,22 +118,22 @@ void GameManager::moveNpcs(vector<Action*>& actionList) noexcept {
     }
 }
 
-vector<int> getIndicesMouvementsSurMemeCaseCible(vector<Mouvement>& mouvements, int caseCible) {
-    vector<int> indices;
-    for (int i = 0; i < mouvements.size(); ++i) {
-        if (mouvements[i].getTileDestination() == caseCible) indices.push_back(i);
+std::vector<int> getIndicesMouvementsSurMemeCaseCible(std::vector<Mouvement>& _mouvements, int _caseCible) {
+   std::vector<int> indices;
+    for (int i = 0; i < _mouvements.size(); ++i) {
+        if (_mouvements[i].getTileDestination() == _caseCible) indices.push_back(i);
     }
     return indices;
 }
 
-int GameManager::getIndiceMouvementPrioritaire(vector<Mouvement>& mouvements, const vector<int>& indicesAConsiderer) {
-    int indiceMax = indicesAConsiderer[0];
-    int distanceMax = getNpcById(mouvements[indicesAConsiderer[0]].getNpcId()).getChemin().distance();
-    for (int i = 0; i < indicesAConsiderer.size(); ++i) {
-        // Si un mouvement est stationnaire, alors personne n'est autorisé à passer !
-        if (!mouvements[indicesAConsiderer[i]].isNotStopped())
+int GameManager::getIndiceMouvementPrioritaire(vector<Mouvement>& _mouvements, const vector<int>& _indicesAConsiderer) {
+    int indiceMax = _indicesAConsiderer[0];
+    int distanceMax = getNpcById(_mouvements[_indicesAConsiderer[0]].getNpcId()).getChemin().distance();
+    for (int i = 0; i < _indicesAConsiderer.size(); ++i) {
+        // Si un mouvement est stationnaire, alors personne n'est autorisï¿½ ï¿½ passer !
+        if (!_mouvements[_indicesAConsiderer[i]].isNotStopped())
             return -1;
-        int dist = getNpcById(mouvements[indicesAConsiderer[i]].getNpcId()).getChemin().distance();
+        int dist = getNpcById(_mouvements[_indicesAConsiderer[i]].getNpcId()).getChemin().distance();
         if (dist > distanceMax) {
             indiceMax = i;
             distanceMax = dist;
@@ -145,118 +142,118 @@ int GameManager::getIndiceMouvementPrioritaire(vector<Mouvement>& mouvements, co
     return indiceMax;
 }
 
-void GameManager::stopNonPrioritaireMouvements(vector<Mouvement>& mouvements, const vector<int>& indicesMouvementsSurMemeCaseCible, const int indiceMouvementPrioritaire, bool& continuer) {
+void GameManager::stopNonPrioritaireMouvements(vector<Mouvement>& _mouvements, const vector<int>& _indicesMouvementsSurMemeCaseCible, const int _indiceMouvementPrioritaire, bool& _continuer) {
     stringstream ss;
 
-    for (int i = 0; i < indicesMouvementsSurMemeCaseCible.size(); ++i) {
-        if (indicesMouvementsSurMemeCaseCible[i] != indiceMouvementPrioritaire) {
-            int indice = indicesMouvementsSurMemeCaseCible[i];
-            // Si le mouvement n'était pas déjà à l'arrêt alors on a réellement effectué un changement !
-            if (mouvements[indice].isNotStopped())
-                continuer = true;
-            mouvements[indice].stop();
-            npcs[mouvements[indice].getNpcId()].getChemin().resetChemin();
+    for (int i = 0; i < _indicesMouvementsSurMemeCaseCible.size(); ++i) {
+        if (_indicesMouvementsSurMemeCaseCible[i] != _indiceMouvementPrioritaire) {
+            int indice = _indicesMouvementsSurMemeCaseCible[i];
+            // Si le mouvement n'ï¿½tait pas dï¿½jï¿½ ï¿½ l'arrï¿½t alors on a rï¿½ellement effectuï¿½ un changement !
+            if (_mouvements[indice].isNotStopped())
+                _continuer = true;
+            _mouvements[indice].stop();
+            npcs[_mouvements[indice].getNpcId()].getChemin().resetChemin();
   
-            ss << "Npc " << mouvements[indice].getNpcId();
-            if (indiceMouvementPrioritaire != -1)
-                ss << " a stoppé son mouvement pour laisser la place à Npc " << mouvements[indiceMouvementPrioritaire].getNpcId();
+            ss << "Npc " << _mouvements[indice].getNpcId();
+            if (_indiceMouvementPrioritaire != -1)
+                ss << " a stoppï¿½ son mouvement pour laisser la place ï¿½ Npc " <<  _mouvements[_indiceMouvementPrioritaire].getNpcId();
             else
-                ss << " a stoppé son mouvement car quelqu'un est immobile.";
+                ss << " a stoppï¿½ son mouvement car quelqu'un est immobile.";
         }
     }
 
     GameManager::Log(ss.str());
 }
 
-void GameManager::gererCollisionsMemeCaseCible(vector<Mouvement>& mouvements) {
+void GameManager::gererCollisionsMemeCaseCible(std::vector<Mouvement>& _mouvements) {
     // Tant que l'on a fait une modification
     bool continuer = true;
     // Pour toutes les cases cibles
     while(continuer) {
         continuer = false;
-        for (auto& mouvement : mouvements) {
-            // On récupère tous les indices des mouvements qui vont sur cette case
-            vector<int> indicesMouvementsSurMemeCaseCible = getIndicesMouvementsSurMemeCaseCible(mouvements, mouvement.getTileDestination());
+        for (auto& mouvement : _mouvements) {
+            // On rï¿½cupï¿½re tous les indices des mouvements qui vont sur cette case
+           std::vector<int> indicesMouvementsSurMemeCaseCible = getIndicesMouvementsSurMemeCaseCible(_mouvements, mouvement.getTileDestination());
 
-            // Si ils sont plusieurs à vouloir aller sur cette case
+            // Si ils sont plusieurs ï¿½ vouloir aller sur cette case
             if (indicesMouvementsSurMemeCaseCible.size() >= 2) {
-                // On récupère le mouvement associé au Npc ayant le plus de chemin à faire
-                int indiceMouvementPrioritaire = getIndiceMouvementPrioritaire(mouvements, indicesMouvementsSurMemeCaseCible);
+                // On rï¿½cupï¿½re le mouvement associï¿½ au Npc ayant le plus de chemin ï¿½ faire
+                int indiceMouvementPrioritaire = getIndiceMouvementPrioritaire(_mouvements, indicesMouvementsSurMemeCaseCible);
 
                 // On passe tous les autres mouvements en Center !
-                stopNonPrioritaireMouvements(mouvements, indicesMouvementsSurMemeCaseCible, indiceMouvementPrioritaire, continuer);
+                stopNonPrioritaireMouvements(_mouvements, indicesMouvementsSurMemeCaseCible, indiceMouvementPrioritaire, continuer);
             }
         }
     }
 }
 
-void GameManager::ordonnerMouvements(vector<Mouvement>& mouvements) noexcept {
-    // Si deux npcs veulent aller sur la même case, alors celui qui a le plus de chemin à faire passe, et tous les autres restent sur place !
-    gererCollisionsMemeCaseCible(mouvements);
+void GameManager::ordonnerMouvements(std::vector<Mouvement>& _mouvements) noexcept {
+    // Si deux npcs veulent aller sur la mï¿½me case, alors celui qui a le plus de chemin ï¿½ faire passe, et tous les autres restent sur place !
+    gererCollisionsMemeCaseCible(_mouvements);
 }
 
-void GameManager::addNewTiles(const TurnInfo& ti) noexcept {
-    if (m.getNbTilesDecouvertes() < m.getNbTiles()) {
+void GameManager::addNewTiles(const TurnInfo& _tile) noexcept {
+    if (map.getNbTilesDecouvertes() < map.getNbTiles()) {
         // pour tous les npcs
-        for (auto& npc : ti.npcs) {
+        for (auto& npc : _tile.npcs) {
             // On regarde les tuiles qu'ils voyent
             for (auto& tileId : npc.second.visibleTiles) {
-                // Si ces tuiles n'ont pas été découvertes
-                if (m.getTile(tileId).getStatut() == MapTile::INCONNU) {
+                // Si ces tuiles n'ont pas ï¿½tï¿½ dï¿½couvertes
+                if (map.getTile(tileId).getStatut() == MapTile::INCONNU) {
                     // On les setDecouverte
-                    m.addTile(ti.tiles.at(tileId));
+                    map.addTile(_tile.tiles.at(tileId));
                 }
             }
         }
     }
 }
 
-void GameManager::addNewObjects(const TurnInfo& ti) noexcept {
+void GameManager::addNewObjects(const TurnInfo& _tile) noexcept {
     // Tous les objets visibles par tous les npcs ...
-    for (auto npc : ti.npcs) {
+    for (auto npc : _tile.npcs) {
         for (auto objet : npc.second.visibleObjects) {
-            // Si on ne connaît pas cet objet on l'ajoute
-            if(!m.objectExist(objet)) {
-                m.addObject(ti.objects.at(objet));
+            // Si on ne connaï¿½t pas cet objet on l'ajoute
+            if(!map.objectExist(objet)) {
+                map.addObject(ti.objects.at(objet));
             }
         }
     }
 }
 
-void GameManager::updateModel(const TurnInfo &ti) noexcept {
+void GameManager::updateModel(const TurnInfo &_tile) noexcept {
    
     stringstream ss;
 
     // On essaye de rajouter les nouvelles tiles !
-    auto pre = high_resolution_clock::now();
-    addNewTiles(ti);
-    auto post = high_resolution_clock::now();
-    ss << "Durée AddTile = " << duration_cast<microseconds>(post - pre).count() / 1000.f << "ms" << std::endl;
+    ss << "Durï¿½e AddTile = " << duration_cast<microseconds>(post - pre).count() / 1000.f << "ms" << std::endl;
+    auto pre = Minuteur::now();
+    addNewTiles(_tile);
+    auto post = Minuteur::now();
 
     // On essaye de rajouter les nouvelles tiles !
-    pre = high_resolution_clock::now();
-    addNewObjects(ti);
-    post = high_resolution_clock::now();
-    ss << "Durée AddObjects = " << duration_cast<microseconds>(post - pre).count() / 1000.f << "ms" << std::endl;
+    ss << "Durï¿½e AddObjects = " << duration_cast<microseconds>(post - pre).count() / 1000.f << "ms" << std::endl;
+    pre = Minuteur::now();
+    addNewObjects(_tile);
+    post = Minuteur::now();
 
-    // Mettre à jour nos NPCs
-    pre = std::chrono::high_resolution_clock::now();
+    // Mettre ï¿½ jour nos NPCs
+    pre = Minuteur::now();
     for (auto &npc : npcs) {
-       npc.second.floodfill(m);
+       npc.second.floodfill(map);
     }
-    post = std::chrono::high_resolution_clock::now();
-    ss << "Durée FloodFill = " << duration_cast<microseconds>(post - pre).count() / 1000.f << "ms";
+    ss << "Durï¿½e FloodFill = " << duration_cast<microseconds>(post - pre).count() / 1000.f << "ms";
 
     GameManager::Log(ss.str());
+    post = Minuteur::now();
 }
 
 
-Npc& GameManager::getNpcById(int id) {
-    if (npcs.find(id) == npcs.end())
+Npc& GameManager::getNpcById(int _id) {
+    if (npcs.find(_id) == npcs.end())
         throw npc_inexistant{};
-    return npcs[id];
+    return npcs[_id];
 }
-map<int, Npc>& GameManager::getNpcs() {
+std::map<int, Npc>& GameManager::getNpcs() {
     return npcs;
 }
 void GameManager::addNpc(Npc npc) {
@@ -265,7 +262,7 @@ void GameManager::addNpc(Npc npc) {
     npcs[npc.getId()] = npc;
 }
 
-void GameManager::reafecterObjectifsSelonDistance() {
+void GameManager::reaffecterObjectifsSelonDistance() {
     // Tant que l'on fait des modifications on continue ...
     stringstream ss;
     bool continuer = true;
@@ -279,17 +276,17 @@ void GameManager::reafecterObjectifsSelonDistance() {
                 Npc& autreNpc = autreNpcPair.second;
                 int objectifNpc = npc.getChemin().empty() ? npc.getTileId() : npc.getChemin().destination();
                 int objectifAutreNpc = autreNpc.getChemin().empty() ? autreNpc.getTileId() : autreNpc.getChemin().destination();
-                int tempsMaxChemins = max(npc.getChemin().distance(), autreNpc.getChemin().distance());
+                int tempsMaxChemins = std::max(npc.getChemin().distance(), autreNpc.getChemin().distance());
                 if (npc.getId() != autreNpc.getId()) {
-                    // Si l'interversion des objectifs est bénéfique pour l'un deux et ne coûte rien à l'autre (ou lui est aussi bénéfique)
-                    if (npc.isAccessibleTile(objectifAutreNpc) // Déjà on vérifie que l'intervertion est "possible"
+                    // Si l'interversion des objectifs est bï¿½nï¿½fique pour l'un deux et ne coï¿½te rien ï¿½ l'autre (ou lui est aussi bï¿½nï¿½fique)
+                    if (npc.isAccessibleTile(objectifAutreNpc) // Dï¿½jï¿½ on vï¿½rifie que l'intervertion est "possible"
                         && autreNpc.isAccessibleTile(objectifNpc)) {
-                        if (max(npc.distanceToTile(objectifAutreNpc), autreNpc.distanceToTile(objectifNpc)) < tempsMaxChemins) {// Ensuite que c'est rentable
+                        if (std::max(npc.distanceToTile(objectifAutreNpc), autreNpc.distanceToTile(objectifNpc)) < tempsMaxChemins) {// Ensuite que c'est rentable
                             // Alors on intervertit !                           
-                            ss << "Npc " << npc.getId() << " et Npc " << autreNpc.getId() << " échangent leurs objectifs !" << std::endl;
+                            ss << "Npc " << npc.getId() << " et Npc " << autreNpc.getId() << " ï¿½changent leurs objectifs !" << std::endl;
                             npc.getChemin() = m.aStar(npc.getTileId(), objectifAutreNpc);
                             autreNpc.getChemin() = m.aStar(autreNpc.getTileId(), objectifNpc);
-                            continuer = true; // Et on devra continuer pour vérifier que cette intervertion n'en a pas entrainé de nouvelles !
+                            continuer = true; // Et on devra continuer pour vï¿½rifier que cette intervertion n'en a pas entrainï¿½ de nouvelles !
                         }
                     }
                 }

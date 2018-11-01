@@ -5,9 +5,9 @@
 #include "../GameManager.h"
 
 class CheminsForAllNpcs : public BT_Feuille {
-   GameManager& gm;
+   GameManager& manager;
 public:
-   CheminsForAllNpcs(GameManager& gm) : gm{ gm } {}
+   CheminsForAllNpcs(GameManager& _manager) : manager{ _manager } {}
 
 
    // On vérifie si tous les npcs peuvent accéder à un objectif différent

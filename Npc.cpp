@@ -1,24 +1,23 @@
-
 #include "Npc.h"
 #include "Globals.h"
 #include "Voisin.h"
 #include "GameManager.h"
-#include <chrono>
+#include"MyBotLogic/Tools/Minuteur.h"
 #include <algorithm>
 #include <sstream>
 
-Npc::Npc(const NPCInfo info) :
-	id{ static_cast<int>(info.npcID) },
-	tileId{ static_cast<int>(info.tileID) },
+Npc::Npc(const NPCInfo _info) :
+	id{ static_cast<int>(_info.npcID) },
+	tileId{ static_cast<int>(_info.tileID) },
 	tileObjectif{ -1 },
 	chemin{ Chemin{} },
 	estArrive{ false }
 {
 }
 
-void Npc::move(const Tile::ETilePosition direction, Map &m) noexcept {
-    tileId = m.getAdjacentTileAt(tileId, direction);
-    m.getTile(tileId).setStatut(MapTile::Statut::VISITE);
+void Npc::move(const Tile::ETilePosition _direction, const Carte &_map) noexcept {
+    tileId = _map.getAdjacentTileAt(tileId, _direction);
+    _map.getTile(tileId).setStatut(MapTile::Statut::VISITE);
 }
 
 void Npc::resetChemins() noexcept {
@@ -26,26 +25,26 @@ void Npc::resetChemins() noexcept {
     scoresAssocies.clear();
 }
 
-void Npc::addChemin(Chemin& chemin) noexcept {
-    cheminsPossibles.push_back(chemin);
+void Npc::addChemin(Chemin& _chemin) noexcept {
+    cheminsPossibles.push_back(_chemin);
 }
 
 void Npc::addScore(ScoreType _score) noexcept {
     scoresAssocies.emplace_back(std::move(_score));
 }
 
-Chemin Npc::getCheminMinNonPris(const vector<int>& objectifsPris, const int tailleCheminMax) const noexcept {
+Chemin Npc::getCheminMinNonPris(const std::vector<int>& _objectifsPris, const int _tailleCheminMax) const noexcept {
     Chemin cheminMin;
     cheminMin.setInaccessible();
-    int distMin = tailleCheminMax;
+    int distMin = _tailleCheminMax;
 
     for (int i = 0; i < cheminsPossibles.size(); ++i) {
         Chemin chemin = cheminsPossibles[i];
-        // Si le chemin n'est pas déjà pris et qu'il est plus court !
-		int destination = (chemin.empty()) ? tileId : chemin.destination(); // si le npc est déjà arrivé il reste là
+        // Si le chemin n'est pas dï¿½jï¿½ pris et qu'il est plus court !
+		int destination = (chemin.empty()) ? tileId : chemin.destination(); // si le npc est dï¿½jï¿½ arrivï¿½ il reste lï¿½
         if (chemin.isAccessible()
         && chemin.distance() < distMin
-        && (objectifsPris.empty() || find(objectifsPris.begin(), objectifsPris.end(), destination) == objectifsPris.end())) {
+        && (_objectifsPris.empty() || std::find(_objectifsPris.begin(), _objectifsPris.end(), destination) == _objectifsPris.end())) {
             cheminMin = chemin;
             distMin = chemin.distance();
         }
@@ -54,11 +53,11 @@ Chemin Npc::getCheminMinNonPris(const vector<int>& objectifsPris, const int tail
     return cheminMin;
 }
 
-int Npc::affecterMeilleurChemin(const Map &m) noexcept {
+int Npc::affecterMeilleurChemin(const Carte &_map) noexcept {
     stringstream ss;
 
     if (scoresAssocies.empty()) {
-        // Dans ce cas-là on reste sur place !
+        // Dans ce cas-lï¿½ on reste sur place !
         chemin = Chemin{};
         ss << "Le Npc " << id << " n'a rien a rechercher et reste sur place !";
         GameManager::Log(ss.str());
@@ -66,28 +65,28 @@ int Npc::affecterMeilleurChemin(const Map &m) noexcept {
     }
 	
     // On cherche le meilleur score
-    auto preScore = std::chrono::high_resolution_clock::now();
+    auto preScore = Minuteur::now();
     auto bestIter = std::max_element(begin(scoresAssocies), end(scoresAssocies),
         [](const ScoreType& scoreDroite, const ScoreType& scoreGauche){
             return scoreDroite.score < scoreGauche.score;
         });
-    auto postScore = std::chrono::high_resolution_clock::now();
-    ss << "Durée chercher meilleur score = " << std::chrono::duration_cast<std::chrono::microseconds>(postScore - preScore).count() / 1000.f << "ms" <<std::endl;
+    ss << "Durï¿½e chercher meilleur score = " << std::chrono::duration_cast<std::chrono::microseconds>(postScore - preScore).count() / 1000.f << "ms" <<std::endl;
+    auto postScore = Minuteur::now();
 
     // On affecte son chemin, mais il nous faut le calculer ! =)
-    auto preAStar = std::chrono::high_resolution_clock::now();
-    chemin = m.aStar(tileId, bestIter->tuileID);
-    auto postAStar = std::chrono::high_resolution_clock::now();
+    auto preAStar = Minuteur::now();
+    chemin = _map.aStar(tileId, bestIter->tuileID);
+    auto postAStar = Minuteur::now();
 
     ss << "Le Npc " << to_string(id) << " va rechercher la tile " << chemin.destination() << std::endl;
-    ss << "Durée a* = " << std::chrono::duration_cast<std::chrono::microseconds>(postAStar - preAStar).count() / 1000.f << "ms" << std::endl;
+    ss << "Durï¿½e a* = " << std::chrono::duration_cast<std::chrono::microseconds>(postAStar - preAStar).count() / 1000.f << "ms" << std::endl;
     GameManager::Log(ss.str());
 
     // On renvoie la destination
     return chemin.destination();
 }
 
-void Npc::floodfill(const Map &m) {
+void Npc::floodfill(const Map &_map) {
     ensembleAccessible.clear();
 
     vector<int> oldOpen;
@@ -95,16 +94,16 @@ void Npc::floodfill(const Map &m) {
     vector<int> newOpen { tileId };
 
     int cout = 0;
-    // Tant qu'il reste des noeuds à traiter ...
+    // Tant qu'il reste des noeuds ï¿½ traiter ...
     while (!newOpen.empty()) {
         oldOpen = newOpen;
         newOpen = vector<int>();
-        // On regarde les voisins des dernieres tuiles ajoutées
+        // On regarde les voisins des dernieres tuiles ajoutï¿½es
         for (int tileID : oldOpen) {
-            for (auto voisinID : m.getTile(tileID).getVoisinsIDParEtat(Etats::ACCESSIBLE)) {
+            for (auto voisinID : _map.getTile(tileID).getVoisinsIDParEtat(Etats::ACCESSIBLE)) {
                 // Si elle est connu
-                if (m.getTile(voisinID).existe()) {
-                    // Si elle n'est pas déjà ajouté
+                if (_map.getTile(voisinID).existe()) {
+                    // Si elle n'est pas dï¿½jï¿½ ajoutï¿½
                     if (find_if(ensembleAccessible.begin(), ensembleAccessible.end(), [&voisinID](const DistanceType& type) {
                         return type.tuileID == voisinID; }) == ensembleAccessible.end()) {
                         // On l'ajoute comme nouvelle tuile ouverte
@@ -113,7 +112,7 @@ void Npc::floodfill(const Map &m) {
                 }
             }
 
-            // On définit les dernières tuiles ajoutés avec leur coût courant
+            // On dï¿½finit les derniï¿½res tuiles ajoutï¿½s avec leur coï¿½t courant
             if (find_if(ensembleAccessible.begin(), ensembleAccessible.end(), [&](const DistanceType& type) {
                 return type.tuileID == tileID; }) == ensembleAccessible.end()) {
                 ensembleAccessible.emplace_back(tileID, cout);
@@ -135,8 +134,8 @@ int Npc::getTileObjectif() const noexcept {
     return tileObjectif;
 }
 
-void Npc::setTileObjectif(const int idTile) noexcept {
-    tileObjectif = idTile;
+void Npc::setTileObjectif(const int _idTile) noexcept {
+    tileObjectif = _idTile;
 }
 
 Chemin& Npc::getChemin() noexcept {
@@ -166,6 +165,6 @@ bool Npc::isArrived() const noexcept {
     return estArrive;
 }
 
-void Npc::setArrived(const bool etat) noexcept {
-    estArrive = etat;
+void Npc::setArrived(const bool _etat) noexcept {
+    estArrive = _etat;
 }

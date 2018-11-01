@@ -21,7 +21,7 @@ class MyBotLogic : public virtual BotLogicIF
 {
 public:
     GameManager gm;
-    string logpath;
+    std::string logpath;
 
 	MyBotLogic();
 	virtual ~MyBotLogic();

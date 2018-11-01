@@ -2,7 +2,7 @@
 #include "GameManager.h"
 
 Chemin::Chemin()
-	: chemin{ vector<int>{} },
+	: chemin{ std::vector<int>{} },
     inaccessible{ false }
 {
 }
@@ -17,7 +17,7 @@ int Chemin::destination() const noexcept {
 	if (!chemin.empty() && !inaccessible) {
 		return chemin[0];
     } else {
-        GameManager::Log("Attention, on essaye de récupérer la destination d'un chemin vide !");
+        GameManager::log("Attention, on essaye de rï¿½cupï¿½rer la destination d'un chemin vide !");
         return -1;
     }
 }
@@ -34,8 +34,8 @@ bool Chemin::empty() const noexcept {
     return chemin.empty();
 }
 
-string Chemin::toString() const noexcept {
-    string str;
+std::string Chemin::toString() const noexcept {
+   std::string str;
     if (chemin.size() <= 0) {
         str += "vide";
     } else {
@@ -43,7 +43,7 @@ string Chemin::toString() const noexcept {
             str += "inaccessible : ";
         }
         for (int i = static_cast<int>(chemin.size() - 1); i >= 0; i--) {
-            str += to_string(chemin[i]) + " ";
+            str += std::to_string(chemin[i]) + " ";
         }
         str.pop_back();
     }

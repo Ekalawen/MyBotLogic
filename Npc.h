@@ -4,9 +4,8 @@
 #include "Globals.h"
 #include "NPCInfo.h"
 #include "Chemin.h"
-#include "Map.h"
+#include "Carte.h"
 #include <vector>
-using namespace std;
 
 class tile_inaccessible {};
 
@@ -28,45 +27,46 @@ using Scores = std::vector<ScoreType>;
 using DistanceType = Score<int>;
 using Distances = std::vector<DistanceType>;
 
-class Map;
+class Carte;
+
 class Npc {
 private:
-    vector<Chemin> cheminsPossibles; // Ceci est une variable temporaire permettant de stocker les chemins parmis lesquelles choisirs un objectif
-    Scores scoresAssocies; // Les scores associés aux tiles !
-    Distances ensembleAccessible; // ensemble des tuiles auquel un npc à accès avec la distance
+    srd::vector<Chemin> cheminsPossibles; // Ceci est une variable temporaire permettant de stocker les chemins parmis lesquelles choisirs un objectif
+    Scores scoresAssocies; // Les scores associï¿½s aux tiles !
+    Distances ensembleAccessible; // ensemble des tuiles auquel un npc ï¿½ accï¿½s avec la distance
 
     int id;
     int tileId; // Sa position sur la carte
-    int tileObjectif; // Là où il doit aller !
-    Chemin chemin; // Utilisé pour savoir quel chemin suivre pour se rendre à l'objectif
+    int tileObjectif; // Lï¿½ oï¿½ il doit aller !
+    Chemin chemin; // Utilisï¿½ pour savoir quel chemin suivre pour se rendre ï¿½ l'objectif
 
     //Distances distancesEnsembleAccessible;
 	bool estArrive; // indique si le npc a atteind son objectif
 
 public:
 
-    Npc() = default;
-    Npc(const NPCInfo);
+   Npc() = default;
+   Npc(const NPCInfo);
 
-    void move(const Tile::ETilePosition, Map&) noexcept; // Permet de faire bouger notre npc dans notre modèle =)
+    void move(const Tile::ETilePosition, Map&) noexcept; // Permet de faire bouger notre npc dans notre modï¿½le =)
 
     void resetChemins() noexcept;
     void addChemin(Chemin& chemin) noexcept;
     void addScore(ScoreType score) noexcept;
-    Chemin getCheminMinNonPris(const vector<int>& objectifsPris, const int tailleCheminMax) const noexcept; // Permet de trouver le chemin le plus court qui ne soit pas déjà pris
-    int affecterMeilleurChemin(const Map &m) noexcept; // Affecte au npc le chemin avec le meilleur score et renvoie la destination de ce chemin !
-    void floodfill(const Map &m); // Calcule le coût et l'ensemble des tiles accessibles pour un npcs, et MAJ ses attributs.
+    Chemin getCheminMinNonPris(const std::vector<int>& _objectifsPris, const int _tailleCheminMax) const noexcept; // Permet de trouver le chemin le plus court qui ne soit pas dï¿½jï¿½ pris
+    int affecterMeilleurChemin(const Map &_map) noexcept; // Affecte au npc le chemin avec le meilleur score et renvoie la destination de ce chemin !
+    void floodfill(const Map &_map); // Calcule le coï¿½t et l'ensemble des tiles accessibles pour un npcs, et MAJ ses attributs.
 
     int getId() const noexcept;
     int getTileId() const noexcept;
     int getTileObjectif() const noexcept;
-    void setTileObjectif(const int idTile) noexcept;
+    void setTileObjectif(const int _idTile) noexcept;
     Chemin& getChemin() noexcept;
     Distances& getEnsembleAccessible() noexcept;
-    bool isAccessibleTile(const int tileId) const noexcept;
-    int distanceToTile(const int tileId);
+    bool isAccessibleTile(const int _tileId) const noexcept;
+    int distanceToTile(const int _tileId);
     bool isArrived() const noexcept;
-    void setArrived(const bool etat) noexcept;
+    void setArrived(const bool _etat) noexcept;
 };
 
 #endif
