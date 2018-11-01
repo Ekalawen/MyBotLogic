@@ -2,15 +2,17 @@
 #define MAP_TILE_H
 
 #include "TileInfo.h"
-#include "MyBotLogic/Carte.h"
+#include "MyBotLogic/Map.h"
 #include "Voisin.h"
 #include <vector>
 
-class Carte;
+using namespace std;
+
+class Map;
 
 class MapTile {
 public:
-   enum Statut { INCONNU, CONNU, VISITE };
+    enum Statut{ INCONNU, CONNU, VISITE };
 
 private:
     int id;
@@ -20,14 +22,13 @@ private:
     Statut statut;
 
 public:
-   MapTile() = default; // Constructeur par dï¿½faut obligatoire pour pouvoir utiliser tuple ...
-   MapTile(unsigned int _id, Carte &_map); // Appelï¿½ dï¿½s le dï¿½but et uniquement lï¿½ !
+    MapTile() = default; // Constructeur par défaut obligatoire pour pouvoir utiliser tuple ...
+    MapTile(unsigned int id, Map &m); // Appelé dès le début et uniquement là !
 
-    void setTileDecouverte(const TileInfo& _tile) noexcept;
-    void setTileDecouverte(const TileInfo& _tile) noexcept;
+    void setTileDecouverte(const TileInfo& ti) noexcept;
 
-    void removeEtat(const Etats _etat, const int _id);
-	bool isVoisinAvecEtat(const Etats _etat, const int _id) const noexcept;
+    void removeEtat(const Etats etat, const int id);
+	bool isVoisinAvecEtat(const Etats etat, const int id) const noexcept;
 
     bool existe() const noexcept;
 
@@ -35,10 +36,10 @@ public:
     int getX() const noexcept;
     int getY() const noexcept;
     Tile::ETileType getType() const noexcept;
-    std::vector<Voisin> getVoisins() const noexcept;
-    std::vector<int> getVoisinsIDParEtat(const Etats etat) const noexcept;
+    vector<Voisin> getVoisins() const noexcept;
+    vector<int> getVoisinsIDParEtat(const Etats etat) const noexcept;
     Statut getStatut() const noexcept;
-    void setStatut(Statut _newStatut);
+    void setStatut(Statut new_statut);
 };
 
 #endif

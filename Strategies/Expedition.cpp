@@ -1,69 +1,70 @@
+
 #include "Expedition.h"
 
-Expedition::Expedition(GameManager& _manager, std::string _nom)
-    : ScoreStrategie(_manager, _nom)
+Expedition::Expedition(GameManager& gm, string nom) 
+    : ScoreStrategie(gm, nom)
 {
 }
 
-// Le score est dï¿½finit ici par plusieurs critï¿½res :
-    // Critï¿½re nï¿½cessaire : la tuile est accessible par le npc
-    // La distance du npc ï¿½ la tuile
-    // La distance moyenne de cette tile ï¿½ tous les objectifs
-    // La distance moyenne de cette tuile aux autres tuiles qui seront visitï¿½s !
-    // Le degrï¿½ d'intï¿½ret de la tuile. 
-void Expedition::saveScore(const MapTile& _tile, Npc& _npc, const std::vector<int>& _tilesAVisiter) const noexcept {
-    // Prï¿½condition : tile.statut == CONNU
+// Le score est définit ici par plusieurs critères :
+    // Critère nécessaire : la tuile est accessible par le npc
+    // La distance du npc à la tuile
+    // La distance moyenne de cette tile à tous les objectifs
+    // La distance moyenne de cette tuile aux autres tuiles qui seront visités !
+    // Le degré d'intêret de la tuile. 
+void Expedition::saveScore(const MapTile& tile, Npc& npc, const vector<int>& tilesAVisiter) const noexcept {
+    // Précondition : tile.statut == CONNU
     float score = 0;
 
-    // Si on a dï¿½jï¿½ visitï¿½ cette case, son score est nul
+    // Si on a déjà visité cette case, son score est nul
     //if (tile.statut == MapTile::Statut::VISITE) return;
 
-	// On regarde l'intï¿½ret de cette tile
-	float interetTile = interet(_tile);
-    if (interetTile == 0) return; // Si pas d'intï¿½ret, la tile ne nous intï¿½resse pas !
+	// On regarde l'intêret de cette tile
+	float interetTile = interet(tile);
+    if (interetTile == 0) return; // Si pas d'intêret, la tile ne nous intéresse pas !
 	score += interetTile * COEF_INTERET;
 
     // On enregistre le cout, cad la distance npc-tile
-    score += _npc.distanceToTile(_tile.getId()) * COEF_DISTANCE_NPC_TILE;
+    score += npc.distanceToTile(tile.getId()) * COEF_DISTANCE_NPC_TILE;
 
-    // On regarde la distance moyenne de cette tile ï¿½ tous les objectifs
+    // On regarde la distance moyenne de cette tile à tous les objectifs
     float distanceMoyenne = 0;
-    for (auto objectif : manager.map.getObjectifs()) {
-        distanceMoyenne += manager.map.distanceHex(_tile.getId(), objectif);
+    for (auto objectif : gm.m.getObjectifs()) {
+        distanceMoyenne += gm.m.distanceHex(tile.getId(), objectif);
     }
-    distanceMoyenne /= manager.map.getObjectifs().size();
+    distanceMoyenne /= gm.m.getObjectifs().size();
     score += distanceMoyenne * COEF_DISTANCE_OBJECTIFS_TILE;
 
-    // On regarde la distance moyenne de cette tuile aux autres tuiles dï¿½jï¿½ visitï¿½s
-    if (!_tilesAVisiter.empty()) {
+    // On regarde la distance moyenne de cette tuile aux autres tuiles déjà visités
+    if (!tilesAVisiter.empty()) {
         float distanceMoyenneTiles = 0;
-        for (auto autre : _tilesAVisiter) {
-            distanceMoyenneTiles += manager.map.distanceHex(_tile.getId(), autre);
+        for (auto autre : tilesAVisiter) {
+            distanceMoyenneTiles += gm.m.distanceHex(tile.getId(), autre);
         }
-        distanceMoyenneTiles /= _tilesAVisiter.size();
+        distanceMoyenneTiles /= tilesAVisiter.size();
         score += distanceMoyenneTiles * COEF_DISTANCE_TILE_AUTRE_TILES;
     }
 
-    // Il reste ï¿½ affecter le score et le chemin au npc
-    npc.addScore({ _tile.getId(), score });
+    // Il reste à affecter le score et le chemin au npc
+    npc.addScore({ tile.getId(), score });
 }
 
-// L'intï¿½rï¿½t est dï¿½finit par :
+// L'intérêt est définit par :
     // Le nombre de voisins inconnues accessibles
     // Le nombre de voisins inconnues non accessibles MAIS visibles !
-float Expedition::interet(const MapTile& _tile) const noexcept {
+float Expedition::interet(const MapTile& tile) const noexcept {
     float interet = 0;
 
     int nbInconnuesAccessibles = 0;
     int nbInconnuesNonAccessiblesMaisVisibles = 0;
-    for (auto voisinID : _tile.getVoisinsIDParEtat(Etats::MYSTERIEUX)) {
-        if (_tile.isVoisinAvecEtat(Etats::ACCESSIBLE, voisinID)) {
+    for (auto voisinID : tile.getVoisinsIDParEtat(Etats::MYSTERIEUX)) {
+        if (tile.isVoisinAvecEtat(Etats::ACCESSIBLE, voisinID)) {
             ++nbInconnuesAccessibles;
             // Si autre est inaccessible ...
         }
         else {
             // Mais visible ...
-            if (_tile.isVoisinAvecEtat(Etats::VISIBLE, voisinID)) {
+            if (tile.isVoisinAvecEtat(Etats::VISIBLE, voisinID)) {
                 ++nbInconnuesNonAccessiblesMaisVisibles;
             }
         }

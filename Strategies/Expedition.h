@@ -7,16 +7,16 @@
 
 class Expedition : public ScoreStrategie {
 public:
-    void saveScore(const MapTile& _tile, Npc& _npc, const std::vector<int>& _tilesAVisiter) const noexcept;
-    float interet(const MapTile& _tile) const noexcept;
+    void saveScore(const MapTile& tile, Npc& npc, const vector<int>& tilesAVisiter) const noexcept;
+    float interet(const MapTile& tile) const noexcept;
 
-    enum { COEF_DISTANCE_NPC_TILE = -12 }; // Il faut que ce soit nï¿½gatif
-    enum { COEF_DISTANCE_OBJECTIFS_TILE = -12 }; // Il faut que ce soit nï¿½gatif
+    enum { COEF_DISTANCE_NPC_TILE = -12 }; // Il faut que ce soit négatif
+    enum { COEF_DISTANCE_OBJECTIFS_TILE = -12 }; // Il faut que ce soit négatif
     enum { COEF_DISTANCE_TILE_AUTRE_TILES = 12 };
     enum { COEF_INTERET = 1 };
     enum { COEF_INTERET_ACCESSIBLE = 2 };
     enum { COEF_INTERET_INACCESSIBLE_MAIS_VISIBLE = 1 };
-    Expedition(GameManager&, std::string);
+    Expedition(GameManager&, string);
 };
 
 #endif
