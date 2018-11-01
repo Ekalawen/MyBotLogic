@@ -43,7 +43,7 @@ public:
             logger.Log(_str);
         #endif
     }
-    static void LogRelease(std::string _str) noexcept { // Permet de d�bugger ! :D
+    static void logRelease(std::string _str) noexcept { // Permet de d�bugger ! :D
         loggerRelease.Log(_str);
     }
     static void setLog(std::string _path, std::string _fileName) noexcept { // Permet d'initialiser le logger =)

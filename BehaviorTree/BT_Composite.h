@@ -5,10 +5,10 @@
 
 class BT_Composite : public BT_Noeud {
 public:
-   std::vector<BT_Noeud*> noeuds;
+   std::vector<std::unique_ptr<BT_Noeud>> noeuds;
 
    BT_Composite() = default;
-   BT_Composite(std::vector<BT_Noeud*> _noeuds) : noeuds{ _noeuds } {
+   BT_Composite(std::vector<std::unique_ptr<BT_Noeud>>&& _noeuds) : noeuds{ std::move(_noeuds) } {
    }
 
    virtual ETAT_ELEMENT execute() noexcept override = 0;

@@ -15,7 +15,7 @@ Npc::Npc(const NPCInfo _info) :
 {
 }
 
-void Npc::move(const Tile::ETilePosition _direction, const Carte &_map) noexcept {
+void Npc::move(const Tile::ETilePosition _direction, Carte& _map) noexcept {
     tileId = _map.getAdjacentTileAt(tileId, _direction);
     _map.getTile(tileId).setStatut(MapTile::Statut::VISITE);
 }
@@ -53,14 +53,14 @@ Chemin Npc::getCheminMinNonPris(const std::vector<int>& _objectifsPris, const in
     return cheminMin;
 }
 
-int Npc::affecterMeilleurChemin(const Carte &_map) noexcept {
-    stringstream ss;
+int Npc::affecterMeilleurChemin(const Carte&_map) noexcept {
+    std::stringstream ss;
 
     if (scoresAssocies.empty()) {
         // Dans ce cas-l� on reste sur place !
         chemin = Chemin{};
         ss << "Le Npc " << id << " n'a rien a rechercher et reste sur place !";
-        GameManager::Log(ss.str());
+        GameManager::log(ss.str());
         return tileId;
     }
 	
@@ -70,34 +70,35 @@ int Npc::affecterMeilleurChemin(const Carte &_map) noexcept {
         [](const ScoreType& scoreDroite, const ScoreType& scoreGauche){
             return scoreDroite.score < scoreGauche.score;
         });
-    ss << "Dur�e chercher meilleur score = " << std::chrono::duration_cast<std::chrono::microseconds>(postScore - preScore).count() / 1000.f << "ms" <<std::endl;
     auto postScore = Minuteur::now();
+    ss << "Dur�e chercher meilleur score = " << Minuteur::dureeMicroseconds(preScore, postScore) / 1000.f << "ms" <<std::endl;
+    
 
     // On affecte son chemin, mais il nous faut le calculer ! =)
     auto preAStar = Minuteur::now();
     chemin = _map.aStar(tileId, bestIter->tuileID);
     auto postAStar = Minuteur::now();
 
-    ss << "Le Npc " << to_string(id) << " va rechercher la tile " << chemin.destination() << std::endl;
-    ss << "Dur�e a* = " << std::chrono::duration_cast<std::chrono::microseconds>(postAStar - preAStar).count() / 1000.f << "ms" << std::endl;
-    GameManager::Log(ss.str());
+    ss << "Le Npc " << std::to_string(id) << " va rechercher la tile " << chemin.destination() << std::endl;
+    ss << "Dur�e a* = " << Minuteur::dureeMicroseconds(preAStar, postAStar) / 1000.f << "ms" << std::endl;
+    GameManager::log(ss.str());
 
     // On renvoie la destination
     return chemin.destination();
 }
 
-void Npc::floodfill(const Map &_map) {
+void Npc::floodfill(const Carte& _map) {
     ensembleAccessible.clear();
 
-    vector<int> oldOpen;
+    std::vector<int> oldOpen;
     // On ajoute le noeud initial
-    vector<int> newOpen { tileId };
+    std::vector<int> newOpen { tileId };
 
     int cout = 0;
     // Tant qu'il reste des noeuds � traiter ...
     while (!newOpen.empty()) {
         oldOpen = newOpen;
-        newOpen = vector<int>();
+        newOpen = std::vector<int>();
         // On regarde les voisins des dernieres tuiles ajout�es
         for (int tileID : oldOpen) {
             for (auto voisinID : _map.getTile(tileID).getVoisinsIDParEtat(Etats::ACCESSIBLE)) {

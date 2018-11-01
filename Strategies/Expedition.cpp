@@ -45,7 +45,7 @@ void Expedition::saveScore(const MapTile& _tile, Npc& _npc, const std::vector<in
     }
 
     // Il reste � affecter le score et le chemin au npc
-    npc.addScore({ _tile.getId(), score });
+    _npc.addScore({ _tile.getId(), score });
 }
 
 // L'int�r�t est d�finit par :

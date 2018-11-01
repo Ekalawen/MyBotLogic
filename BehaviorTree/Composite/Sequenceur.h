@@ -8,7 +8,7 @@ class Sequenceur : public BT_Composite {
 public:
 
    Sequenceur() = default;
-   Sequenceur(std::vector<BT_Noeud*> _noeuds) : BT_Composite(_noeuds) {
+   Sequenceur(std::vector<std::unique_ptr<BT_Noeud>>&& _noeuds) : BT_Composite(std::move(_noeuds)) {
    }
   
    BT_Noeud::ETAT_ELEMENT execute() noexcept override {

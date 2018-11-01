@@ -64,8 +64,8 @@ float Noeud::coefEvaluation = 1;
 // Il s'agit de l'algorithme AStar auquel on peut rajouter un coefficiant � l'�valuation pour modifier l'heuristique.
 // Par d�faut sa valeur est 1. Si on l'augmente l'algorithme ira plus vite au d�triment de trouver un chemin optimal.
 // Si on le diminue l'algorithme se rapproche de plus en plus d'un parcours en largeur.
-Chemin Carte::aStar(const int depart, const int arrivee, const float coefEvaluation) const noexcept {
-    Noeud::coefEvaluation = coefEvaluation;
+Chemin Carte::aStar(const int _depart, const int _arrivee, const float _coefEvaluation) const noexcept {
+    Noeud::coefEvaluation = _coefEvaluation;
     // On cr�e nos liste et notre noeud courrant
     std::vector<Noeud> closedList{};
     std::vector<Noeud> openList{};
@@ -84,7 +84,7 @@ Chemin Carte::aStar(const int depart, const int arrivee, const float coefEvaluat
             // On v�rifie que le voisin existe ...
             if (tiles[voisinID].existe()) {
                 // On construit le nouveau noeud
-                Noeud nouveauNoeud = Noeud(tiles[voisinID], noeudCourant.cout + 1, distanceL2(voisinID, arrivee), noeudCourant.tile.getId());
+                Noeud nouveauNoeud = Noeud(tiles[voisinID], noeudCourant.cout + 1, distanceL2(voisinID, _arrivee), noeudCourant.tile.getId());
                 // On v�rifie s'il existe dans closedList avec un cout inf�rieur ou dans openList avec un cout inf�rieur
                 auto itClose = find(closedList.begin(), closedList.end(), nouveauNoeud);
                 auto itOpen = find(openList.begin(), openList.end(), nouveauNoeud);
@@ -136,8 +136,8 @@ Chemin Carte::aStar(const int depart, const int arrivee, const float coefEvaluat
     return path;
 }
 
-Tile::ETilePosition Carte::getDirection(const int ind1, const int ind2) const noexcept {
-    int y = getY(ind1);
+Tile::ETilePosition Carte::getDirection(const int _tileFrom, const int _tileTo) const noexcept {
+    int y = getY(_tileFrom);
     bool pair = (y % 2 == 0);
     if (pair) {
         if (_tileTo == _tileFrom - colCount) {
@@ -173,8 +173,8 @@ Tile::ETilePosition Carte::getDirection(const int ind1, const int ind2) const no
     return Tile::CENTER;
 }
 
-int Carte::getAdjacentTileAt(const int tileSource, const Tile::ETilePosition direction) const noexcept {
-    int y = getY(tileSource);
+int Carte::getAdjacentTileAt(const int _tileSource, const Tile::ETilePosition _direction) const noexcept {
+    int y = getY(_tileSource);
     bool pair = (y % 2 == 0);
     int res;
     switch (_direction)
@@ -255,7 +255,7 @@ int Carte::tailleCheminMax() const noexcept {
 }
 
 // Il ne faut pas ajouter une tile qui est d�j� dans la map !
-void Carte::addTile(const TileInfo& tile) noexcept {
+void Carte::addTile(const TileInfo& _tile) noexcept {
     // On met � jour le nombre de tiles
     ++nbTilesDecouvertes;
 
@@ -266,28 +266,28 @@ void Carte::addTile(const TileInfo& tile) noexcept {
         objectifs.push_back(_tile.tileID);
     }
 
-    if (tiles[tile.tileID].getType() == Tile::TileAttribute_Forbidden) {
-        for (auto voisin : tiles[tile.tileID].getVoisins()) {
-            tiles[voisin.getTuileIndex()].removeEtat(Etats::ACCESSIBLE, tile.tileID);
+    if (tiles[_tile.tileID].getType() == Tile::TileAttribute_Forbidden) {
+        for (auto voisin : tiles[_tile.tileID].getVoisins()) {
+            tiles[voisin.getTuileIndex()].removeEtat(Etats::ACCESSIBLE, _tile.tileID);
         }
     }
 
     // Puis on met � jour les voisins de ses voisins ! :D
-    for (auto voisinID : tiles[tile.tileID].getVoisinsIDParEtat(Etats::VISIBLE)) {
+    for (auto voisinID : tiles[_tile.tileID].getVoisinsIDParEtat(Etats::VISIBLE)) {
         // Si ce voisin l'a en voisin myst�rieux, on le lui enl�ve
-        tiles[voisinID].removeEtat(Etats::MYSTERIEUX, tile.tileID);
+        tiles[voisinID].removeEtat(Etats::MYSTERIEUX, _tile.tileID);
     }
 
     // On le note !
-    stringstream ss;
-    ss << "Decouverte de la tile " << tile.tileID;
-    GameManager::Log(ss.str());
+    std::stringstream ss;
+    ss << "Decouverte de la tile " << _tile.tileID;
+    GameManager::log(ss.str());
 }
 
 // Il ne faut pas ajouter un objet qui est d�j� dans la map !
-void Carte::addObject(const ObjectInfo& object) noexcept {
-    int voisin1 = object.tileID;
-	int voisin2 = getAdjacentTileAt(object.tileID, object.position);
+void Carte::addObject(const ObjectInfo& _object) noexcept {
+    int voisin1 = _object.tileID;
+	int voisin2 = getAdjacentTileAt(_object.tileID, _object.position);
 
     // On ajoute notre objet � l'ensemble de nos objets
     if (_object.objectTypes.find(Object::ObjectType_Wall) != _object.objectTypes.end()) {
@@ -346,9 +346,9 @@ void Carte::addObject(const ObjectInfo& object) noexcept {
     
     // On le note !
 
-    stringstream ss;
-    ss << "Decouverte de l'objet " << object.objectID << " sur la tuile " << object.tileID << " orient� en " << object.position;
-    GameManager::Log(ss.str());
+    std::stringstream ss;
+    ss << "Decouverte de l'objet " << _object.objectID << " sur la tuile " << _object.tileID << " orient� en " << _object.position;
+    GameManager::log(ss.str());
 }
 
 int Carte::getX(const int id) const noexcept {
@@ -373,19 +373,19 @@ int Carte::getNbTilesDecouvertes() const noexcept {
     return nbTilesDecouvertes;
 }
 
-MapTile& Carte::getTile(const int id) {
-    if (id < 0 || id >= getNbTiles())
+MapTile& Carte::getTile(const int _id) {
+    if (_id < 0 || _id >= getNbTiles())
         throw tile_inexistante{};
     return tiles[_id];
 }
 
-const MapTile& Carte::getTile(const int id) const {
-    if (id < 0 || id >= getNbTiles())
+const MapTile& Carte::getTile(const int _id) const {
+    if (_id < 0 || _id >= getNbTiles())
         throw tile_inexistante{};
-    return tiles[id];
+    return tiles[_id];
 }
 
-vector<unsigned int> Carte::getObjectifs() {
+std::vector<unsigned int> Carte::getObjectifs() {
     return objectifs;
 }
 

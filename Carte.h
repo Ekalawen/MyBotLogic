@@ -27,7 +27,7 @@ class Carte {
 
 public:
     Carte() = default;
-    Carte(const LevelInfo);
+    Carte(const LevelInfo&);
     bool isInMap(const int _idTile) const noexcept;
     std::vector<unsigned int> getObjectifs() const noexcept;
 

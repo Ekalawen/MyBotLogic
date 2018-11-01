@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-MapTile::MapTile(unsigned int _id, Map &_map) :
+MapTile::MapTile(unsigned int _id, Carte& _map) :
     id{ static_cast<int>(_id) },
     x{ static_cast<int>(_id) % _map.getColCount() },
     y{ static_cast<int>(_id) / _map.getColCount() },
@@ -33,7 +33,7 @@ MapTile::MapTile(unsigned int _id, Map &_map) :
            voisins.emplace_back(indice, Tile::SE);
         }
         // SW 
-        indice = _id + m.getColCount() - 1;
+        indice = _id + _map.getColCount() - 1;
         if (_map.isInMap(indice) && y < _map.getRowCount() - 1 && x > 0) {
            voisins.emplace_back(indice, Tile::SW);
         }
@@ -123,13 +123,13 @@ Tile::ETileType MapTile::getType() const noexcept {
     return type;
 }
 
-vector<Voisin> MapTile::getVoisins() const noexcept {
+std::vector<Voisin> MapTile::getVoisins() const noexcept {
     return voisins;
 }
 
-vector<int> MapTile::getVoisinsIDParEtat(const Etats _etat) const noexcept {
+std::vector<int> MapTile::getVoisinsIDParEtat(const Etats _etat) const noexcept {
 
-    vector<int> resultat;
+   std::vector<int> resultat;
 
     std::for_each(begin(voisins), end(voisins), [&](const Voisin& v) {
         if (v.estEtat(_etat))

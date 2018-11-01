@@ -13,8 +13,7 @@ Exploration::Exploration(GameManager& _manager, std::string _nom)
     // La distance du npc � la tuile
     // La distance moyenne de cette tuile aux autres tuiles qui seront visit�s !
     // Le degr� d'int�ret de la tuile. 
-void Exploration::saveScore(const MapTile& _tile, Npc& _npc, const vector<int>& _tilesAVisiter) const noexcept {
-void Exploration::saveScore(const MapTile& tile, Npc& npc, const vector<int>& tilesAVisiter) const noexcept {
+void Exploration::saveScore(const MapTile& _tile, Npc& _npc, const std::vector<int>& _tilesAVisiter) const noexcept {
     float score = 0;
 
     // Si on a d�j� visit� cette case, son score est nul

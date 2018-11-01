@@ -1,6 +1,7 @@
 #include "CheminsForAllNpcs.h"
 #include "../BehaviorTree/BT_Noeud.h"
 #include "MyBotLogic/Tools/Minuteur.h"
+#include <sstream>
 
 // V�rifier si un objectif est accessible pour tous nos NPCs
 BT_Noeud::ETAT_ELEMENT CheminsForAllNpcs::execute() noexcept {
@@ -31,10 +32,10 @@ BT_Noeud::ETAT_ELEMENT CheminsForAllNpcs::execute() noexcept {
       // Sinon on retourne ECHEC
       } else {
          auto post = Minuteur::now();
-         stringstream ss;
-         ss << "Dur�e CheminsForAll = " << std::chrono::duration_cast<std::chrono::microseconds>(post - pre).count() / 1000.f << "ms" << std::endl 
+         std::stringstream ss;
+         ss << "Dur�e CheminsForAll = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms" << std::endl
             << "Il n'y a pas de chemins pour tous les npcs !";
-         GameManager::Log(ss.str());
+         GameManager::log(ss.str());
          // Si le cheminMin n'a pas �t� initialis�, c'est qu'il n'y a pas de chemins pour tous les npcs !
          return ETAT_ELEMENT::ECHEC;
       }

@@ -21,9 +21,8 @@ private:
 
 public:
    MapTile() = default; // Constructeur par d�faut obligatoire pour pouvoir utiliser tuple ...
-   MapTile(unsigned int _id, Carte &_map); // Appel� d�s le d�but et uniquement l� !
+   MapTile(unsigned int _id, Carte& _map); // Appel� d�s le d�but et uniquement l� !
 
-    void setTileDecouverte(const TileInfo& _tile) noexcept;
     void setTileDecouverte(const TileInfo& _tile) noexcept;
 
     void removeEtat(const Etats _etat, const int _id);
@@ -36,7 +35,7 @@ public:
     int getY() const noexcept;
     Tile::ETileType getType() const noexcept;
     std::vector<Voisin> getVoisins() const noexcept;
-    std::vector<int> getVoisinsIDParEtat(const Etats etat) const noexcept;
+    std::vector<int> getVoisinsIDParEtat(const Etats _etat) const noexcept;
     Statut getStatut() const noexcept;
     void setStatut(Statut _newStatut);
 };
