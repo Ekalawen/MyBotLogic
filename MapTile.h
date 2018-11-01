@@ -10,17 +10,17 @@ class Map;
 
 class MapTile {
 public:
-    enum Statut{INCONNU,CONNU,VISITE};
+    enum Statut { INCONNU, CONNU, VISITE };
 
 private:
     int id;
     int x, y; // La position de la tile. x est l'indice de colonne, y est l'indice de ligne.
     Tile::ETileType type;
-   int voisinsDirection[6] = { -1,-1,-1,-1,-1,-1 };
+    int voisinsDirection[6] = { -1,-1,-1,-1,-1,-1 };
     vector<int> voisins; // les identifiants des voisins de la tuile
-	vector<int> voisinsAccessibles; // les voisins connus et accessible (pas de murs ni de fenêtres) y compris les voisinsMysterious
-	vector<int> voisinsVisibles; // les voisins visibles (contient les voisins accessibles et les voisins fenetres)
-	vector<int> voisinsMysterious; // les voisins sur lequel on a pas encore d'information
+    vector<int> voisinsAccessibles; // les voisins connus et accessible (pas de murs ni de fenêtres) y compris les voisinsMysterious
+    vector<int> voisinsVisibles; // les voisins visibles (contient les voisins accessibles et les voisins fenetres)
+    vector<int> voisinsMysterious; // les voisins sur lequel on a pas encore d'information
     Statut statut;
 
 public:
@@ -33,9 +33,9 @@ public:
     void removeVisible(int id);
 
     int getVoisinByDirection(Tile::ETilePosition direction) const noexcept; // Permet de récupérer le voisin dans une certaine direction d'une tile
-	bool isVoisinAccessible(int id) const noexcept;
-	bool isVoisinVisible(int id) const noexcept;
-	bool isVoisinMysterious(int id) const noexcept;
+    bool isVoisinAccessible(int id) const noexcept;
+    bool isVoisinVisible(int id) const noexcept;
+    bool isVoisinMysterious(int id) const noexcept;
 
     bool existe();
 

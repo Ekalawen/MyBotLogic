@@ -46,6 +46,7 @@ MyBotLogic::MyBotLogic() :
     // Le logger
 	GameManager::SetLog(logpath, "MyLog.log");
 	GameManager::SetLogRelease(logpath, "MyLogRelease.log");
+
     // On crée notre modèle du jeu en cours !
     gm = GameManager(_levelInfo);
     gm.InitializeBehaviorTree();
