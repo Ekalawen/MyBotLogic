@@ -1,31 +1,31 @@
 #include "Mouvement.h"
 
-Mouvement::Mouvement(int _npcID, int _tileSource, int _tileDestination, Tile::ETilePosition _direction)
-: npcID(_npcID), tileSource(_tileSource), tileDestination(_tileDestination), direction(_direction)
+Mouvement::Mouvement(const int _npcID, const int _tileSource, const int _tileDestination, const Tile::ETilePosition _direction)
+: npcID{_npcID}, tileSource{_tileSource}, tileDestination{_tileDestination}, direction{_direction}
 {
 }
 
-void Mouvement::stop() {
+void Mouvement::stop() noexcept {
     direction = Tile::CENTER;
     tileDestination = tileSource;
 }
 
-bool Mouvement::isNotStopped() {
+bool Mouvement::isNotStopped() const noexcept {
     return direction != Tile::CENTER;
 }
 
-int Mouvement::getNpcId() {
+int Mouvement::getNpcId() const noexcept {
     return npcID;
 }
 
-int Mouvement::getTileSource() {
+int Mouvement::getTileSource() const noexcept {
     return tileSource;
 }
 
-int Mouvement::getTileDestination() {
+int Mouvement::getTileDestination() const noexcept {
     return tileDestination;
 }
 
-Tile::ETilePosition Mouvement::getDirection() {
+Tile::ETilePosition Mouvement::getDirection() const noexcept {
     return direction;
 }

@@ -1,7 +1,10 @@
 #include "Npc.h"
 #include "Globals.h"
+#include "Voisin.h"
 #include "GameManager.h"
 #include"MyBotLogic/Tools/Minuteur.h"
+#include <algorithm>
+#include <sstream>
 
 Npc::Npc(const NPCInfo _info) :
 	id{ static_cast<int>(_info.npcID) },
@@ -12,8 +15,7 @@ Npc::Npc(const NPCInfo _info) :
 {
 }
 
-
-void Npc::move(Tile::ETilePosition _direction, Carte &_map) noexcept {
+void Npc::move(const Tile::ETilePosition _direction, const Carte &_map) noexcept {
     tileId = _map.getAdjacentTileAt(tileId, _direction);
     _map.getTile(tileId).setStatut(MapTile::Statut::VISITE);
 }
@@ -27,19 +29,19 @@ void Npc::addChemin(Chemin& _chemin) noexcept {
     cheminsPossibles.push_back(_chemin);
 }
 
-void Npc::addScore(int _tileIndice, float _score) noexcept {
-    scoresAssocies[_tileIndice] = _score;
+void Npc::addScore(ScoreType _score) noexcept {
+    scoresAssocies.emplace_back(std::move(_score));
 }
 
-Chemin Npc::getCheminMinNonPris(std::vector<int> _objectifsPris, int _tailleCheminMax) const noexcept {
+Chemin Npc::getCheminMinNonPris(const std::vector<int>& _objectifsPris, const int _tailleCheminMax) const noexcept {
     Chemin cheminMin;
     cheminMin.setInaccessible();
     int distMin = _tailleCheminMax;
 
     for (int i = 0; i < cheminsPossibles.size(); ++i) {
         Chemin chemin = cheminsPossibles[i];
-        // Si le chemin n'est pas déjà pris et qu'il est plus court !
-		int destination = (chemin.empty()) ? tileId : chemin.destination(); // si le npc est déjà arrivé il reste là
+        // Si le chemin n'est pas dï¿½jï¿½ pris et qu'il est plus court !
+		int destination = (chemin.empty()) ? tileId : chemin.destination(); // si le npc est dï¿½jï¿½ arrivï¿½ il reste lï¿½
         if (chemin.isAccessible()
         && chemin.distance() < distMin
         && (_objectifsPris.empty() || std::find(_objectifsPris.begin(), _objectifsPris.end(), destination) == _objectifsPris.end())) {
@@ -51,139 +53,118 @@ Chemin Npc::getCheminMinNonPris(std::vector<int> _objectifsPris, int _tailleChem
     return cheminMin;
 }
 
-void testBestScore(std::pair<const int, float> _pair, float& _bestScore, int& _bestScoreIndice) {
-    int tileId = _pair.first;
-    float score = _pair.second;
-    GameManager::log("Case potentielle à explorer : " + std::to_string(tileId) + " de score " + std::to_string(score));
-    if (score > _bestScore) {
-        _bestScore = score;
-        _bestScoreIndice = tileId;
-    }
-}
+int Npc::affecterMeilleurChemin(const Carte &_map) noexcept {
+    stringstream ss;
 
-int Npc::affecterMeilleurChemin(Carte &_map) noexcept {
     if (scoresAssocies.empty()) {
-        // Dans ce cas-là on reste sur place !
+        // Dans ce cas-lï¿½ on reste sur place !
         chemin = Chemin{};
-        GameManager::log("Le Npc " + std::to_string(id) + " n'a rien a rechercher et reste sur place !");
+        ss << "Le Npc " << id << " n'a rien a rechercher et reste sur place !";
+        GameManager::Log(ss.str());
         return tileId;
     }
 	
     // On cherche le meilleur score
     auto preScore = Minuteur::now();
-    float bestScore = scoresAssocies.begin()->second;
-    int bestScoreIndice = scoresAssocies.begin()->first;
-    for (auto pair : scoresAssocies) {
-        testBestScore(pair, bestScore, bestScoreIndice);
-    }
+    auto bestIter = std::max_element(begin(scoresAssocies), end(scoresAssocies),
+        [](const ScoreType& scoreDroite, const ScoreType& scoreGauche){
+            return scoreDroite.score < scoreGauche.score;
+        });
+    ss << "Durï¿½e chercher meilleur score = " << std::chrono::duration_cast<std::chrono::microseconds>(postScore - preScore).count() / 1000.f << "ms" <<std::endl;
     auto postScore = Minuteur::now();
-    GameManager::log("Durée chercher meilleur score = " + std::to_string(Minuteur::dureeMicroseconds(preScore, postScore) / 1000.f) + "ms");
 
     // On affecte son chemin, mais il nous faut le calculer ! =)
     auto preAStar = Minuteur::now();
-    chemin = _map.aStar(tileId, bestScoreIndice);
+    chemin = _map.aStar(tileId, bestIter->tuileID);
     auto postAStar = Minuteur::now();
-    GameManager::log("Le Npc " + std::to_string(id) + " va rechercher la tile " + std::to_string(chemin.destination()));
-    GameManager::log("Durée a* = " + std::to_string(Minuteur::dureeMicroseconds(preAStar, postAStar) / 1000.f) + "ms");
+
+    ss << "Le Npc " << to_string(id) << " va rechercher la tile " << chemin.destination() << std::endl;
+    ss << "Durï¿½e a* = " << std::chrono::duration_cast<std::chrono::microseconds>(postAStar - preAStar).count() / 1000.f << "ms" << std::endl;
+    GameManager::Log(ss.str());
 
     // On renvoie la destination
     return chemin.destination();
 }
 
-void ajoutIfUnkown(Carte &_map, int _voisin, const std::vector<int>& _oldOpen, const std::vector<int>& _open, std::vector<int>& _newOpen) {
-    // Si elle est connu
-    if (_map.getTile(_voisin).existe()) {
-       // Si elle n'est pas déjà ajouté
-       if (find(_oldOpen.begin(), _oldOpen.end(), _voisin) == _oldOpen.end() && find(_open.begin(), _open.end(), _voisin) == _open.end()) {
-          // On l'ajoute comme nouvelle tuile ouverte
-          _newOpen.push_back(_voisin);
-       }
+void Npc::floodfill(const Map &_map) {
+    ensembleAccessible.clear();
+
+    vector<int> oldOpen;
+    // On ajoute le noeud initial
+    vector<int> newOpen { tileId };
+
+    int cout = 0;
+    // Tant qu'il reste des noeuds ï¿½ traiter ...
+    while (!newOpen.empty()) {
+        oldOpen = newOpen;
+        newOpen = vector<int>();
+        // On regarde les voisins des dernieres tuiles ajoutï¿½es
+        for (int tileID : oldOpen) {
+            for (auto voisinID : _map.getTile(tileID).getVoisinsIDParEtat(Etats::ACCESSIBLE)) {
+                // Si elle est connu
+                if (_map.getTile(voisinID).existe()) {
+                    // Si elle n'est pas dï¿½jï¿½ ajoutï¿½
+                    if (find_if(ensembleAccessible.begin(), ensembleAccessible.end(), [&voisinID](const DistanceType& type) {
+                        return type.tuileID == voisinID; }) == ensembleAccessible.end()) {
+                        // On l'ajoute comme nouvelle tuile ouverte
+                        newOpen.push_back(voisinID);
+                    }
+                }
+            }
+
+            // On dï¿½finit les derniï¿½res tuiles ajoutï¿½s avec leur coï¿½t courant
+            if (find_if(ensembleAccessible.begin(), ensembleAccessible.end(), [&](const DistanceType& type) {
+                return type.tuileID == tileID; }) == ensembleAccessible.end()) {
+                ensembleAccessible.emplace_back(tileID, cout);
+            }
+        }
+        cout++;
     }
 }
 
-void addNewVoisins(Carte &_map, int _tileID, const std::vector<int>& _oldOpen, std::vector<int>& _open, std::vector<int>& _newOpen, std::map<int, int>& _coutCasesAccessibles, int _cout) {
-     for (auto voisin : _map.getTile(_tileID).getVoisinsAccessibles()) {
-         ajoutIfUnkown(_map, voisin, _oldOpen, _open, _newOpen);
-     }
-     // On définit les dernières tuiles ajoutés avec leur coût courant
-     if (find(_open.begin(), _open.end(), _tileID) == _open.end()) {
-        _open.push_back(_tileID);
-        _coutCasesAccessibles[_tileID] = _cout;
-     }       
-}
-
-void parcourirNewVoisins(Carte &_map, int _tileID, std::vector<int>& _oldOpen, std::vector<int>& _open, std::vector<int>& _newOpen, std::map<int, int>& _coutCasesAccessibles, int& _cout) {
-    _oldOpen = _newOpen;
-    _newOpen = std::vector<int>();
-    // On regarde les voisins des dernieres tuiles ajoutées
-    for (int tileID : _oldOpen) {
-        addNewVoisins(_map, tileID, _oldOpen, _open, _newOpen, _coutCasesAccessibles, _cout);
-    }
-    _cout++;
-}
-
-void Npc::floodfill(Carte &_map) {
-   std::vector<int> _open;
-   std::vector<int> _oldOpen;
-   std::vector<int> _newOpen;
-   std::map<int, int> _coutCasesAccessibles;
-
-   // On ajoute le noeud initial
-   _newOpen.push_back(tileId);
-
-   int cout = 0;
-   // Tant qu'il reste des noeuds à traiter ...
-   while (!_newOpen.empty()) {
-       parcourirNewVoisins(_map, tileId, _oldOpen, _open, _newOpen, _coutCasesAccessibles, cout);
-   }
-
-   // On met à jour l'ensemble et les distances accessible d'un NPC
-   ensembleAccessible = _open;
-   distancesEnsembleAccessible = _coutCasesAccessibles;
-}
-
-int Npc::getId() {
+int Npc::getId() const noexcept {
     return id;
 }
 
-int Npc::getTileId() {
+int Npc::getTileId() const noexcept {
     return tileId;
 }
 
-int Npc::getTileObjectif() {
+int Npc::getTileObjectif() const noexcept {
     return tileObjectif;
 }
 
-void Npc::setTileObjectif(int _idTile) {
+void Npc::setTileObjectif(const int _idTile) noexcept {
     tileObjectif = _idTile;
 }
 
-Chemin& Npc::getChemin() {
+Chemin& Npc::getChemin() noexcept {
     return chemin;
 }
 
-std::vector<int> Npc::getEnsembleAccessible() {
+Distances& Npc::getEnsembleAccessible() noexcept {
     return ensembleAccessible;
 }
 
-bool Npc::isAccessibleTile(int _tileId) {
-    return find(ensembleAccessible.begin(), ensembleAccessible.end(), _tileId) != ensembleAccessible.end();
+bool Npc::isAccessibleTile(const int _tuileID) const noexcept {
+    return std::find_if(begin(ensembleAccessible), end(ensembleAccessible), [&_tuileID](const DistanceType& type) {
+        return type.tuileID == _tuileID;
+    }) != end(ensembleAccessible);
 }
 
-int Npc::distanceToTile(int _tileId) {
-    if (!isAccessibleTile(_tileId))
+int Npc::distanceToTile(const int _tuileID) {
+    if (!isAccessibleTile(_tuileID))
         throw tile_inaccessible{};
-    return distancesEnsembleAccessible[_tileId];
+
+    return std::find_if(begin(ensembleAccessible), end(ensembleAccessible), [&_tuileID](const DistanceType& type) {
+        return type.tuileID == _tuileID;
+    })->score;
 }
 
-std::map<int, int> Npc::getDistancesEnsembleAccessible() {
-    return distancesEnsembleAccessible;
-}
-
-bool Npc::isArrived() {
+bool Npc::isArrived() const noexcept {
     return estArrive;
 }
 
-void Npc::setArrived(bool _etat) {
+void Npc::setArrived(const bool _etat) noexcept {
     estArrive = _etat;
 }

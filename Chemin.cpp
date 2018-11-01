@@ -17,7 +17,7 @@ int Chemin::destination() const noexcept {
 	if (!chemin.empty() && !inaccessible) {
 		return chemin[0];
     } else {
-        GameManager::log("Attention, on essaye de récupérer la destination d'un chemin vide !");
+        GameManager::log("Attention, on essaye de rï¿½cupï¿½rer la destination d'un chemin vide !");
         return -1;
     }
 }
@@ -58,18 +58,18 @@ void Chemin::removeFirst() {
         chemin.pop_back();
 }
 
-void Chemin::addFirst(int _elem) {
-    chemin.push_back(_elem);
+void Chemin::addFirst(const int elem) {
+    chemin.push_back(elem);
 }
 
-int Chemin::getFirst() {
+int Chemin::getFirst() const {
     if (empty())
         throw chemin_vide{};
     else
         return chemin.back();
 }
 
-void Chemin::resetChemin() {
+void Chemin::resetChemin() noexcept {
     chemin.clear();
     inaccessible = false;
 }

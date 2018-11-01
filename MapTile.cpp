@@ -4,142 +4,106 @@
 #include "TileInfo.h"
 #include "GameManager.h"
 
-MapTile::MapTile(unsigned int _id, Carte &_map) :
+#include <algorithm>
+
+MapTile::MapTile(unsigned int _id, Map &_map) :
     id{ static_cast<int>(_id) },
     x{ static_cast<int>(_id) % _map.getColCount() },
     y{ static_cast<int>(_id) / _map.getColCount() },
-	voisins{ std::vector<int>{} },
     type{ Tile::ETileType::TileAttribute_Default },
     statut{ INCONNU }
 {
 	voisins.reserve(6);
-    // On regarde sur quelle ligne on est, car ça change les indices
+    // On regarde sur quelle ligne on est, car ï¿½a change les indices
     int indice;
     if (y % 2 == 0) { // Ligne paire
                       // NE
         indice = _id - _map.getColCount();
         if (_map.isInMap(indice) && y > 0) {
-            voisinsDirection[Tile::NE] = indice;
-            voisins.push_back(indice);
+            voisins.emplace_back(indice, Tile::NE);
         }
         // E
         indice = _id + 1;
         if (_map.isInMap(indice) && x < _map.getColCount() - 1) {
-           voisinsDirection[Tile::E] = indice;
-            voisins.push_back(indice);
+           voisins.emplace_back(indice, Tile::E);
         }
         // SE
         indice = _id + _map.getColCount();
         if (_map.isInMap(indice) && y < _map.getRowCount() - 1) {
-           voisinsDirection[Tile::SE] = indice;
-            voisins.push_back(indice);
+           voisins.emplace_back(indice, Tile::SE);
         }
         // SW 
-        indice = _id + _map.getColCount() - 1;
+        indice = _id + m.getColCount() - 1;
         if (_map.isInMap(indice) && y < _map.getRowCount() - 1 && x > 0) {
-           voisinsDirection[Tile::SW] = indice;
-            voisins.push_back(indice);
+           voisins.emplace_back(indice, Tile::SW);
         }
         // W
         indice = _id - 1;
         if (_map.isInMap(indice) && x > 0) {
-           voisinsDirection[Tile::W] = indice;
-            voisins.push_back(indice);
+           voisins.emplace_back(indice, Tile::W);
         }
         // NW
         indice = _id - _map.getColCount() - 1;
         if (_map.isInMap(indice) && y > 0 && x > 0) {
-           voisinsDirection[Tile::NW] = indice;
-           voisins.push_back(indice);
+           voisins.emplace_back(indice, Tile::NW);
         }
     }
     else { // Ligne impaire !
            // NE
         indice = _id - _map.getColCount() + 1;
         if (_map.isInMap(indice) && x < _map.getColCount() - 1) {
-           voisinsDirection[Tile::NE] = indice;
-            voisins.push_back(indice);
+           voisins.emplace_back(indice, Tile::NE);
         }
         // E
         indice = _id + 1;
         if (_map.isInMap(indice) && x < _map.getColCount() - 1) {
-           voisinsDirection[Tile::E] = indice;
-            voisins.push_back(indice);
+           voisins.emplace_back(indice, Tile::E);
         }
         // SE
         indice = _id + _map.getColCount() + 1;
         if (_map.isInMap(indice) && x < _map.getColCount() - 1 && y < _map.getRowCount() - 1) {
-           voisinsDirection[Tile::SE] = indice;
-            voisins.push_back(indice);
+           voisins.emplace_back(indice, Tile::SE);
         }
         // SW
         indice = _id + _map.getColCount();
         if (_map.isInMap(indice) && y < _map.getRowCount() - 1) {
-           voisinsDirection[Tile::SW] = indice;
-            voisins.push_back(indice);
+           voisins.emplace_back(indice, Tile::SW);
         }
         // W
         indice = _id - 1;
         if (_map.isInMap(indice) && x > 0) {
-           voisinsDirection[Tile::W] = indice;
-            voisins.push_back(indice);
+           voisins.emplace_back(indice, Tile::W);
         }
         // NW
         indice = _id - _map.getColCount();
         if (_map.isInMap(indice)) { // Pas de conditions, c'est marrant ! :smiley:
-           voisinsDirection[Tile::NW] = indice;
-            voisins.push_back(indice);
+           voisins.emplace_back(indice, Tile::NW);
         }
     }
-
-    voisinsVisibles = voisins;
-    voisinsAccessibles = voisins;
-    voisinsMysterieux = voisins;
 }
 
-void MapTile::setTileDecouverte(const TileInfo _tile) {
+void MapTile::setTileDecouverte(const TileInfo& _tile) noexcept {
    type = _tile.tileType;
    statut = CONNU;
 }
 
-bool MapTile::isVoisinAccessible(int _id) const noexcept {
-	return std::find(voisinsAccessibles.begin(), voisinsAccessibles.end(), _id) != voisinsAccessibles.end();
+bool MapTile::isVoisinAvecEtat(const Etats _etat, const int _id) const noexcept {
+    return std::find_if(voisins.begin(), voisins.end(), [&](const Voisin& v) {
+        return v.getTuileIndex() == _id && v.estEtat(_etat);
+    }) != voisins.end();
 }
 
-bool MapTile::isVoisinVisible(int _id) const noexcept {
-	return std::find(voisinsVisibles.begin(), voisinsVisibles.end(), _id) != voisinsVisibles.end();
-}
+void MapTile::removeEtat(const Etats _etat, const int _id) {
+    auto it = std::find_if(voisins.begin(), voisins.end(), [&_id](const Voisin& v) {
+        return v.getTuileIndex() == _id;
+    });
 
-bool MapTile::isVoisinMysterious(int _id) const noexcept {
-	return std::find(voisinsMysterieux.begin(), voisinsMysterieux.end(), _id) != voisinsMysterieux.end();
-}
-
-int MapTile::getVoisinByDirection(Tile::ETilePosition _direction) const noexcept {
-   return voisinsDirection[_direction];
-}
-
-void MapTile::removeMysterieux(int _id) {
-    auto it = find(voisinsMysterieux.begin(), voisinsMysterieux.end(), _id);
-    if (it != voisinsMysterieux.end()) {
-        voisinsMysterieux.erase(it);
+    if (it != voisins.end()) {
+        it->setEtat(_etat, false);
     }
 }
 
-void MapTile::removeAccessible(int _id) {
-    auto it = find(voisinsAccessibles.begin(), voisinsAccessibles.end(), _id);
-    if (it != voisinsAccessibles.end()) {
-        voisinsAccessibles.erase(it);
-    }
-}
-
-void MapTile::removeVisible(int _id) {
-    auto it = find(voisinsVisibles.begin(), voisinsVisibles.end(), _id);
-    if (it != voisinsVisibles.end()) {
-        voisinsVisibles.erase(it);
-    }
-}
-
-bool MapTile::existe() {
+bool MapTile::existe() const noexcept {
    return statut != MapTile::Statut::INCONNU;
 }
 
@@ -159,38 +123,21 @@ Tile::ETileType MapTile::getType() const noexcept {
     return type;
 }
 
-std::vector<int> MapTile::getVoisins() const noexcept {
+vector<Voisin> MapTile::getVoisins() const noexcept {
     return voisins;
 }
 
-std::vector<int> MapTile::getVoisinsAccessibles() const noexcept {
-    return voisinsAccessibles;
-}
+vector<int> MapTile::getVoisinsIDParEtat(const Etats _etat) const noexcept {
 
-std::vector<int> MapTile::getVoisinsVisibles() const noexcept {
-    return voisinsVisibles;
-}
+    vector<int> resultat;
 
-std::vector<int> MapTile::getVoisinsMysterieux() const noexcept {
-    return voisinsMysterieux;
-}
+    std::for_each(begin(voisins), end(voisins), [&](const Voisin& v) {
+        if (v.estEtat(_etat))
+            resultat.emplace_back(v.getTuileIndex());
+    });
 
-bool MapTile::isInVoisins(int _id) const noexcept {
-    return find(voisins.begin(), voisins.end(), _id) != voisins.end();
+    return resultat;
 }
-
-bool MapTile::isInVoisinsAccessibles(int _id) const noexcept {
-    return find(voisinsAccessibles.begin(), voisinsAccessibles.end(), _id) != voisinsAccessibles.end();
-}
-
-bool MapTile::isInVoisinsVisibles(int _id) const noexcept {
-    return find(voisinsVisibles.begin(), voisinsVisibles.end(), _id) != voisinsVisibles.end();
-}
-
-bool MapTile::isInVoisinsMysterieux(int _id) const noexcept {
-    return find(voisinsMysterieux.begin(), voisinsMysterieux.end(), _id) != voisinsMysterieux.end();
-}
-
 
 MapTile::Statut MapTile::getStatut() const noexcept {
     return statut;
