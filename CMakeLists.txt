@@ -7,6 +7,14 @@ include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}
 )
 
+add_compile_options(/std:c++latest)
+add_compile_options(/MTd)
+
+set_property(GLOBAL PROPERTY CMAKE_SKIP_INSTALL_ALL_DEPENDENCY  ON)
+set_property(GLOBAL PROPERTY CMAKE_SKIP_PACKAGE_ALL_DEPENDENCY  ON)
+set_property(GLOBAL PROPERTY CMAKE_SUPPRESS_REGENERATION  ON)
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
 # Filters
 include( Filters.cmake )
 
@@ -61,7 +69,7 @@ SET( AIBOT_HEADERS
 	MyBotLogic/Strategies/Exploitation.h
 	MyBotLogic/Strategies/Exploration.h
 	MyBotLogic/Strategies/ScoreStrategie.h
-    MyBotLogic/Tools/Minuteur.h
+    	MyBotLogic/Tools/Minuteur.h
 )
 
 SET( AIBOT_SRC 
@@ -87,7 +95,7 @@ SET( AIBOT_SRC
 	MyBotLogic/Strategies/Exploitation.cpp
 	MyBotLogic/Strategies/Exploration.cpp
 	MyBotLogic/Strategies/ScoreStrategie.cpp
-    MyBotLogic/Tools/Minuteur.cpp
+    	MyBotLogic/Tools/Minuteur.cpp
 	
 	#Main
 	Main.cpp
@@ -103,14 +111,6 @@ add_executable(
 	${AIBOT_HEADERS}
 	${AIBOT_SRC}
 )
-
-add_compile_options(/std:c++latest)
-add_compile_options(/MTd)
-
-set_property(GLOBAL PROPERTY CMAKE_SKIP_INSTALL_ALL_DEPENDENCY  ON)
-set_property(GLOBAL PROPERTY CMAKE_SKIP_PACKAGE_ALL_DEPENDENCY  ON)
-set_property(GLOBAL PROPERTY CMAKE_SUPPRESS_REGENERATION  ON)
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 CREATE_VISUAL_STUDIO_FILTERS(AIBOT)
 
