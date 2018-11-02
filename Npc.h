@@ -4,9 +4,9 @@
 #include "Globals.h"
 #include "NPCInfo.h"
 #include "Chemin.h"
-#include "Map.h"
+#include "Carte.h"
+
 #include <vector>
-using namespace std;
 
 class tile_inaccessible {};
 
@@ -28,7 +28,8 @@ using Scores = std::vector<ScoreType>;
 using DistanceType = Score<int>;
 using Distances = std::vector<DistanceType>;
 
-class Map;
+class Carte;
+
 class Npc {
 private:
     std::vector<Chemin> cheminsPossibles; // Ceci est une variable temporaire permettant de stocker les chemins parmis lesquelles choisirs un objectif
@@ -54,8 +55,8 @@ public:
     void addChemin(Chemin& chemin) noexcept;
     void addScore(ScoreType score) noexcept;
     Chemin getCheminMinNonPris(const std::vector<int>& _objectifsPris, const int _tailleCheminMax) const noexcept; // Permet de trouver le chemin le plus court qui ne soit pas d�j� pris
-    int affecterMeilleurChemin(const Carte&_map) noexcept; // Affecte au npc le chemin avec le meilleur score et renvoie la destination de ce chemin !
-    void floodfill(const Carte& _map); // Calcule le co�t et l'ensemble des tiles accessibles pour un npcs, et MAJ ses attributs.
+    int affecterMeilleurChemin(const Carte& _carte) noexcept; // Affecte au npc le chemin avec le meilleur score et renvoie la destination de ce chemin !
+    void floodfill(const Carte& _carte); // Calcule le co�t et l'ensemble des tiles accessibles pour un npcs, et MAJ ses attributs.
 
     int getId() const noexcept;
     int getTileId() const noexcept;

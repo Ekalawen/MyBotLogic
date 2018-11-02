@@ -1,22 +1,24 @@
 #include "CheminsForAllNpcs.h"
 #include "../BehaviorTree/BT_Noeud.h"
 #include "MyBotLogic/Tools/Minuteur.h"
+
 #include <sstream>
+#include <vector>
 
 // V�rifier si un objectif est accessible pour tous nos NPCs
 BT_Noeud::ETAT_ELEMENT CheminsForAllNpcs::execute() noexcept {
-   auto pre = std::chrono::high_resolution_clock::now();
-   GameManager::Log("CheminsForAllNpcs");
+   auto pre = Minuteur::now();
+   GameManager::log("CheminsForAllNpcs");
    
    // Indices des objectfs d�couverts
-   vector<unsigned int> objectifNonDonne = gm.m.getObjectifs();
+   std::vector<unsigned int> objectifNonDonne = gm.carte.getObjectifs();
 
    // On parcours chaque NPC
    for (auto& pair : gm.getNpcs()) {
       Npc& npc = pair.second;
       bool objFound = false;
       // On regarde si on pourra lui assigner un objectif
-	  vector<unsigned int>::iterator it = objectifNonDonne.begin();
+      std::vector<unsigned int>::iterator it = objectifNonDonne.begin();
 	  while (!objFound && it != objectifNonDonne.end()) {
           if(npc.isAccessibleTile(*it)) {
 			  objFound = true;

@@ -12,6 +12,8 @@
 #include "Strategies/Exploration.h"
 #include "Strategies/Exploitation.h"
 
+#include "MyBotLogic/Tools/Minuteur.h"
+
 #include <algorithm>
 #include <tuple>
 #include <chrono>
@@ -23,7 +25,7 @@ Logger GameManager::logger{};
 Logger GameManager::loggerRelease{};
 
 GameManager::GameManager(LevelInfo _info) :
-   map{ Carte(_info) },
+   carte{ Carte(_info) },
    objectifPris{ std::vector<int>{} }
 {
    // On r�cup�re l'ensemble des npcs !
@@ -81,7 +83,7 @@ std::vector<Mouvement> GameManager::getAllMouvements() {
          int caseCible = npc.second.getChemin().getFirst();
          ss << "case cible = " << caseCible << std::endl;
 
-         Tile::ETilePosition direction = map.getDirection(npc.second.getTileId(), caseCible);
+         Tile::ETilePosition direction = carte.getDirection(npc.second.getTileId(), caseCible);
          ss << "direction = " << direction << std::endl;
 
          // On enregistre le mouvement
@@ -119,7 +121,7 @@ void GameManager::moveNpcs(std::vector<Action*>& _actionList) noexcept {
          // ET ENFIN ON FAIT BOUGER NOTRE NPC !!!!! <3
          _actionList.push_back(new Move(mouvement.getNpcId(), mouvement.getDirection()));
          // ET ON LE FAIT AUSSI BOUGER DANS NOTRE MODELE !!!
-         npcs[mouvement.getNpcId()].move(mouvement.getDirection(), map);
+         npcs[mouvement.getNpcId()].move(mouvement.getDirection(), carte);
          // TEST : pour chaque npc qui se d�place sur son objectif � ce tour, alors mettre estArrive � vrai
          if (mouvement.getDirection() != Tile::ETilePosition::CENTER && npcs[mouvement.getNpcId()].getTileObjectif() == mouvement.getTileDestination())
             // il faut aussi v�rifier si tous les NPC ont un objectif atteignable, donc si on est en mode Exploitation
@@ -208,15 +210,15 @@ void GameManager::ordonnerMouvements(std::vector<Mouvement>& _mouvements) noexce
 }
 
 void GameManager::addNewTiles(const TurnInfo& _tile) noexcept {
-   if (map.getNbTilesDecouvertes() < map.getNbTiles()) {
+   if (carte.getNbTilesDecouvertes() < carte.getNbTiles()) {
       // pour tous les npcs
       for (auto& npc : _tile.npcs) {
          // On regarde les tuiles qu'ils voyent
          for (auto& tileId : npc.second.visibleTiles) {
             // Si ces tuiles n'ont pas �t� d�couvertes
-            if (map.getTile(tileId).getStatut() == MapTile::INCONNU) {
+            if (carte.getTile(tileId).getStatut() == MapTile::INCONNU) {
                // On les setDecouverte
-               map.addTile(_tile.tiles.at(tileId));
+               carte.addTile(_tile.tiles.at(tileId));
             }
          }
       }
@@ -228,8 +230,8 @@ void GameManager::addNewObjects(const TurnInfo& _tile) noexcept {
    for (auto npc : _tile.npcs) {
       for (auto objet : npc.second.visibleObjects) {
          // Si on ne conna�t pas cet objet on l'ajoute
-         if (!map.objectExist(objet)) {
-            map.addObject(_tile.objects.at(objet));
+         if (!carte.objectExist(objet)) {
+            carte.addObject(_tile.objects.at(objet));
          }
       }
    }
@@ -254,7 +256,7 @@ void GameManager::updateModel(const TurnInfo &_tile) noexcept {
    // Mettre � jour nos NPCs
    pre = Minuteur::now();
    for (auto &npc : npcs) {
-      npc.second.floodfill(map);
+      npc.second.floodfill(carte);
    }
    post = Minuteur::now();
    ss << "Dur�e FloodFill = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms";
@@ -300,8 +302,8 @@ void GameManager::reaffecterObjectifsSelonDistance() {
                   if (std::max(npc.distanceToTile(objectifAutreNpc), autreNpc.distanceToTile(objectifNpc)) < tempsMaxChemins) {// Ensuite que c'est rentable
                       // Alors on intervertit !                           
                      ss << "Npc " << npc.getId() << " et Npc " << autreNpc.getId() << " �changent leurs objectifs !" << std::endl;
-                     npc.getChemin() = map.aStar(npc.getTileId(), objectifAutreNpc);
-                     autreNpc.getChemin() = map.aStar(autreNpc.getTileId(), objectifNpc);
+                     npc.getChemin() = carte.aStar(npc.getTileId(), objectifAutreNpc);
+                     autreNpc.getChemin() = carte.aStar(autreNpc.getTileId(), objectifNpc);
                      continuer = true; // Et on devra continuer pour v�rifier que cette intervertion n'en a pas entrain� de nouvelles !
                   }
                }

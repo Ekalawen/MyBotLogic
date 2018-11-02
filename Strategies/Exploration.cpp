@@ -3,8 +3,11 @@
 #include "MyBotLogic/BehaviorTree/BT_Noeud.h"
 #include "MyBotLogic/GameManager.h"
 
-Exploration::Exploration(GameManager& gm, string nom) 
-    : ScoreStrategie(gm, nom)
+#include <string>
+#include <vector>
+
+Exploration::Exploration(GameManager& _manager, std::string _nom)
+    : ScoreStrategie(_manager, _nom)
 {
 }
 
@@ -20,25 +23,25 @@ void Exploration::saveScore(const MapTile& _tile, Npc& _npc, const std::vector<i
     //if (tile.statut == MapTile::Statut::VISITE) return; // Appel� que si statut CONNU => non n�cessaire
 
     // On enregistre le cout, cad la distanc npc-tile
-    score += npc.distanceToTile(tile.getId()) * COEF_DISTANCE_NPC_TILE;
+    score += _npc.distanceToTile(_tile.getId()) * COEF_DISTANCE_NPC_TILE;
 
     // On regarde l'int�ret de cette tile
-    float interetTile = interet(tile);
+    float interetTile = interet(_tile);
     score += interetTile * COEF_INTERET;
     if (interetTile == 0) return; // Si pas d'int�ret, la tile ne nous int�resse pas !
 
     // On regarde la distance moyenne de cette tuile aux autres tuiles d�j� visit�s
-    if (!tilesAVisiter.empty()) {
+    if (!_tilesAVisiter.empty()) {
         float distanceMoyenneTiles = 0;
-        for (auto autre : tilesAVisiter) {
-            distanceMoyenneTiles += gm.m.distanceNbTuiles(tile.getId(), autre);
+        for (auto autre : _tilesAVisiter) {
+            distanceMoyenneTiles += manager.carte.distanceNbTuiles(_tile.getId(), autre);
         }
-        distanceMoyenneTiles /= tilesAVisiter.size();
+        distanceMoyenneTiles /= _tilesAVisiter.size();
         score += distanceMoyenneTiles * COEF_DISTANCE_TILE_AUTRE_TILES;
     }
 
     // Il reste � affecter le score et le chemin au npc
-    npc.addScore({ tile.getId(), score });
+    _npc.addScore({ _tile.getId(), score });
 }
 
 // L'int�r�t est d�finit par :

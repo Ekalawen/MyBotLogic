@@ -1,8 +1,11 @@
 
 #include "Expedition.h"
 
-Expedition::Expedition(GameManager& gm, string nom) 
-    : ScoreStrategie(gm, nom)
+#include <string>
+#include <vector>
+
+Expedition::Expedition(GameManager& _manager, std::string _nom)
+    : ScoreStrategie(_manager, _nom)
 {
 }
 
@@ -12,7 +15,7 @@ Expedition::Expedition(GameManager& gm, string nom)
     // La distance moyenne de cette tile � tous les objectifs
     // La distance moyenne de cette tuile aux autres tuiles qui seront visit�s !
     // Le degr� d'int�ret de la tuile. 
-void Expedition::saveScore(const MapTile& tile, Npc& npc, const vector<int>& tilesAVisiter) const noexcept {
+void Expedition::saveScore(const MapTile& _tile, Npc& _npc, const std::vector<int>& _tilesAVisiter) const noexcept {
     // Pr�condition : tile.statut == CONNU
     float score = 0;
 
@@ -20,28 +23,28 @@ void Expedition::saveScore(const MapTile& tile, Npc& npc, const vector<int>& til
     //if (tile.statut == MapTile::Statut::VISITE) return;
 
 	// On regarde l'int�ret de cette tile
-	float interetTile = interet(tile);
+	float interetTile = interet(_tile);
     if (interetTile == 0) return; // Si pas d'int�ret, la tile ne nous int�resse pas !
 	score += interetTile * COEF_INTERET;
 
     // On enregistre le cout, cad la distance npc-tile
-    score += npc.distanceToTile(tile.getId()) * COEF_DISTANCE_NPC_TILE;
+    score += _npc.distanceToTile(_tile.getId()) * COEF_DISTANCE_NPC_TILE;
 
     // On regarde la distance moyenne de cette tile � tous les objectifs
     float distanceMoyenne = 0;
-    for (auto objectif : gm.m.getObjectifs()) {
-        distanceMoyenne += gm.m.distanceNbTuiles(tile.getId(), objectif);
+    for (auto objectif : manager.carte.getObjectifs()) {
+        distanceMoyenne += manager.carte.distanceNbTuiles(_tile.getId(), objectif);
     }
-    distanceMoyenne /= gm.m.getObjectifs().size();
+    distanceMoyenne /= manager.carte.getObjectifs().size();
     score += distanceMoyenne * COEF_DISTANCE_OBJECTIFS_TILE;
 
     // On regarde la distance moyenne de cette tuile aux autres tuiles d�j� visit�s
-    if (!tilesAVisiter.empty()) {
+    if (!_tilesAVisiter.empty()) {
         float distanceMoyenneTiles = 0;
-        for (auto autre : tilesAVisiter) {
-            distanceMoyenneTiles += gm.m.distanceNbTuiles(tile.getId(), autre);
+        for (auto autre : _tilesAVisiter) {
+            distanceMoyenneTiles += manager.carte.distanceNbTuiles(_tile.getId(), autre);
         }
-        distanceMoyenneTiles /= tilesAVisiter.size();
+        distanceMoyenneTiles /= _tilesAVisiter.size();
         score += distanceMoyenneTiles * COEF_DISTANCE_TILE_AUTRE_TILES;
     }
 

@@ -2,11 +2,11 @@
 #define MAP_TILE_H
 
 #include "TileInfo.h"
-#include "MyBotLogic/Map.h"
+#include "MyBotLogic/Carte.h"
 #include "Voisin.h"
 #include <vector>
 
-class Map;
+class Carte;
 
 class MapTile {
 public:

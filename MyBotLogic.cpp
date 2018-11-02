@@ -4,10 +4,11 @@
 #include "NPCInfo.h"
 #include "LevelInfo.h"
 
-#include "windows.h"
-#include <chrono>
+#include "MyBotLogic/Tools/Minuteur.h"
+
+#include "Windows.h"
+#include "MyBotLogic/Tools/Minuteur.h"
 #include <sstream>
-using namespace std::chrono;
 
 
 MyBotLogic::MyBotLogic() :
@@ -44,7 +45,7 @@ MyBotLogic::MyBotLogic() :
 /*virtual*/ void MyBotLogic::Init(LevelInfo& _levelInfo)
 {
    
-    auto pre = high_resolution_clock::now();
+    auto pre = Minuteur::now();
     // Le logger
 	GameManager::SetLog(logpath, "MyLog.log");
 	GameManager::SetLogRelease(logpath, "MyLogRelease.log");
@@ -70,6 +71,8 @@ MyBotLogic::MyBotLogic() :
 {
     std::stringstream ss;
     ss << "TURN =========================== " << _turnInfo.turnNb << std::endl;
+
+    auto preFAL = Minuteur::now();
 
     // On compl�te notre mod�le avec l'information qu'on vient de d�couvrir !
     auto pre = Minuteur::now();
