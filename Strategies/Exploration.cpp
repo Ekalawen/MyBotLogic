@@ -31,7 +31,7 @@ void Exploration::saveScore(const MapTile& tile, Npc& npc, const vector<int>& ti
     if (!tilesAVisiter.empty()) {
         float distanceMoyenneTiles = 0;
         for (auto autre : tilesAVisiter) {
-            distanceMoyenneTiles += gm.m.distanceNbTuiles(tile.getId(), autre);
+            distanceMoyenneTiles += gm.m.distanceHex(tile.getId(), autre);
         }
         distanceMoyenneTiles /= tilesAVisiter.size();
         score += distanceMoyenneTiles * COEF_DISTANCE_TILE_AUTRE_TILES;

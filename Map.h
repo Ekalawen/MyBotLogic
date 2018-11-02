@@ -4,12 +4,9 @@
 #include "LevelInfo.h"
 #include "TileInfo.h"
 #include "ObjectInfo.h"
-#include "Globals.h"
 #include "Chemin.h"
-#include "MapPosition.h"
 #include "Npc.h"
-#include "MapTile.h"
-
+#include "MyBotLogic/MapTile.h"
 #include <map>
 #include <vector>
 
@@ -32,15 +29,14 @@ public:
     Map() = default;
     Map(const LevelInfo&);
     bool isInMap(const int idTile) const noexcept;
-    bool estDefiniDansCarte(const MapPosition& _position) const noexcept;
-    int ConvertirPositionOffsetAID(const MapPosition& _position) const noexcept;
+    std::vector<unsigned int> getObjectifs() const noexcept;
 
     Chemin aStar(const int depart, const int arrivee, const float coefEvaluation = 1) const noexcept; // Renvoie le chemin à parcourir pour aller du départ à l'arrivée
 
-    float distanceReel(const int _depart, const int _fin) const noexcept; // Renvoie la distance L2 à vol d'oiseau !
-    int distanceNbTuiles(const int _depart, const int _fin) const noexcept;
-    Tile::ETilePosition getDirection(const int _tuileID, const int _voisinID) const noexcept; // Permet de savoir dans quel sens se déplacer pour aller d'une tile à l'autre si celles-ci sont adjacentes ! =)
-    int getAdjacentTileAt(const int tileSource, const Tile::ETilePosition direction) const noexcept; // Permet de récupérer l'indice d'une tuile adjacente à une autre
+    float distanceL2(const int depart, const int arrivee) const noexcept; // Renvoie la distance L2 à vol d'oiseau !
+    int distanceHex(const int depart, const int arrivee) const noexcept;
+    Tile::ETilePosition getDirection(const int tile1, const int tile2) const noexcept; // Permet de savoir dans quel sens se déplacer pour aller d'une tile à l'autre si celles-ci sont adjacentes ! =)
+    int Map::getAdjacentTileAt(const int tileSource, const Tile::ETilePosition direction) const noexcept; // Permet de récupérer l'indice d'une tuile adjacente à une autre
     int tailleCheminMax() const noexcept; // Permet de savoir la taille maximum d'un chemin
 
     void addTile(const TileInfo&) noexcept; // Permet de rajouter une tile à la map
@@ -56,8 +52,7 @@ public:
     MapTile& getTile(const int id);
     const MapTile& getTile(const int id) const;
 
-    std::vector<unsigned int> getObjectifs() const noexcept;
-    std::vector<unsigned int>& getObjectifs();
+    std::vector<unsigned int> getObjectifs();
     std::map<unsigned int, ObjectInfo> getMurs();
     std::map<unsigned int, ObjectInfo> getPortes();
     std::map<unsigned int, ObjectInfo> getFenetres();
