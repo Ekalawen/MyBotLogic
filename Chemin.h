@@ -2,7 +2,10 @@
 #define CHEMIN_H
 
 #include <vector>
-using namespace std;
+#include <string>
+
+using std::vector;
+using std::string;
 
 class chemin_vide {}; // Exception levé lorsqu'une opération illégale est appelée sur un chemin vide
 

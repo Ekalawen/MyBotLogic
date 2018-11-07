@@ -5,6 +5,12 @@
 #include "MyBotLogic/GameManager.h"
 #include "MyBotLogic/Strategies/ScoreStrategie.h"
 
+#include <vector>
+#include <string>
+
+using std::vector;
+using std::string;
+
 class Exploration : public ScoreStrategie {
 public:
     void saveScore(const MapTile& tile, Npc& npc, const vector<int>& tilesAVisiter) const noexcept;

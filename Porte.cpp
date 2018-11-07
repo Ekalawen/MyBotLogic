@@ -1,8 +1,8 @@
 #include "MyBotLogic/Porte.h"
 #include "ObjectInfo.h"
-#include "Map.h"
+#include "Carte.h"
 
-Porte::Porte(const ObjectInfo& porte, const Map& m) {
+Porte::Porte(const ObjectInfo& porte, const Carte& c) {
     // On vérifie que notre objet est bien une porte
     if (find(porte.objectTypes.begin(), porte.objectTypes.end(), Object::ObjectType_Door) == porte.objectTypes.end())
         throw not_a_door{};
@@ -10,7 +10,7 @@ Porte::Porte(const ObjectInfo& porte, const Map& m) {
     // On set les attributs de base
     id = porte.objectID;
     int voisin1 = porte.tileID;
-	int voisin2 = m.getAdjacentTileAt(porte.tileID, porte.position);
+	int voisin2 = c.getAdjacentTileAt(porte.tileID, porte.position);
     tilesVoisines.push_back(voisin1);
     if(voisin2 != -1)
         tilesVoisines.push_back(voisin2);

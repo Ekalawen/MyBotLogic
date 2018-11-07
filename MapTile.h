@@ -2,13 +2,13 @@
 #define MAP_TILE_H
 
 #include "TileInfo.h"
-#include "MyBotLogic/Map.h"
+#include "MyBotLogic/Carte.h"
 #include "Voisin.h"
 #include <vector>
 
-using namespace std;
+using std::vector;
 
-class Map;
+class Carte;
 
 class MapTile {
 public:
@@ -18,15 +18,15 @@ private:
     int id;
     int x, y; // La position de la tile. x est l'indice de colonne, y est l'indice de ligne.
     Tile::ETileType type;
-    std::vector<Voisin> voisins;
+    vector<Voisin> voisins;
     Statut statut;
     vector<int> portesAdjacentes;
 
 public:
-    MapTile() = default; // Constructeur par défaut obligatoire pour pouvoir utiliser tuple ...
-    MapTile(unsigned int id, Map &m); // Appelé dès le début et uniquement là !
+    MapTile() = default; // Constructeur par dï¿½faut obligatoire pour pouvoir utiliser tuple ...
+    MapTile(unsigned int id, Carte &m); // Appelï¿½ dï¿½s le dï¿½but et uniquement lï¿½ !
 
-    void setTileDecouverte(const TileInfo& ti) noexcept;
+    void setTileDecouverte(const TileInfo& _tile) noexcept;
 
     void removeEtat(const Etats etat, const int id);
 	bool isVoisinAvecEtat(const Etats etat, const int id) const noexcept;
@@ -40,7 +40,7 @@ public:
     vector<Voisin> getVoisins() const noexcept;
     vector<int> getVoisinsId() const noexcept;
     vector<int> getVoisinsIDParEtat(const Etats etat) const noexcept;
-    bool hasDoorPoigneeVoisin(const int voisinId, const Map& m) const noexcept; // Permet de savoir s'il y a une porte à poignée entre cette tile et sa voisine. Si la voisine n'existe pas, on lève une exception
+    bool hasDoorPoigneeVoisin(const int voisinId, const Carte& c) const noexcept; // Permet de savoir s'il y a une porte à poignée entre cette tile et sa voisine. Si la voisine n'existe pas, on lève une exception
     Statut getStatut() const noexcept;
     void setStatut(Statut new_statut);
     void addPorte(int porteId);

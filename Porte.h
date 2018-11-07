@@ -2,13 +2,12 @@
 #define PORTE_H
 
 #include "ObjectInfo.h"
-#include "Map.h"
+#include "Carte.h"
 #include <vector>
-using namespace std;
 
 class not_a_door {};
 
-class Map;
+class Carte;
 class Porte {
 public:
     enum Type { A_SWITCH, A_POIGNEE };
@@ -20,7 +19,7 @@ private:
     int switchId; // L'identifiant de l'activateur si il s'agit d'une porte à switch !
 public:
     Porte() = default;
-    Porte(const ObjectInfo& porte, const Map& m);
+    Porte(const ObjectInfo& porte, const Carte& c);
 
     int getId() const noexcept;
     Type getType() const noexcept;

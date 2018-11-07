@@ -5,13 +5,15 @@
 
 #include <bitset>
 
+using std::bitset;
+
 enum Etats { VISIBLE, ACCESSIBLE, MYSTERIEUX, TOTAL };
 
 class Voisin {
     int tuileIndex;
     Tile::ETilePosition direction;
     //chaque bit représente un booléan, les états commencent a 1
-    std::bitset<Etats::TOTAL> etats;
+    bitset<Etats::TOTAL> etats;
 
 public:
     Voisin(const int voisinIndex, Tile::ETilePosition direction);

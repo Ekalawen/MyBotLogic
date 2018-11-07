@@ -5,6 +5,12 @@
 #include "../GameManager.h"
 #include "../Strategies/ScoreStrategie.h"
 
+#include <vector>
+#include <string>
+
+using std::vector;
+using std::string;
+
 class Expedition : public ScoreStrategie {
 public:
     void saveScore(const MapTile& tile, Npc& npc, const vector<int>& tilesAVisiter) const noexcept;

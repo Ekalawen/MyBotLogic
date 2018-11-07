@@ -7,6 +7,14 @@ include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}
 )
 
+add_compile_options(/std:c++latest)
+add_compile_options(/MTd)
+
+set_property(GLOBAL PROPERTY CMAKE_SKIP_INSTALL_ALL_DEPENDENCY  ON)
+set_property(GLOBAL PROPERTY CMAKE_SKIP_PACKAGE_ALL_DEPENDENCY  ON)
+set_property(GLOBAL PROPERTY CMAKE_SUPPRESS_REGENERATION  ON)
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
 # Filters
 include( Filters.cmake )
 
@@ -44,12 +52,13 @@ SET( AIBOT_HEADERS
 	#MY_BOT
 	MyBotLogic/MyBotLogic.h
 	MyBotLogic/GameManager.h
-	MyBotLogic/Map.h
+	MyBotLogic/Carte.h
 	MyBotLogic/MapTile.h
 	MyBotLogic/Npc.h
 	MyBotLogic/Chemin.h
 	MyBotLogic/Mouvement.h
 	MyBotLogic/Voisin.h
+	MyBotLogic/Noeud.h
 	MyBotLogic/Porte.h
 	MyBotLogic/BehaviorTree/BT_Noeud.h
 	MyBotLogic/BehaviorTree/BT_Composite.h
@@ -62,6 +71,7 @@ SET( AIBOT_HEADERS
 	MyBotLogic/Strategies/Exploitation.h
 	MyBotLogic/Strategies/Exploration.h
 	MyBotLogic/Strategies/ScoreStrategie.h
+	MyBotLogic/Tools/Minuteur.h
 )
 
 SET( AIBOT_SRC 
@@ -75,12 +85,13 @@ SET( AIBOT_SRC
 	#MY_BOT
 	MyBotLogic/MyBotLogic.cpp
 	MyBotLogic/GameManager.cpp
-	MyBotLogic/Map.cpp
+	MyBotLogic/Carte.cpp
 	MyBotLogic/MapTile.cpp
 	MyBotLogic/Npc.cpp
 	MyBotLogic/Chemin.cpp
 	MyBotLogic/Mouvement.cpp
 	MyBotLogic/Voisin.cpp
+	MyBotLogic/Noeud.cpp
 	MyBotLogic/Porte.cpp
 	MyBotLogic/BT_Tests/ObjectifsForAllNpcs.cpp
 	MyBotLogic/BT_Tests/CheminsForAllNpcs.cpp
@@ -88,6 +99,7 @@ SET( AIBOT_SRC
 	MyBotLogic/Strategies/Exploitation.cpp
 	MyBotLogic/Strategies/Exploration.cpp
 	MyBotLogic/Strategies/ScoreStrategie.cpp
+	MyBotLogic/Tools/Minuteur.cpp
 	
 	#Main
 	Main.cpp

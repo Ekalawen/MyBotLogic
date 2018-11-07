@@ -4,11 +4,15 @@
 #include "NPCInfo.h"
 #include "LevelInfo.h"
 
-#include "windows.h"
-#include <chrono>
-#include <sstream>
-using namespace std::chrono;
+#include "MyBotLogic/Tools/Minuteur.h"
 
+#include "Windows.h"
+#include "MyBotLogic/Tools/Minuteur.h"
+#include <sstream>
+
+using std::stringstream;
+using std::endl;
+using std::to_string;
 
 MyBotLogic::MyBotLogic() :
     logpath{""}
@@ -21,7 +25,7 @@ MyBotLogic::MyBotLogic() :
 	//Write Code Here
 }
 
-/*virtual*/ void MyBotLogic::Configure(int argc, char *argv[], const std::string& _logpath)
+/*virtual*/ void MyBotLogic::Configure(int argc, char *argv[], const string& _logpath)
 {
 #ifdef BOT_LOGIC_DEBUG
 	mLogger.Init(_logpath, "MyBotLogic.log");
@@ -44,21 +48,22 @@ MyBotLogic::MyBotLogic() :
 /*virtual*/ void MyBotLogic::Init(LevelInfo& _levelInfo)
 {
    
-    auto pre = high_resolution_clock::now();
+    auto pre = Minuteur::now();
     // Le logger
 	GameManager::SetLog(logpath, "MyLog.log");
 	GameManager::SetLogRelease(logpath, "MyLogRelease.log");
 
     // On crée notre modèle du jeu en cours !
-    gm = GameManager(_levelInfo);
-    gm.InitializeBehaviorTree();
+    manager = GameManager(_levelInfo);
+    manager.InitializeBehaviorTree();
+    auto post = Minuteur::now();
 
     // On associe à chaque npc son objectif !
     //gm.associateNpcsWithObjectiv();
-    auto post = high_resolution_clock::now();
     stringstream ss;
-    ss << "Durée Initialisation = " << duration_cast<microseconds>(post - pre).count() / 1000.f << "ms";
-    GameManager::Log(ss.str());
+    ss << "Durée Initialisation = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms";
+    GameManager::log(ss.str());
+   
 }
 
 /*virtual*/ void MyBotLogic::OnGameStarted()
@@ -66,36 +71,37 @@ MyBotLogic::MyBotLogic() :
 	//Write Code Here
 }
 
-/*virtual*/ void MyBotLogic::FillActionList(TurnInfo& _turnInfo, std::vector<Action*>& _actionList)
+/*virtual*/ void MyBotLogic::FillActionList(TurnInfo& _turnInfo, vector<Action*>& _actionList)
 {
-    auto preFAL = high_resolution_clock::now();
-    stringstream ss, ssRelease;
-    ss << "TURN =========================== " << _turnInfo.turnNb << std::endl;
+    auto preFAL = Minuteur::now();
+    stringstream ss;
+    GameManager::log("TURN =========================== " + to_string(_turnInfo.turnNb));
 
     // On complète notre modèle avec l'information qu'on vient de découvrir !
-    auto pre = high_resolution_clock::now();
-    gm.updateModel(_turnInfo);
-    auto post = high_resolution_clock::now();
-    ss << "Durée Update = " << duration_cast<microseconds>(post - pre).count() / 1000.f << "ms" << std::endl;
+    auto pre = Minuteur::now();
+    manager.updateModel(_turnInfo);
+    auto post = Minuteur::now();
+    ss << "Durée Update = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms" << endl;
 
     // On définit notre stratégie en exécutant notre arbre de comportement
-    pre = high_resolution_clock::now();
-    gm.execute();
-    post = high_resolution_clock::now();
-    ss << "Durée Execute = " << duration_cast<microseconds>(post - pre).count() / 1000.f << "ms" << std::endl;
+    pre = Minuteur::now();
+    manager.execute();
+    post = Minuteur::now();
+    ss << "Durée Execute = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms" << endl;
+    
 
     // On fait se déplacer chaque Npc vers son objectif associé =)
-    pre = high_resolution_clock::now();
-    gm.moveNpcs(_actionList);
-    post = high_resolution_clock::now();
-    ss << "Durée Move = " << duration_cast<microseconds>(post - pre).count() / 1000.f << "ms" << std::endl;
+    pre = Minuteur::now();
+    manager.moveNpcs(_actionList);
+    post = Minuteur::now();
+    ss << "Durée Move = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms" << endl;
 
 
-    auto postFAL = high_resolution_clock::now();
-    ss << "Durée Tour = " << duration_cast<microseconds>(postFAL - preFAL).count() / 1000.f << "ms" << std::endl;
-    GameManager::Log(ss.str());
-    ssRelease << "Durée Tour numéro " << _turnInfo.turnNb << " = " << duration_cast<microseconds>(postFAL - preFAL).count() / 1000.f << "ms";
-    GameManager::LogRelease(ssRelease.str());
+    auto postFAL = Minuteur::now();
+    ss << "Durée Tour = " << Minuteur::dureeMicroseconds(preFAL, postFAL) / 1000.f << "ms" << endl;
+    GameManager::log(ss.str());
+    ss << "Durée Tour numéro " << _turnInfo.turnNb << " = " << Minuteur::dureeMicroseconds(preFAL, postFAL) / 1000.f << "ms";
+    GameManager::logRelease(ss.str());
 }
 
 /*virtual*/ void MyBotLogic::Exit()

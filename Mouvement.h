@@ -1,9 +1,9 @@
 #pragma once
 #include "Globals.h"
 #include "Npc.h"
-#include "Map.h"
+#include "Carte.h"
 #include <vector>
-using namespace std;
+using std::map;
 
 class Mouvement {
 	int npcID;
@@ -24,5 +24,5 @@ public:
     Tile::ETilePosition getDirection() const noexcept;
     void setActivateDoor() noexcept; // Permet de spécifier que ce mouvement a en fait pour but d'ouvrir une porte et non pas et déplacer le npc !
 
-    void apply(vector<Action*>& actionList, map<int, Npc>& npcs, Map& m) const noexcept; // Applique un mouvement au modèle
+    void apply(vector<Action*>& actionList, map<int, Npc>& npcs, Carte& c) const noexcept; // Applique un mouvement au modèle
 };

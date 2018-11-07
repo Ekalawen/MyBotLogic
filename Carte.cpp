@@ -1,5 +1,5 @@
 
-#include "Map.h"
+#include "Carte.h"
 #include "MapTile.h"
 #include "GameManager.h"
 #include "Globals.h"
@@ -10,21 +10,21 @@
 #include <algorithm>
 #include <chrono>
 #include <sstream>
+using std::stringstream;
+using std::max;
 
-using namespace std;
-
-Map::Map(const LevelInfo& _levelInfo) :
+Carte::Carte(const LevelInfo& _levelInfo) :
     rowCount{ _levelInfo.rowCount },
     colCount{ _levelInfo.colCount },
     nbTilesDecouvertes{ 0 }
 {
-    // CrÈer toutes les tiles !
+    // Cr√©er toutes les tiles !
     tiles.reserve(getNbTiles());
     for (int id = 0; id < getNbTiles(); ++id) {
-       tiles.push_back(MapTile(id, *this));
+        tiles.push_back(MapTile(id, *this));
     }
 
-    // Mettre ‡ jour les tiles connues
+    // Mettre √† jour les tiles connues
     for (auto tile : _levelInfo.tiles) {
         addTile(tile.second);
     }
@@ -34,27 +34,27 @@ Map::Map(const LevelInfo& _levelInfo) :
         addObject(object.second);
     }
 
-    // Mettre ‡ visiter les cases initiales des NPCs
+    // Mettre √† visiter les cases initiales des NPCs
     for (auto pair_npc : _levelInfo.npcs) {
         tiles[pair_npc.second.tileID].setStatut(MapTile::Statut::VISITE);
     }
 }
 
-bool Map::isInMap(const int idTile) const noexcept {
+bool Carte::isInMap(const int idTile) const noexcept {
     return idTile > -1 && idTile < rowCount * colCount;
 }
 
-vector<unsigned int> Map::getObjectifs() const noexcept {
+vector<unsigned int> Carte::getObjectifs() const noexcept {
     return objectifs;
 }
 
 
-// Il s'agit de l'algorithme AStar auquel on peut rajouter un coefficiant ‡ l'Èvaluation pour modifier l'heuristique.
-// Par dÈfaut sa valeur est 1. Si on l'augmente l'algorithme ira plus vite au dÈtriment de trouver un chemin optimal.
+// Il s'agit de l'algorithme AStar auquel on peut rajouter un coefficiant √† l'√©valuation pour modifier l'heuristique.
+// Par d√©faut sa valeur est 1. Si on l'augmente l'algorithme ira plus vite au d√©triment de trouver un chemin optimal.
 // Si on le diminue l'algorithme se rapproche de plus en plus d'un parcours en largeur.
-Chemin Map::aStar(const int depart, const int arrivee, const float coefEvaluation) const noexcept {
+Chemin Carte::aStar(const int depart, const int arrivee, const float coefEvaluation) const noexcept {
     Noeud::coefEvaluation = coefEvaluation;
-    // On crÈe nos liste et notre noeud courrant
+    // On cr√©e nos liste et notre noeud courrant
     vector<Noeud> closedList{};
     vector<Noeud> openList{};
     Noeud noeudCourant = Noeud(tiles[depart], 0, distanceL2(depart, arrivee), depart);
@@ -62,38 +62,41 @@ Chemin Map::aStar(const int depart, const int arrivee, const float coefEvaluatio
 
     // On ajoute le noeud initial
     openList.push_back(noeudCourant);
-    // Tant qu'il reste des noeuds ‡ traiter ...
+    // Tant qu'il reste des noeuds √† traiter ...
     while (!openList.empty() && noeudCourant.tile.getId() != arrivee) {
-        // On rÈcupËre le premier noeud de notre liste
+        // On r√©cup√®re le premier noeud de notre liste
         noeudCourant = openList.back();
         openList.pop_back();
         // Pour tous les voisins du noeud courant ...
         for (auto voisinID : noeudCourant.tile.getVoisinsIDParEtat(Etats::ACCESSIBLE)) {
-            // On vÈrifie que le voisin existe ...
+            // On v√©rifie que le voisin existe ...
             if (tiles[voisinID].existe()) {
                 // On construit le nouveau noeud
                 Noeud nouveauNoeud = Noeud(tiles[voisinID], noeudCourant.cout + 1, distanceL2(voisinID, arrivee), noeudCourant.tile.getId());
-                // On vÈrifie s'il existe dans closedList avec un cout infÈrieur ou dans openList avec un cout infÈrieur
+                // On v√©rifie s'il existe dans closedList avec un cout inf√©rieur ou dans openList avec un cout inf√©rieur
                 auto itClose = find(closedList.begin(), closedList.end(), nouveauNoeud);
                 auto itOpen = find(openList.begin(), openList.end(), nouveauNoeud);
 
                 if (itClose == closedList.end() && itOpen == openList.end()) {
                     openList.push_back(nouveauNoeud);
-                } else if (itClose != closedList.end() && itOpen == openList.end()) {
+                }
+                else if (itClose != closedList.end() && itOpen == openList.end()) {
                     // Do nothing
-                } else if (itClose == closedList.end() && itOpen != openList.end()) {
-                   if ((*itOpen).heuristique > nouveauNoeud.heuristique) {
-                      (*itOpen) = nouveauNoeud;
-                   }
-                } else {
-                    GameManager::Log("OMG On a fait n'imp !");
+                }
+                else if (itClose == closedList.end() && itOpen != openList.end()) {
+                    if ((*itOpen).heuristique > nouveauNoeud.heuristique) {
+                        (*itOpen) = nouveauNoeud;
+                    }
+                }
+                else {
+                    GameManager::log("OMG On a fait n'imp !");
                 }
             }
         }
         // On trie notre openList pour que le dernier soit le meilleur !
-        // Donc celui qui minimise et le cout, et l'Èvaluation !
+        // Donc celui qui minimise et le cout, et l'√©valuation !
         sort(openList.begin(), openList.end(), [](const Noeud a, const Noeud b) {
-            return a.heuristique > b.heuristique; // Par ordre dÈcroissant
+            return a.heuristique > b.heuristique; // Par ordre d√©croissant
         });
 
         // On ferme notre noeud
@@ -106,17 +109,18 @@ Chemin Map::aStar(const int depart, const int arrivee, const float coefEvaluatio
         while (noeudCourant.tile.getId() != depart) {
             // On enregistre dans le path ...
             path.addFirst(noeudCourant.tile.getId());
-            // On cherche l'antÈcÈdant ...
+            // On cherche l'ant√©c√©dant ...
             for (auto n : closedList) {
                 if (n.tile.getId() == noeudCourant.idPrecedant) {
-                    // On remet ‡ jour le noeud ...
+                    // On remet √† jour le noeud ...
                     noeudCourant = n;
                     break;
                 }
             }
         }
 
-    } else {
+    }
+    else {
         // Si non le path est inaccessible !
         path.setInaccessible();
     }
@@ -124,44 +128,55 @@ Chemin Map::aStar(const int depart, const int arrivee, const float coefEvaluatio
     return path;
 }
 
-Tile::ETilePosition Map::getDirection(const int ind1, const int ind2) const noexcept {
+Tile::ETilePosition Carte::getDirection(const int ind1, const int ind2) const noexcept {
     int y = getY(ind1);
     bool pair = (y % 2 == 0);
     if (pair) {
         if (ind2 == ind1 - colCount) {
             return Tile::NE;
-        } else if (ind2 == ind1 + 1) {
+        }
+        else if (ind2 == ind1 + 1) {
             return Tile::E;
-        } else if (ind2 == ind1 + colCount) {
+        }
+        else if (ind2 == ind1 + colCount) {
             return Tile::SE;
-        } else if (ind2 == ind1 + colCount - 1) {
+        }
+        else if (ind2 == ind1 + colCount - 1) {
             return Tile::SW;
-        } else if (ind2 == ind1 - 1) {
+        }
+        else if (ind2 == ind1 - 1) {
             return Tile::W;
-        } else if (ind2 == ind1 - colCount - 1) {
+        }
+        else if (ind2 == ind1 - colCount - 1) {
             return Tile::NW;
         }
-    } else {
+    }
+    else {
         if (ind2 == ind1 - colCount + 1) {
             return Tile::NE;
-        } else if (ind2 == ind1 + 1) {
+        }
+        else if (ind2 == ind1 + 1) {
             return Tile::E;
-        } else if (ind2 == ind1 + colCount + 1) {
+        }
+        else if (ind2 == ind1 + colCount + 1) {
             return Tile::SE;
-        } else if (ind2 == ind1 + colCount) {
+        }
+        else if (ind2 == ind1 + colCount) {
             return Tile::SW;
-        } else if (ind2 == ind1 - 1) {
+        }
+        else if (ind2 == ind1 - 1) {
             return Tile::W;
-        } else if (ind2 == ind1 - colCount) {
+        }
+        else if (ind2 == ind1 - colCount) {
             return Tile::NW;
         }
     }
 
-    GameManager::Log("Erreur dans l'appel de getDirection() !");
+    GameManager::log("Erreur dans l'appel de getDirection() !");
     return Tile::CENTER;
 }
 
-int Map::getAdjacentTileAt(const int tileSource, const Tile::ETilePosition direction) const noexcept {
+int Carte::getAdjacentTileAt(const int tileSource, const Tile::ETilePosition direction) const noexcept {
     int y = getY(tileSource);
     bool pair = (y % 2 == 0);
     int res;
@@ -170,7 +185,8 @@ int Map::getAdjacentTileAt(const int tileSource, const Tile::ETilePosition direc
     case Tile::NE:
         if (pair) {
             res = tileSource - colCount;
-        } else {
+        }
+        else {
             res = tileSource - colCount + 1;
         }
         break;
@@ -180,14 +196,16 @@ int Map::getAdjacentTileAt(const int tileSource, const Tile::ETilePosition direc
     case Tile::SE:
         if (pair) {
             res = tileSource + colCount;
-        } else {
+        }
+        else {
             res = tileSource + colCount + 1;
         }
         break;
     case Tile::SW:
         if (pair) {
             res = tileSource + colCount - 1;
-        } else {
+        }
+        else {
             res = tileSource + colCount;
         }
         break;
@@ -197,7 +215,8 @@ int Map::getAdjacentTileAt(const int tileSource, const Tile::ETilePosition direc
     case Tile::NW:
         if (pair) {
             res = tileSource - colCount - 1;
-        } else {
+        }
+        else {
             res = tileSource - colCount;
         }
         break;
@@ -216,7 +235,7 @@ int Map::getAdjacentTileAt(const int tileSource, const Tile::ETilePosition direc
     }
 }
 
-float Map::distanceL2(const int depart, const int arrivee) const noexcept {
+float Carte::distanceL2(const int depart, const int arrivee) const noexcept {
     int xd = depart % colCount;
     int yd = depart / colCount;
     int xa = arrivee % colCount;
@@ -224,27 +243,27 @@ float Map::distanceL2(const int depart, const int arrivee) const noexcept {
     return (float)sqrt(pow(xd - xa, 2) + pow(yd - ya, 2));
 }
 
-int Map::distanceHex(const int tile1ID, const int tile2ID) const noexcept {
-   int ligne1 = tile1ID / colCount;
-   int colonne1 = tile1ID % colCount;
-   int ligne2 = tile2ID / colCount;
-   int colonne2 = tile2ID % colCount;
-   int x1 = colonne1 - (ligne1 - ligne1 % 2) / 2;
-   int z1 = ligne1;
-   int y1 = -x1 - z1;
-   int x2 = colonne2 - (ligne2 - ligne2 % 2) / 2;
-   int z2 = ligne2;
-   int y2 = -x2 - z2;
-   return max(max(abs(x1 - x2), abs(y1 - y2)), abs(z1 - z2));
+int Carte::distanceHex(const int tile1ID, const int tile2ID) const noexcept {
+    int ligne1 = tile1ID / colCount;
+    int colonne1 = tile1ID % colCount;
+    int ligne2 = tile2ID / colCount;
+    int colonne2 = tile2ID % colCount;
+    int x1 = colonne1 - (ligne1 - ligne1 % 2) / 2;
+    int z1 = ligne1;
+    int y1 = -x1 - z1;
+    int x2 = colonne2 - (ligne2 - ligne2 % 2) / 2;
+    int z2 = ligne2;
+    int y2 = -x2 - z2;
+    return max(max(abs(x1 - x2), abs(y1 - y2)), abs(z1 - z2));
 }
 
-int Map::tailleCheminMax() const noexcept {
+int Carte::tailleCheminMax() const noexcept {
     return colCount * rowCount + 1;
 }
 
-// Il ne faut pas ajouter une tile qui est dÈj‡ dans la map !
-void Map::addTile(const TileInfo& tile) noexcept {
-    // On met ‡ jour le nombre de tiles
+// Il ne faut pas ajouter une tile qui est d√©j√† dans la map !
+void Carte::addTile(const TileInfo& tile) noexcept {
+    // On met √† jour le nombre de tiles
     ++nbTilesDecouvertes;
 
     // On la rajoute aux tiles
@@ -260,49 +279,50 @@ void Map::addTile(const TileInfo& tile) noexcept {
         }
     }
 
-    // Puis on met ‡ jour les voisins de ses voisins ! :D
+    // Puis on met √† jour les voisins de ses voisins ! :D
     for (auto voisinID : tiles[tile.tileID].getVoisinsIDParEtat(Etats::VISIBLE)) {
-        // Si ce voisin l'a en voisin mystÈrieux, on le lui enlËve
+        // Si ce voisin l'a en voisin myst√©rieux, on le lui enl√®ve
         tiles[voisinID].removeEtat(Etats::MYSTERIEUX, tile.tileID);
     }
 
     // On le note !
     stringstream ss;
     ss << "Decouverte de la tile " << tile.tileID;
-    GameManager::Log(ss.str());
+    GameManager::log(ss.str());
 }
 
-// Il ne faut pas ajouter un objet qui est dÈj‡ dans la map !
-void Map::addObject(const ObjectInfo& object) noexcept {
+// Il ne faut pas ajouter un objet qui est d√©j√† dans la map !
+void Carte::addObject(const ObjectInfo& object) noexcept {
     int voisin1 = object.tileID;
-	int voisin2 = getAdjacentTileAt(object.tileID, object.position);
+    int voisin2 = getAdjacentTileAt(object.tileID, object.position);
 
-    // On ajoute notre objet ‡ l'ensemble de nos objets
+    // On ajoute notre objet √† l'ensemble de nos objets
     if (object.objectTypes.find(Object::ObjectType_Wall) != object.objectTypes.end()) {
-       // Fenetre
-       if (object.objectTypes.find(Object::ObjectType_Window) != object.objectTypes.end()) {
-          fenetres[object.objectID] = object;
-          if (isInMap(voisin1))
-             tiles[voisin1].removeEtat(Etats::ACCESSIBLE, voisin2);
-          if (isInMap(voisin2))
-             tiles[voisin2].removeEtat(Etats::ACCESSIBLE, voisin1);
-       // Mur
-       } else {
-          murs[object.objectID] = object;
-          if (isInMap(voisin1)) {
-             tiles[voisin1].removeEtat(Etats::MYSTERIEUX, voisin2);
-             tiles[voisin1].removeEtat(Etats::ACCESSIBLE, voisin2);
-             tiles[voisin1].removeEtat(Etats::VISIBLE, voisin2);
-          }
-          if (isInMap(voisin2)) {
-             tiles[voisin2].removeEtat(Etats::MYSTERIEUX, voisin1);
-             tiles[voisin2].removeEtat(Etats::ACCESSIBLE, voisin1);
-             tiles[voisin2].removeEtat(Etats::VISIBLE, voisin1);
-          }
-       }
+        // Fenetre
+        if (object.objectTypes.find(Object::ObjectType_Window) != object.objectTypes.end()) {
+            fenetres[object.objectID] = object;
+            if (isInMap(voisin1))
+                tiles[voisin1].removeEtat(Etats::ACCESSIBLE, voisin2);
+            if (isInMap(voisin2))
+                tiles[voisin2].removeEtat(Etats::ACCESSIBLE, voisin1);
+            // Mur
+        }
+        else {
+            murs[object.objectID] = object;
+            if (isInMap(voisin1)) {
+                tiles[voisin1].removeEtat(Etats::MYSTERIEUX, voisin2);
+                tiles[voisin1].removeEtat(Etats::ACCESSIBLE, voisin2);
+                tiles[voisin1].removeEtat(Etats::VISIBLE, voisin2);
+            }
+            if (isInMap(voisin2)) {
+                tiles[voisin2].removeEtat(Etats::MYSTERIEUX, voisin1);
+                tiles[voisin2].removeEtat(Etats::ACCESSIBLE, voisin1);
+                tiles[voisin2].removeEtat(Etats::VISIBLE, voisin1);
+            }
+        }
     }
     // Porte
-    // Dans l'implÈmentation actuelle, les portes ne bloques plus l'accessibilitÈe !
+    // Dans l'impl√©mentation actuelle, les portes ne bloques plus l'accessibilit√©e !
     if (object.objectTypes.find(Object::ObjectType_Door) != object.objectTypes.end()) {
         portes[object.objectID] = Porte{ object, *this };
         if (isInMap(voisin1))
@@ -311,108 +331,110 @@ void Map::addObject(const ObjectInfo& object) noexcept {
             tiles[voisin2].addPorte(object.objectID);
         //Porte Ferme
         if (object.objectStates.find(Object::ObjectState_Closed) != object.objectStates.end()) {
-           // Porte Fenetre
-           if (object.objectTypes.find(Object::ObjectType_Window) != object.objectTypes.end()) {
-              //if (isInMap(voisin1))
-              //   tiles[voisin1].removeEtat(Etats::ACCESSIBLE, voisin2);
-              //if (isInMap(voisin2))
-              //   tiles[voisin2].removeEtat(Etats::ACCESSIBLE, voisin1);
-            // Porte
-           } else {
-              if (isInMap(voisin1)) {
-                 //tiles[voisin1].removeEtat(Etats::ACCESSIBLE, voisin2);
-                 tiles[voisin1].removeEtat(Etats::VISIBLE, voisin2);
-              }
-              if (isInMap(voisin2)) {
-                 //tiles[voisin2].removeEtat(Etats::ACCESSIBLE, voisin1);
-                 tiles[voisin2].removeEtat(Etats::VISIBLE, voisin1);
-              }
-           }
-           // Porte ouverte
-        } else {
-           // Si la porte est ouverte et est accessible ET visible ! =)
+            // Porte Fenetre
+            if (object.objectTypes.find(Object::ObjectType_Window) != object.objectTypes.end()) {
+                //if (isInMap(voisin1))
+                //   tiles[voisin1].removeEtat(Etats::ACCESSIBLE, voisin2);
+                //if (isInMap(voisin2))
+                //   tiles[voisin2].removeEtat(Etats::ACCESSIBLE, voisin1);
+                // Porte
+            }
+            else {
+                if (isInMap(voisin1)) {
+                    //tiles[voisin1].removeEtat(Etats::ACCESSIBLE, voisin2);
+                    tiles[voisin1].removeEtat(Etats::VISIBLE, voisin2);
+                }
+                if (isInMap(voisin2)) {
+                    //tiles[voisin2].removeEtat(Etats::ACCESSIBLE, voisin1);
+                    tiles[voisin2].removeEtat(Etats::VISIBLE, voisin1);
+                }
+            }
+            // Porte ouverte
+        }
+        else {
+            // Si la porte est ouverte et est accessible ET visible ! =)
         }
     }
     if (object.objectTypes.find(Object::ObjectType_PressurePlate) != object.objectTypes.end()) {
         activateurs[object.objectID] = object;
         // prout !
     }
-    
+
     // On le note !
 
     stringstream ss;
-    ss << "Decouverte de l'objet " << object.objectID << " sur la tuile " << object.tileID << " orientÈ en " << object.position;
-    GameManager::Log(ss.str());
+    ss << "Decouverte de l'objet " << object.objectID << " sur la tuile " << object.tileID << " orient√© en " << object.position;
+    GameManager::log(ss.str());
 }
 
-int Map::getX(const int id) const noexcept {
+int Carte::getX(const int id) const noexcept {
     return id % colCount;
 }
-int Map::getY(const int id) const noexcept {
+int Carte::getY(const int id) const noexcept {
     return id / colCount;
 }
-int Map::getRowCount() const noexcept {
+int Carte::getRowCount() const noexcept {
     return rowCount;
 }
 
-int Map::getColCount() const noexcept {
+int Carte::getColCount() const noexcept {
     return colCount;
 }
 
-int Map::getNbTiles() const noexcept {
+int Carte::getNbTiles() const noexcept {
     return getRowCount() * getColCount();
 }
 
-int Map::getNbTilesDecouvertes() const noexcept {
+int Carte::getNbTilesDecouvertes() const noexcept {
     return nbTilesDecouvertes;
 }
 
-MapTile& Map::getTile(const int id) {
+MapTile& Carte::getTile(const int id) {
     if (id < 0 || id >= getNbTiles())
         throw tile_inexistante{};
     return tiles[id];
 }
 
-const MapTile& Map::getTile(const int id) const {
+const MapTile& Carte::getTile(const int id) const {
     if (id < 0 || id >= getNbTiles())
         throw tile_inexistante{};
     return tiles[id];
 }
 
-vector<unsigned int> Map::getObjectifs() {
+vector<unsigned int> Carte::getObjectifs() {
     return objectifs;
 }
 
-map<unsigned int, ObjectInfo> Map::getMurs() {
+map<unsigned int, ObjectInfo> Carte::getMurs() {
     return murs;
 }
 
-map<int, Porte> Map::getPortes() {
+map<int, Porte> Carte::getPortes() {
     return portes;
 }
 
-Porte Map::getPorte(const int id) const noexcept {
+Porte Carte::getPorte(const int id) const noexcept {
     return portes.at(id);
 }
 
-Porte& Map::getPorte(const int tileIdVoisine1, const int tileIdVoisine2) noexcept {
+Porte& Carte::getPorte(const int tileIdVoisine1, const int tileIdVoisine2) {
     for (auto& pair : portes) {
         Porte& porte = pair.second;
         if (porte.isVoisine(tileIdVoisine1) && porte.isVoisine(tileIdVoisine2))
             return porte;
     }
-    throw porte_inexistante {};
+    throw porte_inexistante{};
 }
 
-map<unsigned int, ObjectInfo> Map::getFenetres() {
+map<unsigned int, ObjectInfo> Carte::getFenetres() {
     return fenetres;
 }
 
-map<unsigned int, ObjectInfo> Map::getActivateurs() {
+map<unsigned int, ObjectInfo> Carte::getActivateurs() {
     return activateurs;
 }
 
-bool Map::objectExist(const int objet) const noexcept {
+bool Carte::objectExist(const int objet) const noexcept {
     return murs.find(objet) != murs.end()
         || portes.find(objet) != portes.end()
         || fenetres.find(objet) != fenetres.end()
