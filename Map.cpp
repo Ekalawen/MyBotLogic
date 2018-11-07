@@ -1,11 +1,15 @@
 
 #include "Map.h"
-#include "Map.h"
+#include "MapTile.h"
 #include "GameManager.h"
+#include "Globals.h"
+#include "Voisin.h"
 
 #include <algorithm>
 #include <chrono>
 #include <sstream>
+
+using namespace std;
 
 Map::Map(const LevelInfo& _levelInfo) :
     rowCount{ _levelInfo.rowCount },
@@ -14,38 +18,8 @@ Map::Map(const LevelInfo& _levelInfo) :
 {
     // Créer toutes les tiles !
     tiles.reserve(getNbTiles());
-    // Créer toutes les tiles !
-    tiles.reserve(getNbTiles());
-    int offset = 1;
-    for (auto i = 0; i < getRowCount(); ++i)
-    {
-        offset -= !(i & 1);
-        unsigned int indexI = i * getColCount();
-
-        for (auto j = 0; j < getColCount(); ++j)
-        {
-            tiles.emplace_back(
-                indexI + j,
-                MapPosition{ offset + j,  i }
-            );
-        }
-    }
-
-    // Connecte toutes les tuiles!
-    for (auto& tuile : tiles)
-    {
-        // On test chaque voisin possible
-        for (auto direction = 0; direction < MapTile::NB_VOISINS_TOTAL; ++direction)
-        {
-            auto voisinPositionOffset = tuile.getPosition().CalculerPositionOffset(static_cast<Tile::ETilePosition>(direction));
-
-            // Si la position est définit dans la carte...
-            if (estDefiniDansCarte(voisinPositionOffset))
-            {
-                //On le rajoute comme voisin
-                tuile.getVoisins().emplace_back(ConvertirPositionOffsetAID(voisinPositionOffset), static_cast<Tile::ETilePosition>(direction));
-            }
-        }
+    for (int id = 0; id < getNbTiles(); ++id) {
+       tiles.push_back(MapTile(id, *this));
     }
 
     // Mettre à jour les tiles connues
@@ -68,14 +42,9 @@ bool Map::isInMap(const int idTile) const noexcept {
     return idTile > -1 && idTile < rowCount * colCount;
 }
 
-bool Map::estDefiniDansCarte(const MapPosition& _position) const noexcept {
-    return !(_position.x < 0 || _position.x > getColCount() - 1 || _position.z < 0 || _position.z > getRowCount() - 1);
+vector<unsigned int> Map::getObjectifs() const noexcept {
+    return objectifs;
 }
-
-int Map::ConvertirPositionOffsetAID(const MapPosition& _position) const noexcept {
-    return _position.z * getColCount() + _position.x;
-}
-
 
 struct Noeud {
     static float coefEvaluation;
@@ -103,7 +72,7 @@ Chemin Map::aStar(const int depart, const int arrivee, const float coefEvaluatio
     // On crée nos liste et notre noeud courrant
     vector<Noeud> closedList{};
     vector<Noeud> openList{};
-    Noeud noeudCourant = Noeud(tiles[depart], 0, distanceReel(depart, arrivee), depart);
+    Noeud noeudCourant = Noeud(tiles[depart], 0, distanceL2(depart, arrivee), depart);
     Chemin path;
 
     // On ajoute le noeud initial
@@ -118,7 +87,7 @@ Chemin Map::aStar(const int depart, const int arrivee, const float coefEvaluatio
             // On vérifie que le voisin existe ...
             if (tiles[voisinID].existe()) {
                 // On construit le nouveau noeud
-                Noeud nouveauNoeud = Noeud(tiles[voisinID], noeudCourant.cout + 1, distanceReel(voisinID, arrivee), noeudCourant.tile.getId());
+                Noeud nouveauNoeud = Noeud(tiles[voisinID], noeudCourant.cout + 1, distanceL2(voisinID, arrivee), noeudCourant.tile.getId());
                 // On vérifie s'il existe dans closedList avec un cout inférieur ou dans openList avec un cout inférieur
                 auto itClose = find(closedList.begin(), closedList.end(), nouveauNoeud);
                 auto itOpen = find(openList.begin(), openList.end(), nouveauNoeud);
@@ -170,40 +139,118 @@ Chemin Map::aStar(const int depart, const int arrivee, const float coefEvaluatio
     return path;
 }
 
-Tile::ETilePosition Map::getDirection(const int _tuileID, const int _voisinID) const noexcept {
-    auto voisins = tiles[_tuileID].getVoisins();
-    auto result = std::find_if(begin(voisins), end(voisins), [&_voisinID](const Voisin& v) {
-        return v.getTuileIndex() == _voisinID;
-    });
-
-    if (result != end(voisins)) {
-        return result->getDirection();
+Tile::ETilePosition Map::getDirection(const int ind1, const int ind2) const noexcept {
+    int y = getY(ind1);
+    bool pair = (y % 2 == 0);
+    if (pair) {
+        if (ind2 == ind1 - colCount) {
+            return Tile::NE;
+        } else if (ind2 == ind1 + 1) {
+            return Tile::E;
+        } else if (ind2 == ind1 + colCount) {
+            return Tile::SE;
+        } else if (ind2 == ind1 + colCount - 1) {
+            return Tile::SW;
+        } else if (ind2 == ind1 - 1) {
+            return Tile::W;
+        } else if (ind2 == ind1 - colCount - 1) {
+            return Tile::NW;
+        }
+    } else {
+        if (ind2 == ind1 - colCount + 1) {
+            return Tile::NE;
+        } else if (ind2 == ind1 + 1) {
+            return Tile::E;
+        } else if (ind2 == ind1 + colCount + 1) {
+            return Tile::SE;
+        } else if (ind2 == ind1 + colCount) {
+            return Tile::SW;
+        } else if (ind2 == ind1 - 1) {
+            return Tile::W;
+        } else if (ind2 == ind1 - colCount) {
+            return Tile::NW;
+        }
     }
 
-    GameManager::Log("Erreur dans l'appel de getDirection()!");
+    GameManager::Log("Erreur dans l'appel de getDirection() !");
     return Tile::CENTER;
 }
 
 int Map::getAdjacentTileAt(const int tileSource, const Tile::ETilePosition direction) const noexcept {
-    auto voisins = tiles[tileSource].getVoisins();
-    auto result = std::find_if(begin(voisins), end(voisins), [&direction](const Voisin& v) {
-        return v.getDirection() == direction;
-    });
-
-    if (result != end(voisins)) {
-        return result->getTuileIndex();
+    int y = getY(tileSource);
+    bool pair = (y % 2 == 0);
+    int res;
+    switch (direction)
+    {
+    case Tile::NE:
+        if (pair) {
+            res = tileSource - colCount;
+        } else {
+            res = tileSource - colCount + 1;
+        }
+        break;
+    case Tile::E:
+        res = tileSource + 1;
+        break;
+    case Tile::SE:
+        if (pair) {
+            res = tileSource + colCount;
+        } else {
+            res = tileSource + colCount + 1;
+        }
+        break;
+    case Tile::SW:
+        if (pair) {
+            res = tileSource + colCount - 1;
+        } else {
+            res = tileSource + colCount;
+        }
+        break;
+    case Tile::W:
+        res = tileSource - 1;
+        break;
+    case Tile::NW:
+        if (pair) {
+            res = tileSource - colCount - 1;
+        } else {
+            res = tileSource - colCount;
+        }
+        break;
+    case Tile::CENTER:
+        res = tileSource;
+        break;
+    default:
+        break;
     }
 
-    GameManager::Log("Erreur dans l'appel de getAdjacentTileAt() !");
-    return -1;
+    if (isInMap(res)) {
+        return res;
+    }
+    else {
+        return -1;
+    }
 }
 
-float Map::distanceReel(const int _depart, const int _fin) const noexcept {
-    return tiles[_depart].getPosition().DistancreReelEntre(tiles[_fin].getPosition());
+float Map::distanceL2(const int depart, const int arrivee) const noexcept {
+    int xd = depart % colCount;
+    int yd = depart / colCount;
+    int xa = arrivee % colCount;
+    int ya = arrivee / colCount;
+    return (float)sqrt(pow(xd - xa, 2) + pow(yd - ya, 2));
 }
 
-int Map::distanceNbTuiles(const int _depart, const int _fin) const noexcept {
-    return tiles[_depart].getPosition().NbTuilesEntre(tiles[_fin].getPosition());
+int Map::distanceHex(const int tile1ID, const int tile2ID) const noexcept {
+   int ligne1 = tile1ID / colCount;
+   int colonne1 = tile1ID % colCount;
+   int ligne2 = tile2ID / colCount;
+   int colonne2 = tile2ID % colCount;
+   int x1 = colonne1 - (ligne1 - ligne1 % 2) / 2;
+   int z1 = ligne1;
+   int y1 = -x1 - z1;
+   int x2 = colonne2 - (ligne2 - ligne2 % 2) / 2;
+   int z2 = ligne2;
+   int y2 = -x2 - z2;
+   return max(max(abs(x1 - x2), abs(y1 - y2)), abs(z1 - z2));
 }
 
 int Map::tailleCheminMax() const noexcept {
@@ -341,11 +388,7 @@ const MapTile& Map::getTile(const int id) const {
     return tiles[id];
 }
 
-vector<unsigned int> Map::getObjectifs() const noexcept {
-    return objectifs;
-}
-
-vector<unsigned int>& Map::getObjectifs() {
+vector<unsigned int> Map::getObjectifs() {
     return objectifs;
 }
 

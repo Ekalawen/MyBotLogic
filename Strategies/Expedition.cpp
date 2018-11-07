@@ -32,8 +32,8 @@ void Expedition::saveScore(const MapTile& _tile, Npc& _npc, const std::vector<in
 
     // On regarde la distance moyenne de cette tile � tous les objectifs
     float distanceMoyenne = 0;
-    for (auto objectif : manager.carte.getObjectifs()) {
-        distanceMoyenne += manager.carte.distanceNbTuiles(_tile.getId(), objectif);
+    for (auto objectif : gm.m.getObjectifs()) {
+        distanceMoyenne += gm.m.distanceHex(tile.getId(), objectif);
     }
     distanceMoyenne /= manager.carte.getObjectifs().size();
     score += distanceMoyenne * COEF_DISTANCE_OBJECTIFS_TILE;
@@ -41,8 +41,8 @@ void Expedition::saveScore(const MapTile& _tile, Npc& _npc, const std::vector<in
     // On regarde la distance moyenne de cette tuile aux autres tuiles d�j� visit�s
     if (!_tilesAVisiter.empty()) {
         float distanceMoyenneTiles = 0;
-        for (auto autre : _tilesAVisiter) {
-            distanceMoyenneTiles += manager.carte.distanceNbTuiles(_tile.getId(), autre);
+        for (auto autre : tilesAVisiter) {
+            distanceMoyenneTiles += gm.m.distanceHex(tile.getId(), autre);
         }
         distanceMoyenneTiles /= _tilesAVisiter.size();
         score += distanceMoyenneTiles * COEF_DISTANCE_TILE_AUTRE_TILES;

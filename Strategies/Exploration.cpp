@@ -33,8 +33,8 @@ void Exploration::saveScore(const MapTile& _tile, Npc& _npc, const std::vector<i
     // On regarde la distance moyenne de cette tuile aux autres tuiles d�j� visit�s
     if (!_tilesAVisiter.empty()) {
         float distanceMoyenneTiles = 0;
-        for (auto autre : _tilesAVisiter) {
-            distanceMoyenneTiles += manager.carte.distanceNbTuiles(_tile.getId(), autre);
+        for (auto autre : tilesAVisiter) {
+            distanceMoyenneTiles += gm.m.distanceHex(tile.getId(), autre);
         }
         distanceMoyenneTiles /= _tilesAVisiter.size();
         score += distanceMoyenneTiles * COEF_DISTANCE_TILE_AUTRE_TILES;
