@@ -23,8 +23,8 @@ private:
     vector<int> portesAdjacentes;
 
 public:
-    MapTile() = default; // Constructeur par dï¿½faut obligatoire pour pouvoir utiliser tuple ...
-    MapTile(unsigned int id, Carte &m); // Appelï¿½ dï¿½s le dï¿½but et uniquement lï¿½ !
+    MapTile() = default; // Constructeur par défaut obligatoire pour pouvoir utiliser tuple ...
+    MapTile(unsigned int id, Carte &m); // Appelé dés le début et uniquement là !
 
     void setTileDecouverte(const TileInfo& _tile) noexcept;
 

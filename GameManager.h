@@ -1,4 +1,4 @@
-#ifndef GAME_MANAGER_H
+﻿#ifndef GAME_MANAGER_H
 #define GAME_MANAGER_H
 
 #include "Carte.h"
@@ -20,18 +20,18 @@ class npc_deja_existant {};
 
 class GameManager {
     static Logger logger, loggerRelease;
-    map<int, Npc> npcs; // Les npcs sont stock�s par leurs ids
+    map<int, Npc> npcs; // Les npcs sont stockés par leurs ids
 public:
     Carte c; // La carte, et on utilise c pour gagner du temps !
-    Selecteur behaviorTreeManager; // Arbre de comportement du GameManager pour d�terminer la strat�gie � suivre
-    vector<int> objectifPris; // Permet de savoir quels sont les objectifs actuellement assign�s � des npcs
+    Selecteur behaviorTreeManager; // Arbre de comportement du GameManager pour déterminer la stratégie à suivre
+    vector<int> objectifPris; // Permet de savoir quels sont les objectifs actuellement assignés à des npcs
 
     GameManager() = default;
     GameManager(LevelInfo);
     void moveNpcs(vector<Action*>& actionList) noexcept; // Remplie l'action liste !
-    void reafecterObjectifsSelonDistance(); // R�affecte les objectifs des Npcs entre
-    void ordonnerMouvements(vector<Mouvement>& mouvements) noexcept; // Permet d'ordonner les mouvements pour �viter les collisions et g�rer les politesses de priorit�s =)
-    void updateModel(const TurnInfo&) noexcept; // Met � jour le mod�le avec les informations que d�couvrent les NPCS
+    void reafecterObjectifsSelonDistance(); // Réaffecte les objectifs des Npcs entre
+    void ordonnerMouvements(vector<Mouvement>& mouvements) noexcept; // Permet d'ordonner les mouvements pour éviter les collisions et gérer les politesses de priorités =)
+    void updateModel(const TurnInfo&) noexcept; // Met à jour le modèle avec les informations que découvrent les NPCS
     void InitializeBehaviorTree() noexcept; // Permet d'initialiser le BT
     void execute() noexcept { behaviorTreeManager.execute(); };
 
@@ -39,7 +39,7 @@ public:
     map<int, Npc>& getNpcs();
     void addNpc(Npc npc);
 
-    static void log(string str) noexcept { // Permet de d�bugger ! :D
+    static void log(string str) noexcept { // Permet de débugger ! :D
         #ifndef _DEBUG
             return;
         #endif
@@ -47,7 +47,7 @@ public:
             logger.Log(str);
         #endif
     }
-    static void logRelease(string _str) noexcept { // Permet de d�bugger ! :D
+    static void logRelease(string _str) noexcept { // Permet de débugger ! :D
         loggerRelease.Log(_str);
     }
     static void SetLog(string path, string fileName) noexcept { // Permet d'initialiser le logger =)

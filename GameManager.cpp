@@ -33,7 +33,7 @@ GameManager::GameManager(LevelInfo _info) :
    c{ Carte(_info) },
    objectifPris{ vector<int>{} }
 {
-   // On rï¿½cupï¿½re l'ensemble des npcs !
+   // On récupére l'ensemble des npcs !
    for (auto pair_npc : _info.npcs) {
       NPCInfo npc = pair_npc.second;
       npcs[npc.npcID] = Npc(npc);
@@ -41,7 +41,7 @@ GameManager::GameManager(LevelInfo _info) :
 }
 
 void GameManager::InitializeBehaviorTree() noexcept {
-   //  Crï¿½ation du behaviorTree Manager
+   //  Création du behaviorTree Manager
    unique_ptr<ObjectifsForAllNpcs> objectifs = make_unique<ObjectifsForAllNpcs>(*this);
    unique_ptr<CheminsForAllNpcs> chemins = make_unique< CheminsForAllNpcs>(*this);
    unique_ptr<Exploitation> exploitation = make_unique<Exploitation>(*this);
@@ -78,7 +78,7 @@ vector<Mouvement> GameManager::getAllMouvements() {
         stringstream ss;
         ss << "NPC = " << npc.second.getId() << std::endl
            << "chemin = " << npc.second.getChemin().toString() << std::endl
-           << "case actuelle = " + npc.second.getTileId() << std::endl;
+           << "case actuelle = " <<  npc.second.getTileId() << std::endl;
        
 
         // Si le npc doit aller quelquepart !!!
@@ -145,7 +145,7 @@ int GameManager::getIndiceMouvementPrioritaire(vector<Mouvement>& _mouvements, c
    int indiceMax = _indicesAConsiderer[0];
    int distanceMax = getNpcById(_mouvements[_indicesAConsiderer[0]].getNpcId()).getChemin().distance();
    for (int i = 0; i < _indicesAConsiderer.size(); ++i) {
-      // Si un mouvement est stationnaire, alors personne n'est autorisï¿½ ï¿½ passer !
+      // Si un mouvement est stationnaire, alors personne n'est autorisé à passer !
       if (!_mouvements[_indicesAConsiderer[i]].isNotStopped())
          return -1;
       int dist = getNpcById(_mouvements[_indicesAConsiderer[i]].getNpcId()).getChemin().distance();
@@ -163,7 +163,7 @@ void GameManager::stopNonPrioritaireMouvements(vector<Mouvement>& _mouvements, c
    for (int i = 0; i < _indicesMouvementsSurMemeCaseCible.size(); ++i) {
       if (_indicesMouvementsSurMemeCaseCible[i] != _indiceMouvementPrioritaire) {
          int indice = _indicesMouvementsSurMemeCaseCible[i];
-         // Si le mouvement n'ï¿½tait pas dï¿½jï¿½ ï¿½ l'arrï¿½t alors on a rï¿½ellement effectuï¿½ un changement !
+         // Si le mouvement n'était pas déjà à l'arrêt alors on a réellement effectué un changement !
          if (_mouvements[indice].isNotStopped())
             _continuer = true;
          _mouvements[indice].stop();
@@ -171,9 +171,9 @@ void GameManager::stopNonPrioritaireMouvements(vector<Mouvement>& _mouvements, c
 
          ss << "Npc " << _mouvements[indice].getNpcId();
          if (_indiceMouvementPrioritaire != -1)
-            ss << " a stoppï¿½ son mouvement pour laisser la place ï¿½ Npc " << _mouvements[_indiceMouvementPrioritaire].getNpcId();
+            ss << " a stoppé son mouvement pour laisser la place à Npc " << _mouvements[_indiceMouvementPrioritaire].getNpcId();
          else
-            ss << " a stoppï¿½ son mouvement car quelqu'un est immobile.";
+            ss << " a stoppé son mouvement car quelqu'un est immobile.";
       }
    }
 
@@ -187,12 +187,12 @@ void GameManager::gererCollisionsMemeCaseCible(vector<Mouvement>& _mouvements) {
    while (continuer) {
       continuer = false;
       for (auto& mouvement : _mouvements) {
-         // On rï¿½cupï¿½re tous les indices des mouvements qui vont sur cette case
+         // On récupére tous les indices des mouvements qui vont sur cette case
          vector<int> indicesMouvementsSurMemeCaseCible = getIndicesMouvementsSurMemeCaseCible(_mouvements, mouvement.getTileDestination());
 
-         // Si ils sont plusieurs ï¿½ vouloir aller sur cette case
+         // Si ils sont plusieurs à vouloir aller sur cette case
          if (indicesMouvementsSurMemeCaseCible.size() >= 2) {
-            // On rï¿½cupï¿½re le mouvement associï¿½ au Npc ayant le plus de chemin ï¿½ faire
+            // On récupére le mouvement associé au Npc ayant le plus de chemin à faire
             int indiceMouvementPrioritaire = getIndiceMouvementPrioritaire(_mouvements, indicesMouvementsSurMemeCaseCible);
 
             // On passe tous les autres mouvements en Center !
@@ -203,7 +203,7 @@ void GameManager::gererCollisionsMemeCaseCible(vector<Mouvement>& _mouvements) {
 }
 
 void GameManager::ordonnerMouvements(vector<Mouvement>& _mouvements) noexcept {
-   // Si deux npcs veulent aller sur la mï¿½me case, alors celui qui a le plus de chemin ï¿½ faire passe, et tous les autres restent sur place !
+   // Si deux npcs veulent aller sur la même case, alors celui qui a le plus de chemin à faire passe, et tous les autres restent sur place !
    gererCollisionsMemeCaseCible(_mouvements);
 }
 
@@ -213,7 +213,7 @@ void GameManager::addNewTiles(const TurnInfo& _tile) noexcept {
       for (auto& npc : _tile.npcs) {
          // On regarde les tuiles qu'ils voyent
          for (auto& tileId : npc.second.visibleTiles) {
-            // Si ces tuiles n'ont pas ï¿½tï¿½ dï¿½couvertes
+            // Si ces tuiles n'ont pas été découvertes
             if (c.getTile(tileId).getStatut() == MapTile::INCONNU) {
                // On les setDecouverte
                c.addTile(_tile.tiles.at(tileId));
@@ -227,7 +227,7 @@ void GameManager::addNewObjects(const TurnInfo& _tile) noexcept {
    // Tous les objets visibles par tous les npcs ...
    for (auto npc : _tile.npcs) {
       for (auto objet : npc.second.visibleObjects) {
-         // Si on ne connaï¿½t pas cet objet on l'ajoute
+         // Si on ne connait pas cet objet on l'ajoute
          if (!c.objectExist(objet)) {
             c.addObject(_tile.objects.at(objet));
          }
@@ -243,21 +243,21 @@ void GameManager::updateModel(const TurnInfo &_tile) noexcept {
    auto pre = Minuteur::now();
    addNewTiles(_tile);
    auto post = Minuteur::now();
-   ss << "Durï¿½e AddTile = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms" << endl;
+   ss << "Durée AddTile = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms" << endl;
 
    // On essaye de rajouter les nouvelles tiles !
    pre = Minuteur::now();
    addNewObjects(_tile);
    post = Minuteur::now();
-   ss << "Durï¿½e AddObjects = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms" << endl;
+   ss << "Durée AddObjects = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms" << endl;
 
-   // Mettre ï¿½ jour nos NPCs
+   // Mettre à jour nos NPCs
    pre = Minuteur::now();
    for (auto &npc : npcs) {
       npc.second.floodfill(c);
    }
    post = Minuteur::now();
-   ss << "Durï¿½e FloodFill = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms";
+   ss << "Durée FloodFill = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms";
 
    GameManager::log(ss.str());
 

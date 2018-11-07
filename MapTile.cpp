@@ -17,7 +17,7 @@ MapTile::MapTile(unsigned int id, Carte &c) :
     statut{ INCONNU }
 {
 	voisins.reserve(6);
-    // On regarde sur quelle ligne on est, car �a change les indices
+    // On regarde sur quelle ligne on est, car ça change les indices
     int indice;
     if (y % 2 == 0) { // Ligne paire
                       // NE

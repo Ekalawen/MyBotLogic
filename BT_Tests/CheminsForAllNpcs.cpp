@@ -9,12 +9,12 @@ using std::vector;
 using std::stringstream;
 using std::endl;
 
-// V�rifier si un objectif est accessible pour tous nos NPCs
+// Vérifier si un objectif est accessible pour tous nos NPCs
 BT_Noeud::ETAT_ELEMENT CheminsForAllNpcs::execute() noexcept {
    auto pre = Minuteur::now();
    GameManager::log("CheminsForAllNpcs");
    
-   // Indices des objectfs d�couverts
+   // Indices des objectfs découverts
    vector<unsigned int> objectifNonDonne = gm.c.getObjectifs();
 
    // On parcours chaque NPC
@@ -32,17 +32,17 @@ BT_Noeud::ETAT_ELEMENT CheminsForAllNpcs::execute() noexcept {
 		  }
 	  }
 
-      // Si c'est le cas, on enl�ve cet objectif de ceux attribuables et on continue
+      // Si c'est le cas, on enlève cet objectif de ceux attribuables et on continue
       if (objFound) {
          objectifNonDonne.erase(it);
       // Sinon on retourne ECHEC
       } else {
          auto post = Minuteur::now();
          stringstream ss;
-         ss << "Dur�e CheminsForAll = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms" << endl
+         ss << "Durée CheminsForAll = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms" << endl
             << "Il n'y a pas de chemins pour tous les npcs !";
          GameManager::log(ss.str());
-         // Si le cheminMin n'a pas �t� initialis�, c'est qu'il n'y a pas de chemins pour tous les npcs !
+         // Si le cheminMin n'a pas été initialisé, c'est qu'il n'y a pas de chemins pour tous les npcs !
          return ETAT_ELEMENT::ECHEC;
       }
    }

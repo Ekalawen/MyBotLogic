@@ -1,4 +1,4 @@
-#include "MyBotLogic.h"
+ï»¿#include "MyBotLogic.h"
 
 #include "TurnInfo.h"
 #include "NPCInfo.h"
@@ -53,15 +53,15 @@ MyBotLogic::MyBotLogic() :
 	GameManager::SetLog(logpath, "MyLog.log");
 	GameManager::SetLogRelease(logpath, "MyLogRelease.log");
 
-    // On crée notre modèle du jeu en cours !
+    // On crÃ©e notre modÃ¨le du jeu en cours !
     manager = GameManager(_levelInfo);
     manager.InitializeBehaviorTree();
     auto post = Minuteur::now();
 
-    // On associe à chaque npc son objectif !
+    // On associe Ã  chaque npc son objectif !
     //gm.associateNpcsWithObjectiv();
     stringstream ss;
-    ss << "Durée Initialisation = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms";
+    ss << "DurÃ©e Initialisation = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms";
     GameManager::log(ss.str());
    
 }
@@ -77,30 +77,30 @@ MyBotLogic::MyBotLogic() :
     stringstream ss;
     GameManager::log("TURN =========================== " + to_string(_turnInfo.turnNb));
 
-    // On complète notre modèle avec l'information qu'on vient de découvrir !
+    // On complÃ¨te notre modÃ¨le avec l'information qu'on vient de dÃ©couvrir !
     auto pre = Minuteur::now();
     manager.updateModel(_turnInfo);
     auto post = Minuteur::now();
-    ss << "Durée Update = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms" << endl;
+    ss << "DurÃ©e Update = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms" << endl;
 
-    // On définit notre stratégie en exécutant notre arbre de comportement
+    // On dÃ©finit notre stratÃ©gie en exÃ©cutant notre arbre de comportement
     pre = Minuteur::now();
     manager.execute();
     post = Minuteur::now();
-    ss << "Durée Execute = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms" << endl;
+    ss << "DurÃ©e Execute = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms" << endl;
     
 
-    // On fait se déplacer chaque Npc vers son objectif associé =)
+    // On fait se dÃ©placer chaque Npc vers son objectif associÃ© =)
     pre = Minuteur::now();
     manager.moveNpcs(_actionList);
     post = Minuteur::now();
-    ss << "Durée Move = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms" << endl;
+    ss << "DurÃ©e Move = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms" << endl;
 
 
     auto postFAL = Minuteur::now();
-    ss << "Durée Tour = " << Minuteur::dureeMicroseconds(preFAL, postFAL) / 1000.f << "ms" << endl;
+    ss << "DurÃ©e Tour = " << Minuteur::dureeMicroseconds(preFAL, postFAL) / 1000.f << "ms" << endl;
     GameManager::log(ss.str());
-    ss << "Durée Tour numéro " << _turnInfo.turnNb << " = " << Minuteur::dureeMicroseconds(preFAL, postFAL) / 1000.f << "ms";
+    ss << "DurÃ©e Tour numÃ©ro " << _turnInfo.turnNb << " = " << Minuteur::dureeMicroseconds(preFAL, postFAL) / 1000.f << "ms";
     GameManager::logRelease(ss.str());
 }
 
