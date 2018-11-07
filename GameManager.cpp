@@ -20,13 +20,18 @@
 #include <sstream>
 #include <memory>
 
+using std::make_unique;
+using std::stringstream;
+using std::endl;
+using std::max;
+
 // On initialise notre attribut statique ...
 Logger GameManager::logger{};
 Logger GameManager::loggerRelease{};
 
 GameManager::GameManager(LevelInfo _info) :
    carte{ Carte(_info) },
-   objectifPris{ std::vector<int>{} }
+   objectifPris{ vector<int>{} }
 {
    // On r�cup�re l'ensemble des npcs !
    for (auto pair_npc : _info.npcs) {
@@ -37,43 +42,43 @@ GameManager::GameManager(LevelInfo _info) :
 
 void GameManager::InitializeBehaviorTree() noexcept {
    //  Cr�ation du behaviorTree Manager
-   std::unique_ptr<ObjectifsForAllNpcs> objectifs = std::make_unique<ObjectifsForAllNpcs>(*this);
-   std::unique_ptr<CheminsForAllNpcs> chemins = std::make_unique< CheminsForAllNpcs>(*this);
-   std::unique_ptr<Exploitation> exploitation = std::make_unique<Exploitation>(*this);
-   std::unique_ptr<ScoreStrategie> expedition = std::make_unique<Expedition>(*this, "Expedition");
-   std::unique_ptr<ScoreStrategie> exploration = std::make_unique<Exploration>(*this, "Exploration");
+   unique_ptr<ObjectifsForAllNpcs> objectifs = make_unique<ObjectifsForAllNpcs>(*this);
+   unique_ptr<CheminsForAllNpcs> chemins = make_unique< CheminsForAllNpcs>(*this);
+   unique_ptr<Exploitation> exploitation = make_unique<Exploitation>(*this);
+   unique_ptr<ScoreStrategie> expedition = make_unique<Expedition>(*this, "Expedition");
+   unique_ptr<ScoreStrategie> exploration = make_unique<Exploration>(*this, "Exploration");
 
-   std::vector<std::unique_ptr<BT_Noeud>> vecSequ1{};
-   vecSequ1.push_back(std::move(chemins));
-   vecSequ1.push_back(std::move(exploitation));
-   std::unique_ptr<Sequenceur> sequenceur1 = std::make_unique<Sequenceur>(std::move(vecSequ1));
+   vector<unique_ptr<BT_Noeud>> vecSequ1{};
+   vecSequ1.push_back(move(chemins));
+   vecSequ1.push_back(move(exploitation));
+   unique_ptr<Sequenceur> sequenceur1 = make_unique<Sequenceur>(move(vecSequ1));
 
-   std::vector<std::unique_ptr<BT_Noeud>> vecSelec{};
-   vecSelec.push_back(std::move(sequenceur1));
-   vecSelec.push_back(std::move(expedition));
-   std::unique_ptr<Selecteur> selecteur = std::make_unique<Selecteur>(std::move(vecSelec));
+   vector<unique_ptr<BT_Noeud>> vecSelec{};
+   vecSelec.push_back(move(sequenceur1));
+   vecSelec.push_back(move(expedition));
+   unique_ptr<Selecteur> selecteur = make_unique<Selecteur>(move(vecSelec));
 
-   std::vector<std::unique_ptr<BT_Noeud>> vecSequ2{};
-   vecSequ2.push_back(std::move(objectifs));
-   vecSequ2.push_back(std::move(selecteur));
-   std::unique_ptr<Sequenceur> sequenceur2 = std::make_unique<Sequenceur>(std::move(vecSequ2));
+   vector<unique_ptr<BT_Noeud>> vecSequ2{};
+   vecSequ2.push_back(move(objectifs));
+   vecSequ2.push_back(move(selecteur));
+   unique_ptr<Sequenceur> sequenceur2 = make_unique<Sequenceur>(move(vecSequ2));
 
-   std::vector<std::unique_ptr<BT_Noeud>> vecBehaviorTree;
-   vecBehaviorTree.push_back(std::move(sequenceur2));
-   vecBehaviorTree.push_back(std::move(exploration));
-   behaviorTreeManager = Selecteur(std::move(vecBehaviorTree));
+   vector<unique_ptr<BT_Noeud>> vecBehaviorTree;
+   vecBehaviorTree.push_back(move(sequenceur2));
+   vecBehaviorTree.push_back(move(exploration));
+   behaviorTreeManager = Selecteur(move(vecBehaviorTree));
 }
 
-std::vector<Mouvement> GameManager::getAllMouvements() {
+vector<Mouvement> GameManager::getAllMouvements() {
    // On va r�cup�rer la liste des mouvements
-   std::vector<Mouvement> mouvements;
+   vector<Mouvement> mouvements;
 
    // Pour tous les NPCs, s'il n'y a aucun autre Npc devant eux
    for (auto& npc : npcs) {
-      std::stringstream ss;
-      ss << "NPC = " << npc.second.getId() << std::endl
-         << "chemin = " << npc.second.getChemin().toString() << std::endl
-         << "case actuelle = " + npc.second.getTileId() << std::endl;
+      stringstream ss;
+      ss << "NPC = " << npc.second.getId() << endl
+         << "chemin = " << npc.second.getChemin().toString() << endl
+         << "case actuelle = " + npc.second.getTileId() << endl;
 
 
 
@@ -81,10 +86,10 @@ std::vector<Mouvement> GameManager::getAllMouvements() {
       if (!npc.second.getChemin().empty()) {
          // On r�cup�re la case o� il doit aller
          int caseCible = npc.second.getChemin().getFirst();
-         ss << "case cible = " << caseCible << std::endl;
+         ss << "case cible = " << caseCible << endl;
 
          Tile::ETilePosition direction = carte.getDirection(npc.second.getTileId(), caseCible);
-         ss << "direction = " << direction << std::endl;
+         ss << "direction = " << direction << endl;
 
          // On enregistre le mouvement
          mouvements.push_back(Mouvement(npc.second.getId(), npc.second.getTileId(), caseCible, direction));
@@ -92,7 +97,7 @@ std::vector<Mouvement> GameManager::getAllMouvements() {
          npc.second.getChemin().removeFirst(); // On peut supprimer le chemin
       }
       else {
-         ss << "case cible = Ne Bouge Pas" << std::endl;
+         ss << "case cible = Ne Bouge Pas" << endl;
          // M�me si le Npc ne bouge pas, il a quand m�me un mouvement statique !
          mouvements.push_back(Mouvement(npc.second.getId(), npc.second.getTileId(), npc.second.getTileId(), Tile::ETilePosition::CENTER));
       }
@@ -102,14 +107,14 @@ std::vector<Mouvement> GameManager::getAllMouvements() {
    return mouvements;
 }
 
-void GameManager::moveNpcs(std::vector<Action*>& _actionList) noexcept {
+void GameManager::moveNpcs(vector<Action*>& _actionList) noexcept {
    // TODO !
    // Il faut r�ordonner les chemins entre les npcs !
    // Cad que si deux Npcs peuvent �changer leurs objectifs et que cela diminue leurs chemins respectifs, alors il faut le faire !
    reaffecterObjectifsSelonDistance();
 
    // On r�cup�re tous les mouvements
-   std::vector<Mouvement> mouvements = getAllMouvements();
+   vector<Mouvement> mouvements = getAllMouvements();
 
    // Puis on va l'ordonner pour laisser la priorit� � celui qui va le plus loin !
    ordonnerMouvements(mouvements);
@@ -135,15 +140,15 @@ void GameManager::moveNpcs(std::vector<Action*>& _actionList) noexcept {
    }
 }
 
-std::vector<int> getIndicesMouvementsSurMemeCaseCible(std::vector<Mouvement>& _mouvements, int _caseCible) {
-   std::vector<int> indices;
+vector<int> getIndicesMouvementsSurMemeCaseCible(vector<Mouvement>& _mouvements, int _caseCible) {
+   vector<int> indices;
    for (int i = 0; i < _mouvements.size(); ++i) {
       if (_mouvements[i].getTileDestination() == _caseCible) indices.push_back(i);
    }
    return indices;
 }
 
-int GameManager::getIndiceMouvementPrioritaire(std::vector<Mouvement>& _mouvements, const std::vector<int>& _indicesAConsiderer) {
+int GameManager::getIndiceMouvementPrioritaire(vector<Mouvement>& _mouvements, const vector<int>& _indicesAConsiderer) {
    int indiceMax = _indicesAConsiderer[0];
    int distanceMax = getNpcById(_mouvements[_indicesAConsiderer[0]].getNpcId()).getChemin().distance();
    for (int i = 0; i < _indicesAConsiderer.size(); ++i) {
@@ -159,8 +164,8 @@ int GameManager::getIndiceMouvementPrioritaire(std::vector<Mouvement>& _mouvemen
    return indiceMax;
 }
 
-void GameManager::stopNonPrioritaireMouvements(std::vector<Mouvement>& _mouvements, const std::vector<int>& _indicesMouvementsSurMemeCaseCible, const int _indiceMouvementPrioritaire, bool& _continuer) {
-   std::stringstream ss;
+void GameManager::stopNonPrioritaireMouvements(vector<Mouvement>& _mouvements, const vector<int>& _indicesMouvementsSurMemeCaseCible, const int _indiceMouvementPrioritaire, bool& _continuer) {
+   stringstream ss;
 
    for (int i = 0; i < _indicesMouvementsSurMemeCaseCible.size(); ++i) {
       if (_indicesMouvementsSurMemeCaseCible[i] != _indiceMouvementPrioritaire) {
@@ -182,7 +187,7 @@ void GameManager::stopNonPrioritaireMouvements(std::vector<Mouvement>& _mouvemen
    GameManager::log(ss.str());
 }
 
-void GameManager::gererCollisionsMemeCaseCible(std::vector<Mouvement>& _mouvements) {
+void GameManager::gererCollisionsMemeCaseCible(vector<Mouvement>& _mouvements) {
    // Tant que l'on a fait une modification
    bool continuer = true;
    // Pour toutes les cases cibles
@@ -190,7 +195,7 @@ void GameManager::gererCollisionsMemeCaseCible(std::vector<Mouvement>& _mouvemen
       continuer = false;
       for (auto& mouvement : _mouvements) {
          // On r�cup�re tous les indices des mouvements qui vont sur cette case
-         std::vector<int> indicesMouvementsSurMemeCaseCible = getIndicesMouvementsSurMemeCaseCible(_mouvements, mouvement.getTileDestination());
+         vector<int> indicesMouvementsSurMemeCaseCible = getIndicesMouvementsSurMemeCaseCible(_mouvements, mouvement.getTileDestination());
 
          // Si ils sont plusieurs � vouloir aller sur cette case
          if (indicesMouvementsSurMemeCaseCible.size() >= 2) {
@@ -204,7 +209,7 @@ void GameManager::gererCollisionsMemeCaseCible(std::vector<Mouvement>& _mouvemen
    }
 }
 
-void GameManager::ordonnerMouvements(std::vector<Mouvement>& _mouvements) noexcept {
+void GameManager::ordonnerMouvements(vector<Mouvement>& _mouvements) noexcept {
    // Si deux npcs veulent aller sur la m�me case, alors celui qui a le plus de chemin � faire passe, et tous les autres restent sur place !
    gererCollisionsMemeCaseCible(_mouvements);
 }
@@ -239,19 +244,19 @@ void GameManager::addNewObjects(const TurnInfo& _tile) noexcept {
 
 void GameManager::updateModel(const TurnInfo &_tile) noexcept {
 
-   std::stringstream ss;
+   stringstream ss;
 
    // On essaye de rajouter les nouvelles tiles !
    auto pre = Minuteur::now();
    addNewTiles(_tile);
    auto post = Minuteur::now();
-   ss << "Dur�e AddTile = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms" << std::endl;
+   ss << "Dur�e AddTile = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms" << endl;
 
    // On essaye de rajouter les nouvelles tiles !
    pre = Minuteur::now();
    addNewObjects(_tile);
    post = Minuteur::now();
-   ss << "Dur�e AddObjects = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms" << std::endl;
+   ss << "Dur�e AddObjects = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms" << endl;
 
    // Mettre � jour nos NPCs
    pre = Minuteur::now();
@@ -271,7 +276,7 @@ Npc& GameManager::getNpcById(int _id) {
       throw npc_inexistant{};
    return npcs[_id];
 }
-std::map<int, Npc>& GameManager::getNpcs() {
+map<int, Npc>& GameManager::getNpcs() {
    return npcs;
 }
 void GameManager::addNpc(Npc npc) {
@@ -282,7 +287,7 @@ void GameManager::addNpc(Npc npc) {
 
 void GameManager::reaffecterObjectifsSelonDistance() {
    // Tant que l'on fait des modifications on continue ...
-   std::stringstream ss;
+   stringstream ss;
    bool continuer = true;
    while (continuer) {
       continuer = false;
@@ -294,14 +299,14 @@ void GameManager::reaffecterObjectifsSelonDistance() {
             Npc& autreNpc = autreNpcPair.second;
             int objectifNpc = npc.getChemin().empty() ? npc.getTileId() : npc.getChemin().destination();
             int objectifAutreNpc = autreNpc.getChemin().empty() ? autreNpc.getTileId() : autreNpc.getChemin().destination();
-            int tempsMaxChemins = std::max(npc.getChemin().distance(), autreNpc.getChemin().distance());
+            int tempsMaxChemins = max(npc.getChemin().distance(), autreNpc.getChemin().distance());
             if (npc.getId() != autreNpc.getId()) {
                // Si l'interversion des objectifs est b�n�fique pour l'un deux et ne co�te rien � l'autre (ou lui est aussi b�n�fique)
                if (npc.isAccessibleTile(objectifAutreNpc) // D�j� on v�rifie que l'intervertion est "possible"
                   && autreNpc.isAccessibleTile(objectifNpc)) {
-                  if (std::max(npc.distanceToTile(objectifAutreNpc), autreNpc.distanceToTile(objectifNpc)) < tempsMaxChemins) {// Ensuite que c'est rentable
+                  if (max(npc.distanceToTile(objectifAutreNpc), autreNpc.distanceToTile(objectifNpc)) < tempsMaxChemins) {// Ensuite que c'est rentable
                       // Alors on intervertit !                           
-                     ss << "Npc " << npc.getId() << " et Npc " << autreNpc.getId() << " �changent leurs objectifs !" << std::endl;
+                     ss << "Npc " << npc.getId() << " et Npc " << autreNpc.getId() << " �changent leurs objectifs !" << endl;
                      npc.getChemin() = carte.aStar(npc.getTileId(), objectifAutreNpc);
                      autreNpc.getChemin() = carte.aStar(autreNpc.getTileId(), objectifNpc);
                      continuer = true; // Et on devra continuer pour v�rifier que cette intervertion n'en a pas entrain� de nouvelles !

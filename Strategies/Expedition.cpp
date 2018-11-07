@@ -1,10 +1,14 @@
 
 #include "Expedition.h"
+#include "MyBotLogic/MapTile.h"
 
 #include <string>
 #include <vector>
 
-Expedition::Expedition(GameManager& _manager, std::string _nom)
+using std::string;
+using std::vector;
+
+Expedition::Expedition(GameManager& _manager, string _nom)
     : ScoreStrategie(_manager, _nom)
 {
 }
@@ -15,7 +19,7 @@ Expedition::Expedition(GameManager& _manager, std::string _nom)
     // La distance moyenne de cette tile � tous les objectifs
     // La distance moyenne de cette tuile aux autres tuiles qui seront visit�s !
     // Le degr� d'int�ret de la tuile. 
-void Expedition::saveScore(const MapTile& _tile, Npc& _npc, const std::vector<int>& _tilesAVisiter) const noexcept {
+void Expedition::saveScore(const MapTile& _tile, Npc& _npc, const vector<int>& _tilesAVisiter) const noexcept {
     // Pr�condition : tile.statut == CONNU
     float score = 0;
 
@@ -32,8 +36,8 @@ void Expedition::saveScore(const MapTile& _tile, Npc& _npc, const std::vector<in
 
     // On regarde la distance moyenne de cette tile � tous les objectifs
     float distanceMoyenne = 0;
-    for (auto objectif : gm.m.getObjectifs()) {
-        distanceMoyenne += gm.m.distanceHex(tile.getId(), objectif);
+    for (auto objectif : manager.carte.getObjectifs()) {
+        distanceMoyenne += manager.carte.distanceHex(_tile.getId(), objectif);
     }
     distanceMoyenne /= manager.carte.getObjectifs().size();
     score += distanceMoyenne * COEF_DISTANCE_OBJECTIFS_TILE;
@@ -41,8 +45,8 @@ void Expedition::saveScore(const MapTile& _tile, Npc& _npc, const std::vector<in
     // On regarde la distance moyenne de cette tuile aux autres tuiles d�j� visit�s
     if (!_tilesAVisiter.empty()) {
         float distanceMoyenneTiles = 0;
-        for (auto autre : tilesAVisiter) {
-            distanceMoyenneTiles += gm.m.distanceHex(tile.getId(), autre);
+        for (auto autre : _tilesAVisiter) {
+            distanceMoyenneTiles += manager.carte.distanceHex(_tile.getId(), autre);
         }
         distanceMoyenneTiles /= _tilesAVisiter.size();
         score += distanceMoyenneTiles * COEF_DISTANCE_TILE_AUTRE_TILES;

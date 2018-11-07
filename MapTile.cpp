@@ -1,13 +1,15 @@
 
 #include "MapTile.h"
-#include "Map.h"
+#include "Carte.h"
 #include "TileInfo.h"
 #include "GameManager.h"
 
 #include <algorithm>
 #include <vector>
 
-MapTile::MapTile(unsigned int id, Map &m) :
+using std::vector;
+
+MapTile::MapTile(unsigned int id, Carte &m) :
     id{ static_cast<int>(id) },
     x{ static_cast<int>(id) % m.getColCount() },
     y{ static_cast<int>(id) / m.getColCount() },
@@ -89,13 +91,13 @@ void MapTile::setTileDecouverte(const TileInfo& tile) noexcept {
 }
 
 bool MapTile::isVoisinAvecEtat(const Etats etat, const int id) const noexcept {
-   return std::find_if(voisins.begin(), voisins.end(), [&](const Voisin& v) {
+   return find_if(voisins.begin(), voisins.end(), [&](const Voisin& v) {
       return v.getTuileIndex() == id && v.estEtat(etat);
    }) != voisins.end();
 }
 
 void MapTile::removeEtat(const Etats etat, const int id) {
-   auto it = std::find_if(voisins.begin(), voisins.end(), [&id](const Voisin& v) {
+   auto it = find_if(voisins.begin(), voisins.end(), [&id](const Voisin& v) {
       return v.getTuileIndex() == id;
    });
 
@@ -124,15 +126,15 @@ Tile::ETileType MapTile::getType() const noexcept {
    return type;
 }
 
-std::vector<Voisin> MapTile::getVoisins() const noexcept {
+vector<Voisin> MapTile::getVoisins() const noexcept {
    return voisins;
 }
 
-vector<int> MapTile::getVoisinsIDParEtat(const Etats etat) const noexcept {
+vector<int> MapTile::getVoisinsIDParEtat(const Etats _etat) const noexcept {
 
-   std::vector<int> resultat;
+   vector<int> resultat;
 
-   std::for_each(begin(voisins), end(voisins), [&](const Voisin& v) {
+   for_each(begin(voisins), end(voisins), [&](const Voisin& v) {
       if (v.estEtat(_etat))
          resultat.emplace_back(v.getTuileIndex());
    });

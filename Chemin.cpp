@@ -4,8 +4,10 @@
 #include <vector>
 #include <string>
 
+using std::to_string;
+
 Chemin::Chemin()
-   : chemin{ std::vector<int>{} },
+   : chemin{ vector<int>{} },
    inaccessible{ false }
 {
 }
@@ -38,8 +40,8 @@ bool Chemin::empty() const noexcept {
    return chemin.empty();
 }
 
-std::string Chemin::toString() const noexcept {
-   std::string str;
+string Chemin::toString() const noexcept {
+   string str;
    if (chemin.size() <= 0) {
       str += "vide";
    }
@@ -48,7 +50,7 @@ std::string Chemin::toString() const noexcept {
          str += "inaccessible : ";
       }
       for (int i = static_cast<int>(chemin.size() - 1); i >= 0; i--) {
-         str += std::to_string(chemin[i]) + " ";
+         str += to_string(chemin[i]) + " ";
       }
       str.pop_back();
    }

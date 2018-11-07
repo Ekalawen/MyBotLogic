@@ -1,11 +1,13 @@
-#include <chrono>
-
 #ifndef MINUTEUR_H
 #define MINUTEUR_H
 
+#include <chrono>
+
+namespace chrono = std::chrono;
+
 class Minuteur {
    using duree_t = unsigned int;
-   using time_point_t = std::chrono::high_resolution_clock::time_point;
+   using time_point_t = chrono::high_resolution_clock::time_point;
 public:
    static time_point_t now();
 

@@ -8,6 +8,12 @@
 #include <algorithm>
 #include <sstream>
 #include <vector>
+#include <memory>
+
+using std::stringstream;
+using std::vector;
+using std::to_string;
+using std::endl;
 
 Npc::Npc(const NPCInfo info) :
 	id{ static_cast<int>(info.npcID) },
@@ -36,7 +42,7 @@ void Npc::addScore(ScoreType _score) noexcept {
    scoresAssocies.emplace_back(std::move(_score));
 }
 
-Chemin Npc::getCheminMinNonPris(const std::vector<int>& objectifsPris, const int tailleCheminMax) const noexcept {
+Chemin Npc::getCheminMinNonPris(const vector<int>& objectifsPris, const int tailleCheminMax) const noexcept {
    Chemin cheminMin;
    cheminMin.setInaccessible();
    int distMin = tailleCheminMax;
@@ -57,7 +63,7 @@ Chemin Npc::getCheminMinNonPris(const std::vector<int>& objectifsPris, const int
 }
 
 int Npc::affecterMeilleurChemin(const Carte&_carte) noexcept {
-   std::stringstream ss;
+   stringstream ss;
 
    if (scoresAssocies.empty()) {
       // Dans ce cas-l� on reste sur place !
@@ -68,22 +74,22 @@ int Npc::affecterMeilleurChemin(const Carte&_carte) noexcept {
    }
 
    // On cherche le meilleur score
-   auto preScore = std::chrono::high_resolution_clock::now();
-   auto bestIter = std::max_element(begin(scoresAssocies), end(scoresAssocies),
+   auto preScore = chrono::high_resolution_clock::now();
+   auto bestIter = max_element(begin(scoresAssocies), end(scoresAssocies),
       [](const ScoreType& scoreDroite, const ScoreType& scoreGauche) {
       return scoreDroite.score < scoreGauche.score;
    });
    auto postScore = Minuteur::now();
-   ss << "Dur�e chercher meilleur score = " << Minuteur::dureeMicroseconds(preScore, postScore) / 1000.f << "ms" << std::endl;
+   ss << "Dur�e chercher meilleur score = " << Minuteur::dureeMicroseconds(preScore, postScore) / 1000.f << "ms" << endl;
 
 
    // On affecte son chemin, mais il nous faut le calculer ! =)
-   auto preAStar = std::chrono::high_resolution_clock::now();
+   auto preAStar = chrono::high_resolution_clock::now();
    chemin = _carte.aStar(tileId, bestIter->tuileID);
-   auto postAStar = std::chrono::high_resolution_clock::now();
+   auto postAStar = chrono::high_resolution_clock::now();
 
-   ss << "Le Npc " << std::to_string(id) << " va rechercher la tile " << chemin.destination() << std::endl;
-   ss << "Dur�e a* = " << Minuteur::dureeMicroseconds(preAStar, postAStar) / 1000.f << "ms" << std::endl;
+   ss << "Le Npc " << to_string(id) << " va rechercher la tile " << chemin.destination() << endl;
+   ss << "Dur�e a* = " << Minuteur::dureeMicroseconds(preAStar, postAStar) / 1000.f << "ms" << endl;
    GameManager::log(ss.str());
 
    // On renvoie la destination
@@ -93,15 +99,15 @@ int Npc::affecterMeilleurChemin(const Carte&_carte) noexcept {
 void Npc::floodfill(const Carte& _carte) {
    ensembleAccessible.clear();
 
-   std::vector<int> oldOpen;
+   vector<int> oldOpen;
    // On ajoute le noeud initial
-   std::vector<int> newOpen{ tileId };
+   vector<int> newOpen{ tileId };
 
    int cout = 0;
    // Tant qu'il reste des noeuds � traiter ...
    while (!newOpen.empty()) {
       oldOpen = newOpen;
-      newOpen = std::vector<int>();
+      newOpen = vector<int>();
       // On regarde les voisins des dernieres tuiles ajout�es
       for (int tileID : oldOpen) {
          for (auto voisinID : _carte.getTile(tileID).getVoisinsIDParEtat(Etats::ACCESSIBLE)) {
@@ -151,7 +157,7 @@ Distances& Npc::getEnsembleAccessible() noexcept {
 }
 
 bool Npc::isAccessibleTile(const int _tuileID) const noexcept {
-   return std::find_if(begin(ensembleAccessible), end(ensembleAccessible), [&_tuileID](const DistanceType& type) {
+   return find_if(begin(ensembleAccessible), end(ensembleAccessible), [&_tuileID](const DistanceType& type) {
       return type.tuileID == _tuileID;
    }) != end(ensembleAccessible);
 }
@@ -160,7 +166,7 @@ int Npc::distanceToTile(const int _tuileID) {
    if (!isAccessibleTile(_tuileID))
       throw tile_inaccessible{};
 
-   return std::find_if(begin(ensembleAccessible), end(ensembleAccessible), [&_tuileID](const DistanceType& type) {
+   return find_if(begin(ensembleAccessible), end(ensembleAccessible), [&_tuileID](const DistanceType& type) {
       return type.tuileID == _tuileID;
    })->score;
 }

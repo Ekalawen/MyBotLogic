@@ -6,9 +6,9 @@
 #include "Voisin.h"
 #include <vector>
 
-using namespace std;
+using std::vector;
 
-class Map;
+class Carte;
 
 class MapTile {
 public:
@@ -18,12 +18,12 @@ private:
     int id;
     int x, y; // La position de la tile. x est l'indice de colonne, y est l'indice de ligne.
     Tile::ETileType type;
-    std::vector<Voisin> voisins;
+    vector<Voisin> voisins;
     Statut statut;
 
 public:
     MapTile() = default; // Constructeur par d�faut obligatoire pour pouvoir utiliser tuple ...
-    MapTile(unsigned int id, Map &m); // Appel� d�s le d�but et uniquement l� !
+    MapTile(unsigned int id, Carte &m); // Appel� d�s le d�but et uniquement l� !
 
     void setTileDecouverte(const TileInfo& _tile) noexcept;
 

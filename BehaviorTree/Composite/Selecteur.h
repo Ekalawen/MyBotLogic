@@ -3,11 +3,17 @@
 
 #include "../BT_Composite.h"
 
+#include <memory>
+
+using std::vector;
+using std::unique_ptr;
+using std::move;
+
 class Selecteur : public BT_Composite {
 
 public:
    Selecteur() = default;
-   Selecteur(std::vector<std::unique_ptr<BT_Noeud>>&& _noeuds) : BT_Composite(std::move(_noeuds)) {
+   Selecteur(vector<unique_ptr<BT_Noeud>>&& _noeuds) : BT_Composite(move(_noeuds)) {
    }
 
    BT_Noeud::ETAT_ELEMENT execute() noexcept override {

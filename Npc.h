@@ -8,6 +8,8 @@
 
 #include <vector>
 
+using std::vector;
+
 class tile_inaccessible {};
 
 template <class T> class Score
@@ -23,16 +25,16 @@ public:
 };
 
 using ScoreType = Score<float>;
-using Scores = std::vector<ScoreType>;
+using Scores = vector<ScoreType>;
 
 using DistanceType = Score<int>;
-using Distances = std::vector<DistanceType>;
+using Distances = vector<DistanceType>;
 
 class Carte;
 
 class Npc {
 private:
-    std::vector<Chemin> cheminsPossibles; // Ceci est une variable temporaire permettant de stocker les chemins parmis lesquelles choisirs un objectif
+    vector<Chemin> cheminsPossibles; // Ceci est une variable temporaire permettant de stocker les chemins parmis lesquelles choisirs un objectif
     Scores scoresAssocies; // Les scores associ�s aux tiles !
     Distances ensembleAccessible; // ensemble des tuiles auquel un npc � acc�s avec la distance
 
@@ -54,7 +56,7 @@ public:
     void resetChemins() noexcept;
     void addChemin(Chemin& chemin) noexcept;
     void addScore(ScoreType score) noexcept;
-    Chemin getCheminMinNonPris(const std::vector<int>& _objectifsPris, const int _tailleCheminMax) const noexcept; // Permet de trouver le chemin le plus court qui ne soit pas d�j� pris
+    Chemin getCheminMinNonPris(const vector<int>& _objectifsPris, const int _tailleCheminMax) const noexcept; // Permet de trouver le chemin le plus court qui ne soit pas d�j� pris
     int affecterMeilleurChemin(const Carte& _carte) noexcept; // Affecte au npc le chemin avec le meilleur score et renvoie la destination de ce chemin !
     void floodfill(const Carte& _carte); // Calcule le co�t et l'ensemble des tiles accessibles pour un npcs, et MAJ ses attributs.
 

@@ -2,11 +2,14 @@
 #include "Exploration.h"
 #include "MyBotLogic/BehaviorTree/BT_Noeud.h"
 #include "MyBotLogic/GameManager.h"
+#include "MyBotLogic/MapTile.h"
 
 #include <string>
 #include <vector>
 
-Exploration::Exploration(GameManager& _manager, std::string _nom)
+using std::vector;
+
+Exploration::Exploration(GameManager& _manager, string _nom)
     : ScoreStrategie(_manager, _nom)
 {
 }
@@ -16,7 +19,7 @@ Exploration::Exploration(GameManager& _manager, std::string _nom)
     // La distance du npc � la tuile
     // La distance moyenne de cette tuile aux autres tuiles qui seront visit�s !
     // Le degr� d'int�ret de la tuile. 
-void Exploration::saveScore(const MapTile& _tile, Npc& _npc, const std::vector<int>& _tilesAVisiter) const noexcept {
+void Exploration::saveScore(const MapTile& _tile, Npc& _npc, const vector<int>& _tilesAVisiter) const noexcept {
     float score = 0;
 
     // Si on a d�j� visit� cette case, son score est nul
@@ -33,8 +36,8 @@ void Exploration::saveScore(const MapTile& _tile, Npc& _npc, const std::vector<i
     // On regarde la distance moyenne de cette tuile aux autres tuiles d�j� visit�s
     if (!_tilesAVisiter.empty()) {
         float distanceMoyenneTiles = 0;
-        for (auto autre : tilesAVisiter) {
-            distanceMoyenneTiles += gm.m.distanceHex(tile.getId(), autre);
+        for (auto autre : _tilesAVisiter) {
+            distanceMoyenneTiles += manager.carte.distanceHex(_tile.getId(), autre);
         }
         distanceMoyenneTiles /= _tilesAVisiter.size();
         score += distanceMoyenneTiles * COEF_DISTANCE_TILE_AUTRE_TILES;
