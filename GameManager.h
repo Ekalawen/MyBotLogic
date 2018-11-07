@@ -59,12 +59,12 @@ public:
     }
 
 private:
-    void addNewTiles(TurnInfo ti) noexcept;
-    void addNewObjects(TurnInfo ti) noexcept;
+    void addNewTiles(const TurnInfo& ti) noexcept;
+    void addNewObjects(const TurnInfo& ti) noexcept;
     vector<Mouvement> getAllMouvements();
-    int getIndiceMouvementPrioritaire(vector<Mouvement>& mouvements, vector<int> indicesAConsiderer);
+    int getIndiceMouvementPrioritaire(vector<Mouvement>& mouvements, const vector<int>& indicesAConsiderer);
     void gererCollisionsMemeCaseCible(vector<Mouvement>& mouvements);
-    void stopNonPrioritaireMouvements(vector<Mouvement>& mouvements, vector<int> indicesMouvementsSurMemeCaseCible, int indiceMouvementPrioritaire, bool& continuer);
+    void stopNonPrioritaireMouvements(vector<Mouvement>& mouvements, const vector<int>& indicesMouvementsSurMemeCaseCible, const int indiceMouvementPrioritaire, bool& continuer);
 };
 
 #endif

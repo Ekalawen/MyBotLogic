@@ -1,19 +1,28 @@
 #pragma once
 #include "Globals.h"
+#include "Npc.h"
+#include "Map.h"
+#include <vector>
+using namespace std;
 
 class Mouvement {
 	int npcID;
 	int tileSource;
 	int tileDestination;
 	Tile::ETilePosition direction;
+    bool isActivateDoorMouvement = false;
+
 public:
-	Mouvement(int npcID, int tileSource, int tileDestination, Tile::ETilePosition direction);
+	Mouvement(const int npcID, const int tileSource, const int tileDestination, const Tile::ETilePosition direction);
 
-    void stop(); // Arrête le mouvement
-    bool isNotStopped();
+    void stop() noexcept; // Arrête le mouvement
+    bool isNotStopped() const noexcept;
 
-    int getNpcId();
-    int getTileSource();
-    int getTileDestination();
-    Tile::ETilePosition getDirection();
+    int getNpcId() const noexcept;
+    int getTileSource() const noexcept;
+    int getTileDestination() const noexcept;
+    Tile::ETilePosition getDirection() const noexcept;
+    void setActivateDoor() noexcept; // Permet de spécifier que ce mouvement a en fait pour but d'ouvrir une porte et non pas et déplacer le npc !
+
+    void apply(vector<Action*>& actionList, map<int, Npc>& npcs, Map& m) const noexcept; // Applique un mouvement au modèle
 };

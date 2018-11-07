@@ -3,6 +3,7 @@
 #include "MyBotLogic/BehaviorTree/BT_Noeud.h"
 #include "MyBotLogic/GameManager.h"
 #include <chrono>
+#include <sstream>
 
 ScoreStrategie::ScoreStrategie(GameManager& gm, string nom)
     : gm{ gm },
@@ -11,9 +12,11 @@ ScoreStrategie::ScoreStrategie(GameManager& gm, string nom)
 }
 
 BT_Noeud::ETAT_ELEMENT ScoreStrategie::execute() noexcept {
-   auto pre = std::chrono::high_resolution_clock::now();
+    auto pre = std::chrono::high_resolution_clock::now();
 
-    GameManager::Log(nom);
+    stringstream ss;
+    ss << nom << std::endl;
+
     // On ne sait pas où se trouvent les objectifs !
     // On va les chercher !
 
@@ -32,15 +35,13 @@ BT_Noeud::ETAT_ELEMENT ScoreStrategie::execute() noexcept {
         auto preCalcul = std::chrono::high_resolution_clock::now();
         calculerScoresTilesPourNpc(npc, tilesAVisiter);
         auto postCalcul = std::chrono::high_resolution_clock::now();
-        GameManager::Log("Durée calculerScoresEtCheminsTilesPourNpc = " + to_string(std::chrono::duration_cast<std::chrono::microseconds>(postCalcul - preCalcul).count() / 1000.f) + "ms");
-
+        ss << "Durée calculerScoresEtCheminsTilesPourNpc = " << std::chrono::duration_cast<std::chrono::microseconds>(postCalcul - preCalcul).count() / 1000.f << "ms" << std::endl;
 
         // Choisir la meilleure tile pour ce npc et lui affecter son chemin
         auto preAffect = std::chrono::high_resolution_clock::now();
         int tileChoisi = npc.affecterMeilleurChemin(gm.m);
         auto postAffect = std::chrono::high_resolution_clock::now();
-        GameManager::Log("Durée AffectationChemin = " + to_string(std::chrono::duration_cast<std::chrono::microseconds>(postAffect - preAffect).count() / 1000.f) + "ms");
-
+        ss << "Durée AffectationChemin = " << std::chrono::duration_cast<std::chrono::microseconds>(postAffect - preAffect).count() / 1000.f << "ms" << std::endl;
 
         // Mettre à jour les tilesAVisiter
         tilesAVisiter.push_back(tileChoisi);
@@ -48,12 +49,13 @@ BT_Noeud::ETAT_ELEMENT ScoreStrategie::execute() noexcept {
 
     // Temps d'execution
     auto post = std::chrono::high_resolution_clock::now();
-    GameManager::Log("Durée " + nom + " = " + to_string(std::chrono::duration_cast<std::chrono::microseconds>(post - pre).count() / 1000.f) + "ms");
-    
+    ss << "Durée " << nom << " = " << std::chrono::duration_cast<std::chrono::microseconds>(post - pre).count() / 1000.f << "ms";
+
+    GameManager::Log(ss.str());
     return ETAT_ELEMENT::REUSSI;
 }
 
-void ScoreStrategie::calculerScore1Tile(int tileID, Map& m, Npc& npc, const vector<int> tilesAVisiter) {
+void ScoreStrategie::calculerScore1Tile(int tileID, Map& m, Npc& npc, const vector<int>& tilesAVisiter) {
     MapTile tile = m.getTile(tileID);
     // On ne considère la tile que si on ne la visite pas déjà !
     if (tile.getStatut() == MapTile::Statut::CONNU && find(tilesAVisiter.begin(), tilesAVisiter.end(), tile.getId()) == tilesAVisiter.end()) {
@@ -63,10 +65,12 @@ void ScoreStrategie::calculerScore1Tile(int tileID, Map& m, Npc& npc, const vect
 
 // Calcul le score de chaque tiles et son chemin pour un npc
 // On prend en compte les tilesAVisiter des autres npcs pour que les tiles soient loins les unes des autres
-void ScoreStrategie::calculerScoresTilesPourNpc(Npc& npc, vector<int> tilesAVisiter) noexcept {
-   GameManager::Log("Taille ensemble : " + to_string(npc.getEnsembleAccessible().size()));
-    for (auto tileID : npc.getEnsembleAccessible()) { // parcours toutes les tiles découvertes par l'ensemble des npcs et qui sont accessibles
-        calculerScore1Tile(tileID, gm.m, npc, tilesAVisiter);
+void ScoreStrategie::calculerScoresTilesPourNpc(Npc& npc, const vector<int>& tilesAVisiter) noexcept {
+    stringstream ss;
+    ss << "Taille ensemble : " << npc.getEnsembleAccessible().size();
+    GameManager::Log(ss.str());
+    for (auto score : npc.getEnsembleAccessible()) { // parcours toutes les tiles découvertes par l'ensemble des npcs et qui sont accessibles
+        calculerScore1Tile(score.tuileID, gm.m, npc, tilesAVisiter);
     }
 }
 

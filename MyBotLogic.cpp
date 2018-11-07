@@ -6,6 +6,7 @@
 
 #include "windows.h"
 #include <chrono>
+#include <sstream>
 using namespace std::chrono;
 
 
@@ -42,6 +43,7 @@ MyBotLogic::MyBotLogic() :
 
 /*virtual*/ void MyBotLogic::Init(LevelInfo& _levelInfo)
 {
+   
     auto pre = high_resolution_clock::now();
     // Le logger
 	GameManager::SetLog(logpath, "MyLog.log");
@@ -54,7 +56,9 @@ MyBotLogic::MyBotLogic() :
     // On associe à chaque npc son objectif !
     //gm.associateNpcsWithObjectiv();
     auto post = high_resolution_clock::now();
-    GameManager::Log("Durée Initialisation = " + to_string(duration_cast<microseconds>(post - pre).count() / 1000.f) + "ms");
+    stringstream ss;
+    ss << "Durée Initialisation = " << duration_cast<microseconds>(post - pre).count() / 1000.f << "ms";
+    GameManager::Log(ss.str());
 }
 
 /*virtual*/ void MyBotLogic::OnGameStarted()
@@ -65,29 +69,33 @@ MyBotLogic::MyBotLogic() :
 /*virtual*/ void MyBotLogic::FillActionList(TurnInfo& _turnInfo, std::vector<Action*>& _actionList)
 {
     auto preFAL = high_resolution_clock::now();
-    GameManager::Log("TURN =========================== " + to_string(_turnInfo.turnNb));
+    stringstream ss, ssRelease;
+    ss << "TURN =========================== " << _turnInfo.turnNb << std::endl;
 
     // On complète notre modèle avec l'information qu'on vient de découvrir !
     auto pre = high_resolution_clock::now();
     gm.updateModel(_turnInfo);
     auto post = high_resolution_clock::now();
-    GameManager::Log("Durée Update = " + to_string(duration_cast<microseconds>(post - pre).count() / 1000.f) + "ms");
+    ss << "Durée Update = " << duration_cast<microseconds>(post - pre).count() / 1000.f << "ms" << std::endl;
 
     // On définit notre stratégie en exécutant notre arbre de comportement
     pre = high_resolution_clock::now();
     gm.execute();
     post = high_resolution_clock::now();
-    GameManager::Log("Durée Execute = " + to_string(duration_cast<microseconds>(post - pre).count() / 1000.f) + "ms");
+    ss << "Durée Execute = " << duration_cast<microseconds>(post - pre).count() / 1000.f << "ms" << std::endl;
 
     // On fait se déplacer chaque Npc vers son objectif associé =)
     pre = high_resolution_clock::now();
     gm.moveNpcs(_actionList);
     post = high_resolution_clock::now();
-    GameManager::Log("Durée Move = " + to_string(duration_cast<microseconds>(post - pre).count() / 1000.f) + "ms");
+    ss << "Durée Move = " << duration_cast<microseconds>(post - pre).count() / 1000.f << "ms" << std::endl;
+
 
     auto postFAL = high_resolution_clock::now();
-    GameManager::Log("Durée Tour = " + to_string(duration_cast<microseconds>(postFAL - preFAL).count() / 1000.f) + "ms");
-    GameManager::LogRelease("Durée Tour numéro " + to_string(_turnInfo.turnNb) + " = " + to_string(duration_cast<microseconds>(postFAL - preFAL).count() / 1000.f) + "ms");
+    ss << "Durée Tour = " << duration_cast<microseconds>(postFAL - preFAL).count() / 1000.f << "ms" << std::endl;
+    GameManager::Log(ss.str());
+    ssRelease << "Durée Tour numéro " << _turnInfo.turnNb << " = " << duration_cast<microseconds>(postFAL - preFAL).count() / 1000.f << "ms";
+    GameManager::LogRelease(ssRelease.str());
 }
 
 /*virtual*/ void MyBotLogic::Exit()
