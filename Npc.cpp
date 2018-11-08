@@ -138,7 +138,7 @@ void Npc::floodfill(const Carte& c) {
 
     // On copie les ferm�es dans ensembleAccessible
     for (auto noeud : fermees) {
-        ensembleAccessible.emplace_back(noeud.tile.getId(), noeud.cout);
+        ensembleAccessible.emplace_back(noeud.tile.getId(), static_cast<int>(noeud.cout));
     }
 
     //ensembleAccessible.clear();
