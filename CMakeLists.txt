@@ -52,7 +52,7 @@ SET( AIBOT_HEADERS
 	#MY_BOT
 	MyBotLogic/MyBotLogic.h
 	MyBotLogic/GameManager.h
-	MyBotLogic/Map.h
+	MyBotLogic/Carte.h
 	MyBotLogic/MapTile.h
 	MyBotLogic/Npc.h
 	MyBotLogic/Chemin.h
@@ -70,6 +70,7 @@ SET( AIBOT_HEADERS
 	MyBotLogic/Strategies/Exploration.h
 	MyBotLogic/Strategies/ScoreStrategie.h
 	MyBotLogic/Tools/Minuteur.h
+	MyBotLogic/Tools/Profiler.h
 )
 
 SET( AIBOT_SRC 
@@ -83,7 +84,7 @@ SET( AIBOT_SRC
 	#MY_BOT
 	MyBotLogic/MyBotLogic.cpp
 	MyBotLogic/GameManager.cpp
-	MyBotLogic/Map.cpp
+	MyBotLogic/Carte.cpp
 	MyBotLogic/MapTile.cpp
 	MyBotLogic/Npc.cpp
 	MyBotLogic/Chemin.cpp
@@ -96,6 +97,7 @@ SET( AIBOT_SRC
 	MyBotLogic/Strategies/Exploration.cpp
 	MyBotLogic/Strategies/ScoreStrategie.cpp
 	MyBotLogic/Tools/Minuteur.cpp
+	MyBotLogic/Tools/Profiler.cpp
 	
 	#Main
 	Main.cpp
