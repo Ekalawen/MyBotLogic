@@ -65,7 +65,7 @@ Chemin Npc::getCheminMinNonPris(const vector<int>& objectifsPris, const int tail
 
 }
 
-auto Npc::chercherMeilleurScore(Scores& _scores) {
+Scores::iterator Npc::chercherMeilleurScore(Scores& _scores) {
    Profiler profiler2{ GameManager::getLogger(), "chercherMeilleurScore" };
 
    return max_element(begin(_scores), end(_scores),
