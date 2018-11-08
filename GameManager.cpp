@@ -122,6 +122,7 @@ void GameManager::moveNpcs(vector<Action*>& _actionList) noexcept {
    // Cad que si deux Npcs peuvent échanger leurs objectifs et que cela diminue leurs chemins respectifs, alors il faut le faire !
    reaffecterObjectifsSelonDistance();
 
+
     // On r�cup�re tous les mouvements
     vector<Mouvement> mouvements = getAllMouvements();
 
@@ -132,7 +133,7 @@ void GameManager::moveNpcs(vector<Action*>& _actionList) noexcept {
     for (auto mouvement : mouvements) {
 
         // On applique notre mouvement
-        mouvement.apply(actionList, npcs, c);
+        mouvement.apply(_actionList, npcs, c);
     }
 }
 
@@ -214,7 +215,7 @@ void GameManager::addNewTiles(const TurnInfo& _tile) noexcept {
 
    Profiler profiler{ GameManager::getLogger(), "addNewTiles" };
    
-   if (carte.getNbTilesDecouvertes() < carte.getNbTiles()) {
+   if (c.getNbTilesDecouvertes() < c.getNbTiles()) {
       // pour tous les npcs
       for (auto& npc : _tile.npcs) {
          // On regarde les tuiles qu'ils voyent
@@ -273,7 +274,7 @@ void GameManager::addNpc(Npc npc) {
    npcs[npc.getId()] = npc;
 }
 
-void GameManager::reafecterObjectifsSelonDistance() {
+void GameManager::reaffecterObjectifsSelonDistance() {
    // Tant que l'on fait des modifications on continue ...
    stringstream ss;
    bool continuer = true;
@@ -312,6 +313,6 @@ void GameManager::refreshFloodfill() {
    Profiler profiler{ GameManager::getLogger(), "refreshFloodfill" };
 
    for (auto &npc : npcs) {
-      npc.second.floodfill(carte);
+      npc.second.floodfill(c);
    }
 }

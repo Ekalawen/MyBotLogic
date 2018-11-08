@@ -24,14 +24,14 @@ class GameManager {
     static Logger logger, loggerRelease;
     map<int, Npc> npcs; // Les npcs sont stockés par leurs ids
 public:
-    Carte c; // La carte, et on utilise c pour gagner du temps !
+    Carte c;
     Selecteur behaviorTreeManager; // Arbre de comportement du GameManager pour déterminer la stratégie à suivre
     vector<int> objectifPris; // Permet de savoir quels sont les objectifs actuellement assignés à des npcs
 
     GameManager() = default;
     GameManager(LevelInfo);
     void moveNpcs(vector<Action*>& actionList) noexcept; // Remplie l'action liste !
-    void reafecterObjectifsSelonDistance(); // Réaffecte les objectifs des Npcs entre
+    void reaffecterObjectifsSelonDistance(); // Réaffecte les objectifs des Npcs entre
     void ordonnerMouvements(vector<Mouvement>& mouvements) noexcept; // Permet d'ordonner les mouvements pour éviter les collisions et gérer les politesses de priorités =)
     void updateModel(const TurnInfo&) noexcept; // Met à jour le modèle avec les informations que découvrent les NPCS
     void InitializeBehaviorTree() noexcept; // Permet d'initialiser le BT

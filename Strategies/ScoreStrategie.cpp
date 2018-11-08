@@ -42,7 +42,7 @@ BT_Noeud::ETAT_ELEMENT ScoreStrategie::execute() noexcept {
       calculerScoresTilesPourNpc(npc, tilesAVisiter);
 
       // Choisir la meilleure tile pour ce npc et lui affecter son chemin
-      int tileChoisi = npc.affecterMeilleurChemin(manager.carte);
+      int tileChoisi = npc.affecterMeilleurChemin(manager.c);
 
       // Mettre à jour les tilesAVisiter
       tilesAVisiter.push_back(tileChoisi);
@@ -64,8 +64,8 @@ void ScoreStrategie::calculerScore1Tile(int _tileID, Carte& _carte, Npc& _npc, c
 void ScoreStrategie::calculerScoresTilesPourNpc(Npc& _npc, const vector<int>& _tilesAVisiter) noexcept {
    Profiler profiler{ GameManager::getLogger(), "calculerScoresTilesPourNpc" };
    profiler << "Taille ensemble : " << _npc.getEnsembleAccessible().size();
-      calculerScore1Tile(score.tuileID, manager.carte, _npc, _tilesAVisiter);
    for (auto score : _npc.getEnsembleAccessible()) { // parcours toutes les tiles découvertes par l'ensemble des npcs et qui sont accessibles
+      calculerScore1Tile(score.tuileID, manager.c, _npc, _tilesAVisiter);
    }
 }
 
