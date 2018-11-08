@@ -11,8 +11,6 @@
 #include <vector>
 #include "Porte.h"
 
-using std::map;
-using std::vector;
 class tile_inexistante {};
 class porte_inexistante {};
 
@@ -23,19 +21,20 @@ class Carte {
     int rowCount;
     int colCount;
     int nbTilesDecouvertes;
-   vector<MapTile> tiles;
-   vector<unsigned int> objectifs;
-   map<unsigned int, ObjectInfo> murs;
-   map<unsigned int, ObjectInfo> fenetres;
-   map<unsigned int, ObjectInfo> activateurs;
+    std::vector<MapTile> tiles;
 
+    std::vector<unsigned int> objectifs;
+
+    std::map<unsigned int, ObjectInfo> murs;
     std::map<int, Porte> portes;
+    std::map<unsigned int, ObjectInfo> fenetres;
+    std::map<unsigned int, ObjectInfo> activateurs;
 
 public:
     Carte() = default;
     Carte(const LevelInfo&);
     bool isInMap(const int idTile) const noexcept;
-   vector<unsigned int> getObjectifs() const noexcept;
+    std::vector<unsigned int> getObjectifs() const noexcept;
 
     Chemin aStar(const int depart, const int arrivee, const float coefEvaluation = 1) const noexcept; // Renvoie le chemin à parcourir pour aller du départ à l'arrivée
 
@@ -58,11 +57,13 @@ public:
     MapTile& getTile(const int id);
     const MapTile& getTile(const int id) const;
 
-   vector<unsigned int> getObjectifs();
-   map<unsigned int, ObjectInfo> getMurs();
+    std::vector<unsigned int> getObjectifs();
+    std::map<unsigned int, ObjectInfo> getMurs();
     std::map<int, Porte> getPortes();
     Porte getPorte(const int id) const noexcept;
     Porte& getPorte(const int tileIdVoisine1, const int tileIdVoisine2);
+    std::map<unsigned int, ObjectInfo> getFenetres();
+    std::map<unsigned int, ObjectInfo> getActivateurs();
 
     bool objectExist(const int id) const noexcept; // Permet de savoir si un objet existe déjà ou pas
 };
