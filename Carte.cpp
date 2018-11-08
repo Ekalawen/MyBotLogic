@@ -4,6 +4,7 @@
 #include "GameManager.h"
 #include "Globals.h"
 #include "Voisin.h"
+#include "MyBotLogic/Tools/Profiler.h"
 
 #include <algorithm>
 #include <chrono>
@@ -12,6 +13,7 @@
 using std::stringstream;
 using std::max;
 using std::vector;
+using std::endl;
 
 Carte::Carte(const LevelInfo& _levelInfo) :
    rowCount{ _levelInfo.rowCount },
@@ -70,6 +72,8 @@ float Noeud::coefEvaluation = 1;
 // Par d�faut sa valeur est 1. Si on l'augmente l'algorithme ira plus vite au d�triment de trouver un chemin optimal.
 // Si on le diminue l'algorithme se rapproche de plus en plus d'un parcours en largeur.
 Chemin Carte::aStar(const int depart, const int arrivee, const float coefEvaluation) const noexcept {
+   Profiler profiler{ GameManager::getLogger(), "aStar" };
+
    Noeud::coefEvaluation = coefEvaluation;
    // On cr�e nos liste et notre noeud courrant
    vector<Noeud> closedList{};
@@ -106,7 +110,7 @@ Chemin Carte::aStar(const int depart, const int arrivee, const float coefEvaluat
                }
             }
             else {
-               GameManager::log("OMG On a fait n'imp !");
+               profiler << "OMG On a fait n'imp !" << endl;
             }
          }
       }

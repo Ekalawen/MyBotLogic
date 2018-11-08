@@ -13,6 +13,7 @@
 #include "Strategies/Exploitation.h"
 
 #include "MyBotLogic/Tools/Minuteur.h"
+#include "MyBotLogic/Tools/Profiler.h"
 
 #include <algorithm>
 #include <tuple>
@@ -108,6 +109,7 @@ vector<Mouvement> GameManager::getAllMouvements() {
 }
 
 void GameManager::moveNpcs(vector<Action*>& _actionList) noexcept {
+   Profiler profiler{ getLogger(), "moveNpcs" };
    // TODO !
    // Il faut r�ordonner les chemins entre les npcs !
    // Cad que si deux Npcs peuvent �changer leurs objectifs et que cela diminue leurs chemins respectifs, alors il faut le faire !
@@ -215,6 +217,9 @@ void GameManager::ordonnerMouvements(vector<Mouvement>& _mouvements) noexcept {
 }
 
 void GameManager::addNewTiles(const TurnInfo& _tile) noexcept {
+
+   Profiler profiler{ GameManager::getLogger(), "addNewTiles" };
+   
    if (carte.getNbTilesDecouvertes() < carte.getNbTiles()) {
       // pour tous les npcs
       for (auto& npc : _tile.npcs) {
@@ -231,6 +236,9 @@ void GameManager::addNewTiles(const TurnInfo& _tile) noexcept {
 }
 
 void GameManager::addNewObjects(const TurnInfo& _tile) noexcept {
+
+   Profiler profiler{ GameManager::getLogger(), "addNewObjects" };
+
    // Tous les objets visibles par tous les npcs ...
    for (auto npc : _tile.npcs) {
       for (auto objet : npc.second.visibleObjects) {
@@ -244,30 +252,16 @@ void GameManager::addNewObjects(const TurnInfo& _tile) noexcept {
 
 void GameManager::updateModel(const TurnInfo &_tile) noexcept {
 
-   stringstream ss;
+   Profiler profiler{ GameManager::getLogger(), "updateModel" };
 
    // On essaye de rajouter les nouvelles tiles !
-   auto pre = Minuteur::now();
    addNewTiles(_tile);
-   auto post = Minuteur::now();
-   ss << "Dur�e AddTile = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms" << endl;
 
    // On essaye de rajouter les nouvelles tiles !
-   pre = Minuteur::now();
    addNewObjects(_tile);
-   post = Minuteur::now();
-   ss << "Dur�e AddObjects = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms" << endl;
 
    // Mettre � jour nos NPCs
-   pre = Minuteur::now();
-   for (auto &npc : npcs) {
-      npc.second.floodfill(carte);
-   }
-   post = Minuteur::now();
-   ss << "Dur�e FloodFill = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms";
-
-   GameManager::log(ss.str());
-
+   refreshFloodfill();
 }
 
 
@@ -318,4 +312,12 @@ void GameManager::reaffecterObjectifsSelonDistance() {
    }
 
    GameManager::log(ss.str());
+}
+
+void GameManager::refreshFloodfill() {
+   Profiler profiler{ GameManager::getLogger(), "refreshFloodfill" };
+
+   for (auto &npc : npcs) {
+      npc.second.floodfill(carte);
+   }
 }

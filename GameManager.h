@@ -7,6 +7,8 @@
 #include "Mouvement.h"
 #include "TurnInfo.h"
 
+#include "MyBotLogic/Tools/Profiler.h"
+
 #include "BehaviorTree/Composite/Selecteur.h"
 
 #include <map>
@@ -33,7 +35,10 @@ public:
     void ordonnerMouvements(vector<Mouvement>& mouvements) noexcept; // Permet d'ordonner les mouvements pour �viter les collisions et g�rer les politesses de priorit�s =)
     void updateModel(const TurnInfo&) noexcept; // Met � jour le mod�le avec les informations que d�couvrent les NPCS
     void InitializeBehaviorTree() noexcept; // Permet d'initialiser le BT
-    void execute() noexcept { behaviorTreeManager.execute(); };
+    void execute() noexcept { 
+       Profiler profiler{ GameManager::getLogger(), "execute" }; 
+       behaviorTreeManager.execute(); 
+    };
 
     Npc& getNpcById(int id);
     map<int, Npc>& getNpcs();
@@ -50,7 +55,7 @@ public:
     static void logRelease(string _str) noexcept { // Permet de d�bugger ! :D
         loggerRelease.Log(_str);
     }
-    static void SetLog(string path, string fileName) noexcept { // Permet d'initialiser le logger =)
+    static void setLog(string path, string fileName) noexcept { // Permet d'initialiser le logger =)
         #ifndef _DEBUG
             return;
         #endif
@@ -58,8 +63,24 @@ public:
             logger.Init(path, fileName);
         #endif
     }
-    static void SetLogRelease(string path, string fileName) noexcept { // Permet d'initialiser le logger =)
+    static void setLogRelease(string path, string fileName) noexcept { // Permet d'initialiser le logger =)
         loggerRelease.Init(path, fileName);
+    }
+    static Logger& getLogger() noexcept { // Permet d'initialiser le logger =)
+#ifndef _DEBUG
+       return;
+#endif
+#ifdef _DEBUG
+       return logger;
+#endif
+    }
+    static Logger& getLoggerRelease() noexcept { // Permet d'initialiser le logger =)
+#ifndef _DEBUG
+       return;
+#endif
+#ifdef _DEBUG
+       return loggerRelease;
+#endif
     }
 
 private:
@@ -69,6 +90,7 @@ private:
     int getIndiceMouvementPrioritaire(vector<Mouvement>& mouvements, const vector<int>& indicesAConsiderer);
     void gererCollisionsMemeCaseCible(vector<Mouvement>& mouvements);
     void stopNonPrioritaireMouvements(vector<Mouvement>& mouvements, const vector<int>& indicesMouvementsSurMemeCaseCible, const int indiceMouvementPrioritaire, bool& continuer);
+    void refreshFloodfill();
 };
 
 #endif

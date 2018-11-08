@@ -4,6 +4,7 @@
 #include "Voisin.h"
 #include "GameManager.h"
 #include "MyBotLogic/Tools/Minuteur.h"
+#include "MyBotLogic/Tools/Profiler.h"
 
 #include <algorithm>
 #include <sstream>
@@ -48,49 +49,46 @@ Chemin Npc::getCheminMinNonPris(const vector<int>& objectifsPris, const int tail
    int distMin = tailleCheminMax;
 
    for (int i = 0; i < cheminsPossibles.size(); ++i) {
-      Chemin chemin = cheminsPossibles[i];
+      Chemin cheminTrouve = cheminsPossibles[i];
       // Si le chemin n'est pas d�j� pris et qu'il est plus court !
-      int destination = (chemin.empty()) ? tileId : chemin.destination(); // si le npc est d�j� arriv� il reste l�
-      if (chemin.isAccessible()
-         && chemin.distance() < distMin
+      int destination = (cheminTrouve.empty()) ? tileId : cheminTrouve.destination(); // si le npc est d�j� arriv� il reste l�
+      if (cheminTrouve.isAccessible()
+         && cheminTrouve.distance() < distMin
          && (objectifsPris.empty() || find(objectifsPris.begin(), objectifsPris.end(), destination) == objectifsPris.end())) {
-         cheminMin = chemin;
-         distMin = chemin.distance();
+         cheminMin = cheminTrouve;
+         distMin = cheminTrouve.distance();
       }
    }
 
    return cheminMin;
 }
 
+auto Npc::chercherMeilleurScore(Scores& _scores) {
+   Profiler profiler2{ GameManager::getLogger(), "chercherMeilleurScore" };
+
+   return max_element(begin(_scores), end(_scores),
+      [](const ScoreType& scoreDroite, const ScoreType& scoreGauche) {
+      return scoreDroite.score < scoreGauche.score;
+   });
+}
+
 int Npc::affecterMeilleurChemin(const Carte&_carte) noexcept {
-   stringstream ss;
+   Profiler profiler{ GameManager::getLogger(), "affecterMeilleurChemin" };
 
    if (scoresAssocies.empty()) {
       // Dans ce cas-l� on reste sur place !
       chemin = Chemin{};
-      ss << "Le Npc " << id << " n'a rien a rechercher et reste sur place !";
-      GameManager::log(ss.str());
+      profiler << "Le Npc " << id << " n'a rien a rechercher et reste sur place !";
       return tileId;
    }
 
    // On cherche le meilleur score
-   auto preScore = chrono::high_resolution_clock::now();
-   auto bestIter = max_element(begin(scoresAssocies), end(scoresAssocies),
-      [](const ScoreType& scoreDroite, const ScoreType& scoreGauche) {
-      return scoreDroite.score < scoreGauche.score;
-   });
-   auto postScore = Minuteur::now();
-   ss << "Dur�e chercher meilleur score = " << Minuteur::dureeMicroseconds(preScore, postScore) / 1000.f << "ms" << endl;
-
+   auto bestIter = chercherMeilleurScore(scoresAssocies);
 
    // On affecte son chemin, mais il nous faut le calculer ! =)
-   auto preAStar = chrono::high_resolution_clock::now();
    chemin = _carte.aStar(tileId, bestIter->tuileID);
-   auto postAStar = chrono::high_resolution_clock::now();
 
-   ss << "Le Npc " << to_string(id) << " va rechercher la tile " << chemin.destination() << endl;
-   ss << "Dur�e a* = " << Minuteur::dureeMicroseconds(preAStar, postAStar) / 1000.f << "ms" << endl;
-   GameManager::log(ss.str());
+   profiler << "Le Npc " << to_string(id) << " va rechercher la tile " << chemin.destination() << endl;
 
    // On renvoie la destination
    return chemin.destination();

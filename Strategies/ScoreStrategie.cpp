@@ -4,6 +4,7 @@
 #include "MyBotLogic/GameManager.h"
 #include "MyBotLogic/Tools/Minuteur.h"
 #include "MyBotLogic/MapTile.h"
+#include "MyBotLogic/Tools/Profiler.h"
 
 #include <sstream>
 #include <string>
@@ -20,10 +21,8 @@ ScoreStrategie::ScoreStrategie(GameManager& _manager, string _nom)
 }
 
 BT_Noeud::ETAT_ELEMENT ScoreStrategie::execute() noexcept {
-   auto pre = Minuteur::now();
-
-   stringstream ss;
-   ss << nom << endl;
+   Profiler profiler{ GameManager::getLogger(), string("ScoreStrategie::execute") };
+   profiler << nom << endl;
 
    // On ne sait pas o� se trouvent les objectifs !
    // On va les chercher !
@@ -40,26 +39,15 @@ BT_Noeud::ETAT_ELEMENT ScoreStrategie::execute() noexcept {
       // Calculer le score de chaque tile pour le npc
       // En m�me temps on calcul le chemin pour aller � cette tile
       // On stocke ces deux informations dans l'attribut cheminsPossibles du Npc
-      auto preCalcul = Minuteur::now();
       calculerScoresTilesPourNpc(npc, tilesAVisiter);
-      auto postCalcul = Minuteur::now();
-      ss << "Dur�e calculerScoresEtCheminsTilesPourNpc = " << Minuteur::dureeMicroseconds(preCalcul, postCalcul) / 1000.f << "ms" << endl;
 
       // Choisir la meilleure tile pour ce npc et lui affecter son chemin
-      auto preAffect = Minuteur::now();
       int tileChoisi = npc.affecterMeilleurChemin(manager.carte);
-      auto postAffect = Minuteur::now();
-      ss << "Dur�e AffectationChemin = " << Minuteur::dureeMicroseconds(preAffect, postAffect) / 1000.f << "ms" << endl;
 
       // Mettre � jour les tilesAVisiter
       tilesAVisiter.push_back(tileChoisi);
    }
 
-   // Temps d'execution
-   auto post = Minuteur::now();
-   ss << "Dur�e " << nom << " = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms";
-
-   GameManager::log(ss.str());
    return ETAT_ELEMENT::REUSSI;
 }
 
@@ -74,9 +62,8 @@ void ScoreStrategie::calculerScore1Tile(int _tileID, Carte& _carte, Npc& _npc, c
 // Calcul le score de chaque tiles et son chemin pour un npc
 // On prend en compte les tilesAVisiter des autres npcs pour que les tiles soient loins les unes des autres
 void ScoreStrategie::calculerScoresTilesPourNpc(Npc& _npc, const vector<int>& _tilesAVisiter) noexcept {
-   stringstream ss;
-   ss << "Taille ensemble : " << _npc.getEnsembleAccessible().size();
-   GameManager::log(ss.str());
+   Profiler profiler{ GameManager::getLogger(), "calculerScoresTilesPourNpc" };
+   profiler << "Taille ensemble : " << _npc.getEnsembleAccessible().size();
    for (auto score : _npc.getEnsembleAccessible()) { // parcours toutes les tiles d�couvertes par l'ensemble des npcs et qui sont accessibles
       calculerScore1Tile(score.tuileID, manager.carte, _npc, _tilesAVisiter);
    }
