@@ -58,6 +58,7 @@ public:
     Chemin getCheminMinNonPris(const vector<int>& _objectifsPris, const int _tailleCheminMax) const noexcept; // Permet de trouver le chemin le plus court qui ne soit pas déjà pris
     int affecterMeilleurChemin(const Carte& _carte) noexcept; // Affecte au npc le chemin avec le meilleur score et renvoie la destination de ce chemin !
     void floodfill(const Carte&); // Calcule le coût et l'ensemble des tiles accessibles pour un npcs, et MAJ ses attributs.
+    auto chercherMeilleurScore(Scores& _scores);
 
     int getId() const noexcept;
     int getTileId() const noexcept;

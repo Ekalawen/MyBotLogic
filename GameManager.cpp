@@ -13,6 +13,7 @@
 #include "Strategies/Exploitation.h"
 
 #include "MyBotLogic/Tools/Minuteur.h"
+#include "MyBotLogic/Tools/Profiler.h"
 
 #include <algorithm>
 #include <tuple>
@@ -33,7 +34,7 @@ GameManager::GameManager(LevelInfo _info) :
    c{ Carte(_info) },
    objectifPris{ vector<int>{} }
 {
-   // On récupére l'ensemble des npcs !
+   // On rï¿½cupï¿½re l'ensemble des npcs !
    for (auto pair_npc : _info.npcs) {
       NPCInfo npc = pair_npc.second;
       npcs[npc.npcID] = Npc(npc);
@@ -41,7 +42,7 @@ GameManager::GameManager(LevelInfo _info) :
 }
 
 void GameManager::InitializeBehaviorTree() noexcept {
-   //  Création du behaviorTree Manager
+   //  Crï¿½ation du behaviorTree Manager
    unique_ptr<ObjectifsForAllNpcs> objectifs = make_unique<ObjectifsForAllNpcs>(*this);
    unique_ptr<CheminsForAllNpcs> chemins = make_unique< CheminsForAllNpcs>(*this);
    unique_ptr<Exploitation> exploitation = make_unique<Exploitation>(*this);
@@ -70,7 +71,7 @@ void GameManager::InitializeBehaviorTree() noexcept {
 }
 
 vector<Mouvement> GameManager::getAllMouvements() {
-    // On va récupérer la liste des mouvements
+    // On va rï¿½cupï¿½rer la liste des mouvements
     vector<Mouvement> mouvements;
 
     // Pour tous les NPCs, s'il n'y a aucun autre Npc devant eux
@@ -83,18 +84,18 @@ vector<Mouvement> GameManager::getAllMouvements() {
 
         // Si le npc doit aller quelquepart !!!
         if (!npc.second.getChemin().empty()) {
-            // On récupère la case où il doit aller
+            // On rï¿½cupï¿½re la case oï¿½ il doit aller
             int caseCible = npc.second.getChemin().getFirst();
             ss << "case cible = " << caseCible << std::endl;
             
             Tile::ETilePosition direction = c.getDirection(npc.second.getTileId(), caseCible);
             ss << "direction = " << direction << std::endl;
 
-            // Si le mouvement est bloqué par une porte à poignée
+            // Si le mouvement est bloquï¿½ par une porte ï¿½ poignï¿½e
             if (c.getTile(npc.second.getTileId()).hasDoorPoigneeVoisin(caseCible, c)) {
                 // Alors on enregistre un mouvement statique
                 mouvements.push_back(Mouvement(npc.second.getId(), npc.second.getTileId(), npc.second.getTileId(), Tile::ETilePosition::CENTER));
-                // Et on lui précise qu'il s'agit d'un mouvement d'ouverture de porte et non de déplacement !
+                // Et on lui prï¿½cise qu'il s'agit d'un mouvement d'ouverture de porte et non de dï¿½placement !
                 mouvements[mouvements.size() - 1].setActivateDoor();
             } else {
 
@@ -105,7 +106,7 @@ vector<Mouvement> GameManager::getAllMouvements() {
             }
         } else {
             ss << "case cible = Ne Bouge Pas" << std::endl;
-            // Même si le Npc ne bouge pas, il a quand même un mouvement statique !
+            // Mï¿½me si le Npc ne bouge pas, il a quand mï¿½me un mouvement statique !
             mouvements.push_back(Mouvement(npc.second.getId(), npc.second.getTileId(), npc.second.getTileId(), Tile::ETilePosition::CENTER));
         }
 
@@ -114,22 +115,25 @@ vector<Mouvement> GameManager::getAllMouvements() {
     return mouvements;
 }
 
-void GameManager::moveNpcs(vector<Action*>& actionList) noexcept {
-    // Il faut réordonner les chemins entre les npcs !
-    // Cad que si deux Npcs peuvent échanger leurs objectifs et que cela diminue leurs chemins respectifs, alors il faut le faire !
-    reafecterObjectifsSelonDistance();
+void GameManager::moveNpcs(vector<Action*>& _actionList) noexcept {
+   Profiler profiler{ getLogger(), "moveNpcs" };
+   // TODO !
+   // Il faut rÃ©ordonner les chemins entre les npcs !
+   // Cad que si deux Npcs peuvent Ã©changer leurs objectifs et que cela diminue leurs chemins respectifs, alors il faut le faire !
+   reaffecterObjectifsSelonDistance();
 
-    // On récupère tous les mouvements
+
+    // On rï¿½cupï¿½re tous les mouvements
     vector<Mouvement> mouvements = getAllMouvements();
 
-    // Puis on va l'ordonner pour laisser la priorité à celui qui va le plus loin !
+    // Puis on va l'ordonner pour laisser la prioritï¿½ ï¿½ celui qui va le plus loin !
 	ordonnerMouvements(mouvements);
 
     // Puis pour chaque mouvement
     for (auto mouvement : mouvements) {
 
         // On applique notre mouvement
-        mouvement.apply(actionList, npcs, c);
+        mouvement.apply(_actionList, npcs, c);
     }
 }
 
@@ -145,7 +149,7 @@ int GameManager::getIndiceMouvementPrioritaire(vector<Mouvement>& _mouvements, c
    int indiceMax = _indicesAConsiderer[0];
    int distanceMax = getNpcById(_mouvements[_indicesAConsiderer[0]].getNpcId()).getChemin().distance();
    for (int i = 0; i < _indicesAConsiderer.size(); ++i) {
-      // Si un mouvement est stationnaire, alors personne n'est autorisé à passer !
+      // Si un mouvement est stationnaire, alors personne n'est autorisï¿½ ï¿½ passer !
       if (!_mouvements[_indicesAConsiderer[i]].isNotStopped())
          return -1;
       int dist = getNpcById(_mouvements[_indicesAConsiderer[i]].getNpcId()).getChemin().distance();
@@ -163,7 +167,7 @@ void GameManager::stopNonPrioritaireMouvements(vector<Mouvement>& _mouvements, c
    for (int i = 0; i < _indicesMouvementsSurMemeCaseCible.size(); ++i) {
       if (_indicesMouvementsSurMemeCaseCible[i] != _indiceMouvementPrioritaire) {
          int indice = _indicesMouvementsSurMemeCaseCible[i];
-         // Si le mouvement n'était pas déjà à l'arrêt alors on a réellement effectué un changement !
+         // Si le mouvement n'ï¿½tait pas dï¿½jï¿½ ï¿½ l'arrï¿½t alors on a rï¿½ellement effectuï¿½ un changement !
          if (_mouvements[indice].isNotStopped())
             _continuer = true;
          _mouvements[indice].stop();
@@ -171,9 +175,9 @@ void GameManager::stopNonPrioritaireMouvements(vector<Mouvement>& _mouvements, c
 
          ss << "Npc " << _mouvements[indice].getNpcId();
          if (_indiceMouvementPrioritaire != -1)
-            ss << " a stoppé son mouvement pour laisser la place à Npc " << _mouvements[_indiceMouvementPrioritaire].getNpcId();
+            ss << " a stoppï¿½ son mouvement pour laisser la place ï¿½ Npc " << _mouvements[_indiceMouvementPrioritaire].getNpcId();
          else
-            ss << " a stoppé son mouvement car quelqu'un est immobile.";
+            ss << " a stoppï¿½ son mouvement car quelqu'un est immobile.";
       }
    }
 
@@ -187,12 +191,12 @@ void GameManager::gererCollisionsMemeCaseCible(vector<Mouvement>& _mouvements) {
    while (continuer) {
       continuer = false;
       for (auto& mouvement : _mouvements) {
-         // On récupére tous les indices des mouvements qui vont sur cette case
+         // On rï¿½cupï¿½re tous les indices des mouvements qui vont sur cette case
          vector<int> indicesMouvementsSurMemeCaseCible = getIndicesMouvementsSurMemeCaseCible(_mouvements, mouvement.getTileDestination());
 
-         // Si ils sont plusieurs à vouloir aller sur cette case
+         // Si ils sont plusieurs ï¿½ vouloir aller sur cette case
          if (indicesMouvementsSurMemeCaseCible.size() >= 2) {
-            // On récupére le mouvement associé au Npc ayant le plus de chemin à faire
+            // On rï¿½cupï¿½re le mouvement associï¿½ au Npc ayant le plus de chemin ï¿½ faire
             int indiceMouvementPrioritaire = getIndiceMouvementPrioritaire(_mouvements, indicesMouvementsSurMemeCaseCible);
 
             // On passe tous les autres mouvements en Center !
@@ -203,17 +207,20 @@ void GameManager::gererCollisionsMemeCaseCible(vector<Mouvement>& _mouvements) {
 }
 
 void GameManager::ordonnerMouvements(vector<Mouvement>& _mouvements) noexcept {
-   // Si deux npcs veulent aller sur la même case, alors celui qui a le plus de chemin à faire passe, et tous les autres restent sur place !
+   // Si deux npcs veulent aller sur la mï¿½me case, alors celui qui a le plus de chemin ï¿½ faire passe, et tous les autres restent sur place !
    gererCollisionsMemeCaseCible(_mouvements);
 }
 
 void GameManager::addNewTiles(const TurnInfo& _tile) noexcept {
+
+   Profiler profiler{ GameManager::getLogger(), "addNewTiles" };
+   
    if (c.getNbTilesDecouvertes() < c.getNbTiles()) {
       // pour tous les npcs
       for (auto& npc : _tile.npcs) {
          // On regarde les tuiles qu'ils voyent
          for (auto& tileId : npc.second.visibleTiles) {
-            // Si ces tuiles n'ont pas été découvertes
+            // Si ces tuiles n'ont pas ï¿½tï¿½ dï¿½couvertes
             if (c.getTile(tileId).getStatut() == MapTile::INCONNU) {
                // On les setDecouverte
                c.addTile(_tile.tiles.at(tileId));
@@ -224,6 +231,9 @@ void GameManager::addNewTiles(const TurnInfo& _tile) noexcept {
 }
 
 void GameManager::addNewObjects(const TurnInfo& _tile) noexcept {
+
+   Profiler profiler{ GameManager::getLogger(), "addNewObjects" };
+
    // Tous les objets visibles par tous les npcs ...
    for (auto npc : _tile.npcs) {
       for (auto objet : npc.second.visibleObjects) {
@@ -237,30 +247,16 @@ void GameManager::addNewObjects(const TurnInfo& _tile) noexcept {
 
 void GameManager::updateModel(const TurnInfo &_tile) noexcept {
 
-   stringstream ss;
+   Profiler profiler{ GameManager::getLogger(), "updateModel" };
 
    // On essaye de rajouter les nouvelles tiles !
-   auto pre = Minuteur::now();
    addNewTiles(_tile);
-   auto post = Minuteur::now();
-   ss << "Durée AddTile = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms" << endl;
 
    // On essaye de rajouter les nouvelles tiles !
-   pre = Minuteur::now();
    addNewObjects(_tile);
-   post = Minuteur::now();
-   ss << "Durée AddObjects = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms" << endl;
 
-   // Mettre à jour nos NPCs
-   pre = Minuteur::now();
-   for (auto &npc : npcs) {
-      npc.second.floodfill(c);
-   }
-   post = Minuteur::now();
-   ss << "Durée FloodFill = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms";
-
-   GameManager::log(ss.str());
-
+   // Mettre ï¿½ jour nos NPCs
+   refreshFloodfill();
 }
 
 
@@ -278,7 +274,7 @@ void GameManager::addNpc(Npc npc) {
    npcs[npc.getId()] = npc;
 }
 
-void GameManager::reafecterObjectifsSelonDistance() {
+void GameManager::reaffecterObjectifsSelonDistance() {
    // Tant que l'on fait des modifications on continue ...
    stringstream ss;
    bool continuer = true;
@@ -294,16 +290,16 @@ void GameManager::reafecterObjectifsSelonDistance() {
                 int objectifAutreNpc = autreNpc.getChemin().empty() ? autreNpc.getTileId() : autreNpc.getChemin().destination();
                 int tempsMaxChemins = max(npc.getChemin().distance(), autreNpc.getChemin().distance());
                 if (npc.getId() != autreNpc.getId()) {
-                    // Si l'interversion des objectifs est bénéfique pour l'un deux et ne coûte rien à l'autre (ou lui est aussi bénéfique)
-                    if (npc.isAccessibleTile(objectifAutreNpc) // Déjà on vérifie que l'intervertion est "possible"
+                    // Si l'interversion des objectifs est bï¿½nï¿½fique pour l'un deux et ne coï¿½te rien ï¿½ l'autre (ou lui est aussi bï¿½nï¿½fique)
+                    if (npc.isAccessibleTile(objectifAutreNpc) // Dï¿½jï¿½ on vï¿½rifie que l'intervertion est "possible"
                         && autreNpc.isAccessibleTile(objectifNpc)) {
                         //if (max(m.distanceHex(npc.getTileId(), objectifAutreNpc), m.distanceHex(autreNpc.getTileId(), objectifNpc))) {
                         if (max(npc.distanceToTile(objectifAutreNpc), autreNpc.distanceToTile(objectifNpc)) < tempsMaxChemins) {// Ensuite que c'est rentable
                             // Alors on intervertit !                           
-                            ss << "Npc " << npc.getId() << " et Npc " << autreNpc.getId() << " échangent leurs objectifs !" << std::endl;
+                            ss << "Npc " << npc.getId() << " et Npc " << autreNpc.getId() << " ï¿½changent leurs objectifs !" << std::endl;
                             npc.getChemin() = c.aStar(npc.getTileId(), objectifAutreNpc);
                             autreNpc.getChemin() = c.aStar(autreNpc.getTileId(), objectifNpc);
-                            continuer = true; // Et on devra continuer pour vérifier que cette intervertion n'en a pas entrainé de nouvelles !
+                            continuer = true; // Et on devra continuer pour vï¿½rifier que cette intervertion n'en a pas entrainï¿½ de nouvelles !
                         }
                     }
                 }
@@ -311,4 +307,12 @@ void GameManager::reafecterObjectifsSelonDistance() {
         }
     }
     GameManager::log(ss.str());
+}
+
+void GameManager::refreshFloodfill() {
+   Profiler profiler{ GameManager::getLogger(), "refreshFloodfill" };
+
+   for (auto &npc : npcs) {
+      npc.second.floodfill(c);
+   }
 }

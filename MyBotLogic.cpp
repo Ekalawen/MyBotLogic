@@ -5,9 +5,9 @@
 #include "LevelInfo.h"
 
 #include "MyBotLogic/Tools/Minuteur.h"
+#include "MyBotLogic/Tools/Profiler.h"
 
 #include "Windows.h"
-#include "MyBotLogic/Tools/Minuteur.h"
 #include <sstream>
 
 using std::stringstream;
@@ -15,96 +15,77 @@ using std::endl;
 using std::to_string;
 
 MyBotLogic::MyBotLogic() :
-    logpath{""}
+   logpath{ "" }
 {
-	//Write Code Here
+   //Write Code Here
 }
 
 /*virtual*/ MyBotLogic::~MyBotLogic()
 {
-	//Write Code Here
+   //Write Code Here
 }
 
 /*virtual*/ void MyBotLogic::Configure(int argc, char *argv[], const string& _logpath)
 {
 #ifdef BOT_LOGIC_DEBUG
-	mLogger.Init(_logpath, "MyBotLogic.log");
+   mLogger.Init(_logpath, "MyBotLogic.log");
 #endif
 
-	BOT_LOGIC_LOG(mLogger, "Configure", true);
-    /* _logpath =
-    C:\Users\dusa2404\Documents\IA\IABootCamp\AIBot_v0.59\\LocalMatchResults\aibotlog
-    */
-    logpath = _logpath;
-	
-	//Write Code Here
+   BOT_LOGIC_LOG(mLogger, "Configure", true);
+   /* _logpath =
+   C:\Users\dusa2404\Documents\IA\IABootCamp\AIBot_v0.59\\LocalMatchResults\aibotlog
+   */
+   logpath = _logpath;
+
+   //Write Code Here
 }
 
 /*virtual*/ void MyBotLogic::Start()
 {
-	//Write Code Here
+   //Write Code Here
 }
 
 /*virtual*/ void MyBotLogic::Init(LevelInfo& _levelInfo)
 {
-   
-    auto pre = Minuteur::now();
-    // Le logger
-	GameManager::SetLog(logpath, "MyLog.log");
-	GameManager::SetLogRelease(logpath, "MyLogRelease.log");
-
     // On crée notre modèle du jeu en cours !
-    manager = GameManager(_levelInfo);
-    manager.InitializeBehaviorTree();
-    auto post = Minuteur::now();
 
+   auto pre = Minuteur::now();
+   // Le logger
+   GameManager::setLog(logpath, "MyLog.log");
+   GameManager::setLogRelease(logpath, "MyLogRelease.log");
+   manager = GameManager(_levelInfo);
+   manager.InitializeBehaviorTree();
+   auto post = Minuteur::now();
     // On associe à chaque npc son objectif !
-    //gm.associateNpcsWithObjectiv();
-    stringstream ss;
+   //gm.associateNpcsWithObjectiv();
+   stringstream ss;
     ss << "Durée Initialisation = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms";
-    GameManager::log(ss.str());
-   
+   GameManager::log(ss.str());
 }
 
 /*virtual*/ void MyBotLogic::OnGameStarted()
 {
-	//Write Code Here
+   //Write Code Here
 }
 
 /*virtual*/ void MyBotLogic::FillActionList(TurnInfo& _turnInfo, vector<Action*>& _actionList)
 {
-    auto preFAL = Minuteur::now();
-    stringstream ss;
-    GameManager::log("TURN =========================== " + to_string(_turnInfo.turnNb));
+   Profiler profiler{ GameManager::getLogger(), "FillActionList" };
+   profiler << "TURN =========================== " << _turnInfo.turnNb << endl;
+   Profiler profilerRelease{ GameManager::getLoggerRelease(), "FillActionList" };
+   profilerRelease << "TURN =========================== " << _turnInfo.turnNb << endl;
 
-    // On complète notre modèle avec l'information qu'on vient de découvrir !
-    auto pre = Minuteur::now();
-    manager.updateModel(_turnInfo);
-    auto post = Minuteur::now();
-    ss << "Durée Update = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms" << endl;
+   // On compl�te notre mod�le avec l'information qu'on vient de d�couvrir !
+   manager.updateModel(_turnInfo);
 
-    // On définit notre stratégie en exécutant notre arbre de comportement
-    pre = Minuteur::now();
-    manager.execute();
-    post = Minuteur::now();
-    ss << "Durée Execute = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms" << endl;
-    
+   // On d�finit notre strat�gie en ex�cutant notre arbre de comportement
+   manager.execute();
 
-    // On fait se déplacer chaque Npc vers son objectif associé =)
-    pre = Minuteur::now();
-    manager.moveNpcs(_actionList);
-    post = Minuteur::now();
-    ss << "Durée Move = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms" << endl;
-
-
-    auto postFAL = Minuteur::now();
-    ss << "Durée Tour = " << Minuteur::dureeMicroseconds(preFAL, postFAL) / 1000.f << "ms" << endl;
-    GameManager::log(ss.str());
-    ss << "Durée Tour numéro " << _turnInfo.turnNb << " = " << Minuteur::dureeMicroseconds(preFAL, postFAL) / 1000.f << "ms";
-    GameManager::logRelease(ss.str());
+   // On fait se d�placer chaque Npc vers son objectif associ� =)
+   manager.moveNpcs(_actionList);
 }
 
 /*virtual*/ void MyBotLogic::Exit()
 {
-	//Write Code Here
+   //Write Code Here
 }

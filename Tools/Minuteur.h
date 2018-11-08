@@ -2,14 +2,18 @@
 #define MINUTEUR_H
 
 #include <chrono>
+#include <string>
 
 namespace chrono = std::chrono;
+using std::string;
 
 class Minuteur {
+public:
    using duree_t = unsigned int;
    using time_point_t = chrono::high_resolution_clock::time_point;
 public:
    static time_point_t now();
+   static string nowStr();
 
    static duree_t dureeHours(time_point_t _instantAvant, time_point_t _instantApres);
    static duree_t dureeMinutes(time_point_t _instantAvant, time_point_t _instantApres);

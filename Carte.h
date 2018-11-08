@@ -7,9 +7,14 @@
 #include "Chemin.h"
 #include "Npc.h"
 #include "MyBotLogic/MapTile.h"
+#include "Porte.h"
+
 #include <map>
 #include <vector>
-#include "Porte.h"
+
+
+using std::vector;
+using std::map;
 
 class tile_inexistante {};
 class porte_inexistante {};
@@ -21,14 +26,14 @@ class Carte {
     int rowCount;
     int colCount;
     int nbTilesDecouvertes;
-    std::vector<MapTile> tiles;
+    vector<MapTile> tiles;
 
-    std::vector<unsigned int> objectifs;
+    vector<unsigned int> objectifs;
 
-    std::map<unsigned int, ObjectInfo> murs;
-    std::map<int, Porte> portes;
-    std::map<unsigned int, ObjectInfo> fenetres;
-    std::map<unsigned int, ObjectInfo> activateurs;
+    map<unsigned int, ObjectInfo> murs;
+    map<int, Porte> portes;
+    map<unsigned int, ObjectInfo> fenetres;
+    map<unsigned int, ObjectInfo> activateurs;
 
 public:
     Carte() = default;
@@ -57,13 +62,13 @@ public:
     MapTile& getTile(const int id);
     const MapTile& getTile(const int id) const;
 
-    std::vector<unsigned int> getObjectifs();
-    std::map<unsigned int, ObjectInfo> getMurs();
-    std::map<int, Porte> getPortes();
+    vector<unsigned int> getObjectifs();
+    map<unsigned int, ObjectInfo> getMurs();
+    map<int, Porte> getPortes();
     Porte getPorte(const int id) const noexcept;
     Porte& getPorte(const int tileIdVoisine1, const int tileIdVoisine2);
-    std::map<unsigned int, ObjectInfo> getFenetres();
-    std::map<unsigned int, ObjectInfo> getActivateurs();
+    map<unsigned int, ObjectInfo> getFenetres();
+    map<unsigned int, ObjectInfo> getActivateurs();
 
     bool objectExist(const int id) const noexcept; // Permet de savoir si un objet existe déjà ou pas
 };

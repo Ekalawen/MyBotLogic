@@ -6,12 +6,16 @@
 #include "Voisin.h"
 #include "Porte.h"
 #include "Noeud.h"
+#include "MyBotLogic/Tools/Profiler.h"
 
 #include <algorithm>
 #include <chrono>
 #include <sstream>
+
 using std::stringstream;
 using std::max;
+using std::vector;
+using std::endl;
 
 Carte::Carte(const LevelInfo& _levelInfo) :
     rowCount{ _levelInfo.rowCount },
@@ -53,12 +57,14 @@ vector<unsigned int> Carte::getObjectifs() const noexcept {
 // Par défaut sa valeur est 1. Si on l'augmente l'algorithme ira plus vite au détriment de trouver un chemin optimal.
 // Si on le diminue l'algorithme se rapproche de plus en plus d'un parcours en largeur.
 Chemin Carte::aStar(const int depart, const int arrivee, const float coefEvaluation) const noexcept {
-    Noeud::coefEvaluation = coefEvaluation;
+   Profiler profiler{ GameManager::getLogger(), "aStar" };
+
+   Noeud::coefEvaluation = coefEvaluation;
     // On crée nos liste et notre noeud courrant
-    vector<Noeud> closedList{};
-    vector<Noeud> openList{};
-    Noeud noeudCourant = Noeud(tiles[depart], 0, distanceL2(depart, arrivee), depart);
-    Chemin path;
+   vector<Noeud> closedList{};
+   vector<Noeud> openList{};
+   Chemin path;
+   Noeud noeudCourant = Noeud(tiles[depart], 0, distanceL2(depart, arrivee), depart);
 
     // On ajoute le noeud initial
     openList.push_back(noeudCourant);

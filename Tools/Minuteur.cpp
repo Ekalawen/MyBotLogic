@@ -1,11 +1,29 @@
 #include "Minuteur.h"
 
 #include <chrono>
+#include <string>
+#include <iomanip>
+#include <sstream>
+
+using std::stringstream;
+using std::string;
 
 namespace chrono = std::chrono;
 
-chrono::time_point<chrono::high_resolution_clock> Minuteur::now() {
+Minuteur::time_point_t Minuteur::now() {
    return chrono::high_resolution_clock::now();
+}
+
+string Minuteur::nowStr() {
+   auto now = std::chrono::system_clock::now();
+   auto in_time_t = std::chrono::system_clock::to_time_t(now);
+
+   struct tm time_info;
+   localtime_s(&time_info, &in_time_t);
+
+   std::stringstream ss;
+   ss << std::put_time(&time_info, "%Y-%m-%d %X");
+   return ss.str();
 }
 
 Minuteur::duree_t Minuteur::dureeHours(time_point_t _instantAvant, time_point_t _instantApres) {
