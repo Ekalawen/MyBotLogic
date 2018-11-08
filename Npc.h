@@ -12,8 +12,8 @@ using std::vector;
 
 class tile_inaccessible {};
 
-template <class T> class Score
-{
+template <class T>
+class Score {
 public:
     int tuileID;
     T score;
@@ -31,17 +31,16 @@ using DistanceType = Score<int>;
 using Distances = vector<DistanceType>;
 
 class Carte;
-
 class Npc {
 private:
     vector<Chemin> cheminsPossibles; // Ceci est une variable temporaire permettant de stocker les chemins parmis lesquelles choisirs un objectif
-    Scores scoresAssocies; // Les scores associ�s aux tiles !
-    Distances ensembleAccessible; // ensemble des tuiles auquel un npc � acc�s avec la distance
+    Scores scoresAssocies; // Les scores associés aux tiles !
+    Distances ensembleAccessible; // ensemble des tuiles auquel un npc à accés avec la distance
 
     int id;
     int tileId; // Sa position sur la carte
-    int tileObjectif; // L� o� il doit aller !
-    Chemin chemin; // Utilis� pour savoir quel chemin suivre pour se rendre � l'objectif
+    int tileObjectif; // Là oû il doit aller !
+    Chemin chemin; // Utilisé pour savoir quel chemin suivre pour se rendre à l'objectif
 
     //Distances distancesEnsembleAccessible;
 	bool estArrive; // indique si le npc a atteind son objectif
@@ -51,14 +50,14 @@ public:
     Npc() = default;
     Npc(const NPCInfo);
 
-    void move(const Tile::ETilePosition, Carte&) noexcept; // Permet de faire bouger notre npc dans notre mod�le =)
+    void move(const Tile::ETilePosition, Carte&) noexcept; // Permet de faire bouger notre npc dans notre modèle =)
 
     void resetChemins() noexcept;
     void addChemin(Chemin& chemin) noexcept;
     void addScore(ScoreType score) noexcept;
-    Chemin getCheminMinNonPris(const vector<int>& _objectifsPris, const int _tailleCheminMax) const noexcept; // Permet de trouver le chemin le plus court qui ne soit pas d�j� pris
+    Chemin getCheminMinNonPris(const vector<int>& _objectifsPris, const int _tailleCheminMax) const noexcept; // Permet de trouver le chemin le plus court qui ne soit pas déjà pris
     int affecterMeilleurChemin(const Carte& _carte) noexcept; // Affecte au npc le chemin avec le meilleur score et renvoie la destination de ce chemin !
-    void floodfill(const Carte& _carte); // Calcule le co�t et l'ensemble des tiles accessibles pour un npcs, et MAJ ses attributs.
+    void floodfill(const Carte&); // Calcule le coût et l'ensemble des tiles accessibles pour un npcs, et MAJ ses attributs.
     auto chercherMeilleurScore(Scores& _scores);
 
     int getId() const noexcept;

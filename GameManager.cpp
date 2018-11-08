@@ -31,7 +31,7 @@ Logger GameManager::logger{};
 Logger GameManager::loggerRelease{};
 
 GameManager::GameManager(LevelInfo _info) :
-   carte{ Carte(_info) },
+   c{ Carte(_info) },
    objectifPris{ vector<int>{} }
 {
    // On r�cup�re l'ensemble des npcs !
@@ -71,75 +71,69 @@ void GameManager::InitializeBehaviorTree() noexcept {
 }
 
 vector<Mouvement> GameManager::getAllMouvements() {
-   // On va r�cup�rer la liste des mouvements
-   vector<Mouvement> mouvements;
+    // On va r�cup�rer la liste des mouvements
+    vector<Mouvement> mouvements;
 
-   // Pour tous les NPCs, s'il n'y a aucun autre Npc devant eux
-   for (auto& npc : npcs) {
-      stringstream ss;
-      ss << "NPC = " << npc.second.getId() << endl
-         << "chemin = " << npc.second.getChemin().toString() << endl
-         << "case actuelle = " + npc.second.getTileId() << endl;
+    // Pour tous les NPCs, s'il n'y a aucun autre Npc devant eux
+    for (auto& npc : npcs) {
+        stringstream ss;
+        ss << "NPC = " << npc.second.getId() << std::endl
+           << "chemin = " << npc.second.getChemin().toString() << std::endl
+           << "case actuelle = " <<  npc.second.getTileId() << std::endl;
+       
 
+        // Si le npc doit aller quelquepart !!!
+        if (!npc.second.getChemin().empty()) {
+            // On r�cup�re la case o� il doit aller
+            int caseCible = npc.second.getChemin().getFirst();
+            ss << "case cible = " << caseCible << std::endl;
+            
+            Tile::ETilePosition direction = c.getDirection(npc.second.getTileId(), caseCible);
+            ss << "direction = " << direction << std::endl;
 
+            // Si le mouvement est bloqu� par une porte � poign�e
+            if (c.getTile(npc.second.getTileId()).hasDoorPoigneeVoisin(caseCible, c)) {
+                // Alors on enregistre un mouvement statique
+                mouvements.push_back(Mouvement(npc.second.getId(), npc.second.getTileId(), npc.second.getTileId(), Tile::ETilePosition::CENTER));
+                // Et on lui pr�cise qu'il s'agit d'un mouvement d'ouverture de porte et non de d�placement !
+                mouvements[mouvements.size() - 1].setActivateDoor();
+            } else {
 
-      // Si le npc doit aller quelquepart !!!
-      if (!npc.second.getChemin().empty()) {
-         // On r�cup�re la case o� il doit aller
-         int caseCible = npc.second.getChemin().getFirst();
-         ss << "case cible = " << caseCible << endl;
+                // On enregistre le mouvement
+                mouvements.push_back(Mouvement(npc.second.getId(), npc.second.getTileId(), caseCible, direction));
 
-         Tile::ETilePosition direction = carte.getDirection(npc.second.getTileId(), caseCible);
-         ss << "direction = " << direction << endl;
+                npc.second.getChemin().removeFirst(); // On peut supprimer le chemin
+            }
+        } else {
+            ss << "case cible = Ne Bouge Pas" << std::endl;
+            // M�me si le Npc ne bouge pas, il a quand m�me un mouvement statique !
+            mouvements.push_back(Mouvement(npc.second.getId(), npc.second.getTileId(), npc.second.getTileId(), Tile::ETilePosition::CENTER));
+        }
 
-         // On enregistre le mouvement
-         mouvements.push_back(Mouvement(npc.second.getId(), npc.second.getTileId(), caseCible, direction));
-
-         npc.second.getChemin().removeFirst(); // On peut supprimer le chemin
-      }
-      else {
-         ss << "case cible = Ne Bouge Pas" << endl;
-         // M�me si le Npc ne bouge pas, il a quand m�me un mouvement statique !
-         mouvements.push_back(Mouvement(npc.second.getId(), npc.second.getTileId(), npc.second.getTileId(), Tile::ETilePosition::CENTER));
-      }
-
-      GameManager::log(ss.str());
-   }
-   return mouvements;
+        GameManager::log(ss.str());
+    }
+    return mouvements;
 }
 
 void GameManager::moveNpcs(vector<Action*>& _actionList) noexcept {
    Profiler profiler{ getLogger(), "moveNpcs" };
    // TODO !
-   // Il faut r�ordonner les chemins entre les npcs !
-   // Cad que si deux Npcs peuvent �changer leurs objectifs et que cela diminue leurs chemins respectifs, alors il faut le faire !
+   // Il faut réordonner les chemins entre les npcs !
+   // Cad que si deux Npcs peuvent échanger leurs objectifs et que cela diminue leurs chemins respectifs, alors il faut le faire !
    reaffecterObjectifsSelonDistance();
 
-   // On r�cup�re tous les mouvements
-   vector<Mouvement> mouvements = getAllMouvements();
+    // On r�cup�re tous les mouvements
+    vector<Mouvement> mouvements = getAllMouvements();
 
-   // Puis on va l'ordonner pour laisser la priorit� � celui qui va le plus loin !
-   ordonnerMouvements(mouvements);
+    // Puis on va l'ordonner pour laisser la priorit� � celui qui va le plus loin !
+	ordonnerMouvements(mouvements);
 
-   // Puis pour chaque mouvement
-   for (auto mouvement : mouvements) {
-      // On ne prend en compte notre mouvement que s'il compte
-      if (mouvement.isNotStopped()) {
-         // ET ENFIN ON FAIT BOUGER NOTRE NPC !!!!! <3
-         _actionList.push_back(new Move(mouvement.getNpcId(), mouvement.getDirection()));
-         // ET ON LE FAIT AUSSI BOUGER DANS NOTRE MODELE !!!
-         npcs[mouvement.getNpcId()].move(mouvement.getDirection(), carte);
-         // TEST : pour chaque npc qui se d�place sur son objectif � ce tour, alors mettre estArrive � vrai
-         if (mouvement.getDirection() != Tile::ETilePosition::CENTER && npcs[mouvement.getNpcId()].getTileObjectif() == mouvement.getTileDestination())
-            // il faut aussi v�rifier si tous les NPC ont un objectif atteignable, donc si on est en mode Exploitation
-         {
-            npcs[mouvement.getNpcId()].setArrived(true);
-         }
-         else {
-            npcs[mouvement.getNpcId()].setArrived(false);
-         }
-      }
-   }
+    // Puis pour chaque mouvement
+    for (auto mouvement : mouvements) {
+
+        // On applique notre mouvement
+        mouvement.apply(actionList, npcs, c);
+    }
 }
 
 vector<int> getIndicesMouvementsSurMemeCaseCible(vector<Mouvement>& _mouvements, int _caseCible) {
@@ -226,9 +220,9 @@ void GameManager::addNewTiles(const TurnInfo& _tile) noexcept {
          // On regarde les tuiles qu'ils voyent
          for (auto& tileId : npc.second.visibleTiles) {
             // Si ces tuiles n'ont pas �t� d�couvertes
-            if (carte.getTile(tileId).getStatut() == MapTile::INCONNU) {
+            if (c.getTile(tileId).getStatut() == MapTile::INCONNU) {
                // On les setDecouverte
-               carte.addTile(_tile.tiles.at(tileId));
+               c.addTile(_tile.tiles.at(tileId));
             }
          }
       }
@@ -242,9 +236,9 @@ void GameManager::addNewObjects(const TurnInfo& _tile) noexcept {
    // Tous les objets visibles par tous les npcs ...
    for (auto npc : _tile.npcs) {
       for (auto objet : npc.second.visibleObjects) {
-         // Si on ne conna�t pas cet objet on l'ajoute
-         if (!carte.objectExist(objet)) {
-            carte.addObject(_tile.objects.at(objet));
+         // Si on ne connait pas cet objet on l'ajoute
+         if (!c.objectExist(objet)) {
+            c.addObject(_tile.objects.at(objet));
          }
       }
    }
@@ -279,39 +273,39 @@ void GameManager::addNpc(Npc npc) {
    npcs[npc.getId()] = npc;
 }
 
-void GameManager::reaffecterObjectifsSelonDistance() {
+void GameManager::reafecterObjectifsSelonDistance() {
    // Tant que l'on fait des modifications on continue ...
    stringstream ss;
    bool continuer = true;
-   while (continuer) {
-      continuer = false;
+    while (continuer) {
+        continuer = false;
 
-      // Pour tous les npcs ...
-      for (auto& npcPair : npcs) {
-         Npc& npc = npcPair.second;
-         for (auto& autreNpcPair : npcs) {
-            Npc& autreNpc = autreNpcPair.second;
-            int objectifNpc = npc.getChemin().empty() ? npc.getTileId() : npc.getChemin().destination();
-            int objectifAutreNpc = autreNpc.getChemin().empty() ? autreNpc.getTileId() : autreNpc.getChemin().destination();
-            int tempsMaxChemins = max(npc.getChemin().distance(), autreNpc.getChemin().distance());
-            if (npc.getId() != autreNpc.getId()) {
-               // Si l'interversion des objectifs est b�n�fique pour l'un deux et ne co�te rien � l'autre (ou lui est aussi b�n�fique)
-               if (npc.isAccessibleTile(objectifAutreNpc) // D�j� on v�rifie que l'intervertion est "possible"
-                  && autreNpc.isAccessibleTile(objectifNpc)) {
-                  if (max(npc.distanceToTile(objectifAutreNpc), autreNpc.distanceToTile(objectifNpc)) < tempsMaxChemins) {// Ensuite que c'est rentable
-                      // Alors on intervertit !                           
-                     ss << "Npc " << npc.getId() << " et Npc " << autreNpc.getId() << " �changent leurs objectifs !" << endl;
-                     npc.getChemin() = carte.aStar(npc.getTileId(), objectifAutreNpc);
-                     autreNpc.getChemin() = carte.aStar(autreNpc.getTileId(), objectifNpc);
-                     continuer = true; // Et on devra continuer pour v�rifier que cette intervertion n'en a pas entrain� de nouvelles !
-                  }
-               }
+        // Pour tous les npcs ...
+        for (auto& npcPair : npcs) {
+            Npc& npc = npcPair.second;
+            for (auto& autreNpcPair : npcs) {
+                Npc& autreNpc = autreNpcPair.second;
+                int objectifNpc = npc.getChemin().empty() ? npc.getTileId() : npc.getChemin().destination();
+                int objectifAutreNpc = autreNpc.getChemin().empty() ? autreNpc.getTileId() : autreNpc.getChemin().destination();
+                int tempsMaxChemins = max(npc.getChemin().distance(), autreNpc.getChemin().distance());
+                if (npc.getId() != autreNpc.getId()) {
+                    // Si l'interversion des objectifs est b�n�fique pour l'un deux et ne co�te rien � l'autre (ou lui est aussi b�n�fique)
+                    if (npc.isAccessibleTile(objectifAutreNpc) // D�j� on v�rifie que l'intervertion est "possible"
+                        && autreNpc.isAccessibleTile(objectifNpc)) {
+                        //if (max(m.distanceHex(npc.getTileId(), objectifAutreNpc), m.distanceHex(autreNpc.getTileId(), objectifNpc))) {
+                        if (max(npc.distanceToTile(objectifAutreNpc), autreNpc.distanceToTile(objectifNpc)) < tempsMaxChemins) {// Ensuite que c'est rentable
+                            // Alors on intervertit !                           
+                            ss << "Npc " << npc.getId() << " et Npc " << autreNpc.getId() << " �changent leurs objectifs !" << std::endl;
+                            npc.getChemin() = c.aStar(npc.getTileId(), objectifAutreNpc);
+                            autreNpc.getChemin() = c.aStar(autreNpc.getTileId(), objectifNpc);
+                            continuer = true; // Et on devra continuer pour v�rifier que cette intervertion n'en a pas entrain� de nouvelles !
+                        }
+                    }
+                }
             }
-         }
-      }
-   }
-
-   GameManager::log(ss.str());
+        }
+    }
+    GameManager::log(ss.str());
 }
 
 void GameManager::refreshFloodfill() {

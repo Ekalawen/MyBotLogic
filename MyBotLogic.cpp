@@ -1,4 +1,4 @@
-#include "MyBotLogic.h"
+﻿#include "MyBotLogic.h"
 
 #include "TurnInfo.h"
 #include "NPCInfo.h"
@@ -12,6 +12,7 @@
 
 using std::stringstream;
 using std::endl;
+using std::to_string;
 
 MyBotLogic::MyBotLogic() :
    logpath{ "" }
@@ -46,22 +47,20 @@ MyBotLogic::MyBotLogic() :
 
 /*virtual*/ void MyBotLogic::Init(LevelInfo& _levelInfo)
 {
+    // On crée notre modèle du jeu en cours !
 
    auto pre = Minuteur::now();
    // Le logger
    GameManager::setLog(logpath, "MyLog.log");
    GameManager::setLogRelease(logpath, "MyLogRelease.log");
-   // On cr�e notre mod�le du jeu en cours !
    manager = GameManager(_levelInfo);
    manager.InitializeBehaviorTree();
    auto post = Minuteur::now();
-
-   // On associe � chaque npc son objectif !
+    // On associe à chaque npc son objectif !
    //gm.associateNpcsWithObjectiv();
    stringstream ss;
-   ss << "Dur�e Initialisation = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms";
+    ss << "Durée Initialisation = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms";
    GameManager::log(ss.str());
-
 }
 
 /*virtual*/ void MyBotLogic::OnGameStarted()

@@ -24,10 +24,10 @@ BT_Noeud::ETAT_ELEMENT ScoreStrategie::execute() noexcept {
    Profiler profiler{ GameManager::getLogger(), string("ScoreStrategie::execute") };
    profiler << nom << endl;
 
-   // On ne sait pas o� se trouvent les objectifs !
+   // On ne sait pas où se trouvent les objectifs !
    // On va les chercher !
 
-   // Pour �a chaque npc va visiter en premier les tuiles avec le plus haut score
+   // Pour chaque npc va visiter en premier les tuiles avec le plus haut score
 
    // L'ensemble des tiles que l'on va visiter
    vector<int> tilesAVisiter;
@@ -37,14 +37,14 @@ BT_Noeud::ETAT_ELEMENT ScoreStrategie::execute() noexcept {
       npc.resetChemins();
 
       // Calculer le score de chaque tile pour le npc
-      // En m�me temps on calcul le chemin pour aller � cette tile
+      // En même temps on calcul le chemin pour aller à cette tile
       // On stocke ces deux informations dans l'attribut cheminsPossibles du Npc
       calculerScoresTilesPourNpc(npc, tilesAVisiter);
 
       // Choisir la meilleure tile pour ce npc et lui affecter son chemin
       int tileChoisi = npc.affecterMeilleurChemin(manager.carte);
 
-      // Mettre � jour les tilesAVisiter
+      // Mettre à jour les tilesAVisiter
       tilesAVisiter.push_back(tileChoisi);
    }
 
@@ -53,7 +53,7 @@ BT_Noeud::ETAT_ELEMENT ScoreStrategie::execute() noexcept {
 
 void ScoreStrategie::calculerScore1Tile(int _tileID, Carte& _carte, Npc& _npc, const vector<int>& _tilesAVisiter) {
    MapTile tile = _carte.getTile(_tileID);
-   // On ne consid�re la tile que si on ne la visite pas d�j� !
+   // On ne considère la tile que si on ne la visite pas déjà !
    if (tile.getStatut() == MapTile::Statut::CONNU && find(_tilesAVisiter.begin(), _tilesAVisiter.end(), tile.getId()) == _tilesAVisiter.end()) {
       saveScore(tile, _npc, _tilesAVisiter);
    }
@@ -64,8 +64,8 @@ void ScoreStrategie::calculerScore1Tile(int _tileID, Carte& _carte, Npc& _npc, c
 void ScoreStrategie::calculerScoresTilesPourNpc(Npc& _npc, const vector<int>& _tilesAVisiter) noexcept {
    Profiler profiler{ GameManager::getLogger(), "calculerScoresTilesPourNpc" };
    profiler << "Taille ensemble : " << _npc.getEnsembleAccessible().size();
-   for (auto score : _npc.getEnsembleAccessible()) { // parcours toutes les tiles d�couvertes par l'ensemble des npcs et qui sont accessibles
       calculerScore1Tile(score.tuileID, manager.carte, _npc, _tilesAVisiter);
+   for (auto score : _npc.getEnsembleAccessible()) { // parcours toutes les tiles découvertes par l'ensemble des npcs et qui sont accessibles
    }
 }
 
