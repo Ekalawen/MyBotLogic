@@ -324,11 +324,17 @@ void Carte::addObject(const ObjectInfo& object) noexcept {
     // Porte
     // Dans l'implémentation actuelle, les portes ne bloques plus l'accessibilitée !
     if (object.objectTypes.find(Object::ObjectType_Door) != object.objectTypes.end()) {
+        // On crée notre porte
         portes[object.objectID] = Porte{ object, *this };
-        if (isInMap(voisin1))
+        // On l'ajoute à ses voisins et on les sets comme existants, car les voisins d'une porte existent forcément !
+        if (isInMap(voisin1)) {
             tiles[voisin1].addPorte(object.objectID);
-        if (isInMap(voisin2))
+            tiles[voisin1].setStatut(MapTile::Statut::CONNU);
+        }
+        if (isInMap(voisin2)) {
             tiles[voisin2].addPorte(object.objectID);
+            tiles[voisin2].setStatut(MapTile::Statut::CONNU);
+        }
         //Porte Ferme
         if (object.objectStates.find(Object::ObjectState_Closed) != object.objectStates.end()) {
             // Porte Fenetre
