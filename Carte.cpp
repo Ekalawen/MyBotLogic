@@ -95,7 +95,7 @@ Chemin Carte::aStar(const int depart, const int arrivee, const float coefEvaluat
                     }
                 }
                 else {
-                    GameManager::log("OMG On a fait n'imp !");
+                    GAME_MANAGER_LOG_DEBUG("OMG On a fait n'imp !");
                 }
             }
         }
@@ -178,7 +178,7 @@ Tile::ETilePosition Carte::getDirection(const int ind1, const int ind2) const no
         }
     }
 
-    GameManager::log("Erreur dans l'appel de getDirection() !");
+    GAME_MANAGER_LOG_DEBUG("Erreur dans l'appel de getDirection() !");
     return Tile::CENTER;
 }
 
@@ -294,7 +294,7 @@ void Carte::addTile(const TileInfo& tile) noexcept {
     // On le note !
     stringstream ss;
     ss << "Decouverte de la tile " << tile.tileID;
-    GameManager::log(ss.str());
+    GAME_MANAGER_LOG_DEBUG(ss.str());
 }
 
 // Il ne faut pas ajouter un objet qui est déjà dans la map !
@@ -376,7 +376,7 @@ void Carte::addObject(const ObjectInfo& object) noexcept {
 
     stringstream ss;
     ss << "Decouverte de l'objet " << object.objectID << " sur la tuile " << object.tileID << " orienté en " << object.position;
-    GameManager::log(ss.str());
+    GAME_MANAGER_LOG_DEBUG(ss.str());
 }
 
 int Carte::getX(const int id) const noexcept {

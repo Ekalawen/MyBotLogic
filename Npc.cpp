@@ -123,7 +123,7 @@ void Npc::floodfill(const Carte& c) {
                       (*itOuvert) = nouveau;
                    }
                 } else {
-                    GameManager::log("Probl�me dans le floodfill !");
+                    GAME_MANAGER_LOG_DEBUG("Probl�me dans le floodfill !");
                 }
             }
         }

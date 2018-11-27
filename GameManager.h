@@ -23,6 +23,22 @@ class npc_deja_existant {};
 class GameManager {
     static Logger logger, loggerRelease;
     map<int, Npc> npcs; // Les npcs sont stockés par leurs ids
+#ifdef BOT_LOGIC_DEBUG
+#define GAME_MANAGER_LOG_DEBUG(text, autoEndLine) logger.Log(text, autoEndLine)
+#define GAME_MANAGER_LOG_DEBUG(text) logger.Log(text)
+#else
+#define GAME_MANAGER_LOG_DEBUG(text, autoEndLine) 0
+#define GAME_MANAGER_LOG_DEBUG(text) 0
+#endif
+
+#ifndef BOT_LOGIC_DEBUG
+#define GAME_MANAGER_LOG_RELEASE(text, autoEndLine) loggerRelease.Log(text, autoEndLine)
+#define GAME_MANAGER_LOG_RELEASE(text) loggerRelease.Log(text)
+#else
+#define GAME_MANAGER_LOG_RELEASE(text, autoEndLine) 0
+#define GAME_MANAGER_LOG_RELEASE(text) 0
+#endif
+
 public:
     Carte c;
     Selecteur behaviorTreeManager; // Arbre de comportement du GameManager pour déterminer la stratégie à suivre
@@ -45,17 +61,18 @@ public:
     map<int, Npc>& getNpcs();
     void addNpc(Npc npc);
 
-    static void log(string str) noexcept { // Permet de débugger ! :D
-        #ifndef _DEBUG
-            return;
-        #endif
-        #ifdef _DEBUG
-            logger.Log(str);
-        #endif
-    }
-    static void logRelease(string _str) noexcept { // Permet de débugger ! :D
-        loggerRelease.Log(_str);
-    }
+    //static void log(string str) noexcept { // Permet de débugger ! :D
+    //    #ifndef _DEBUG
+    //        return;
+    //    #endif
+    //    #ifdef _DEBUG
+    //        logger.Log(str);
+    //    #endif
+    //}
+    //static void logRelease(string _str) noexcept { // Permet de débugger ! :D
+    //    loggerRelease.Log(_str);
+    //}
+
     static void setLog(string path, string fileName) noexcept { // Permet d'initialiser le logger =)
         #ifndef _DEBUG
             return;
@@ -68,12 +85,7 @@ public:
         loggerRelease.Init(path, fileName);
     }
     static Logger& getLogger() noexcept { // Permet d'initialiser le logger =)
-#ifndef _DEBUG
-       return;
-#endif
-#ifdef _DEBUG
        return logger;
-#endif
     }
     static Logger& getLoggerRelease() noexcept { // Permet d'initialiser le logger =)
        return loggerRelease;

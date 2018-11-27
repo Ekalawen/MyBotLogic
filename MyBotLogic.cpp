@@ -60,7 +60,7 @@ MyBotLogic::MyBotLogic() :
    //gm.associateNpcsWithObjectiv();
    stringstream ss;
     ss << "Durée Initialisation = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms";
-   GameManager::log(ss.str());
+    GAME_MANAGER_LOG_DEBUG(ss.str());
 }
 
 /*virtual*/ void MyBotLogic::OnGameStarted()

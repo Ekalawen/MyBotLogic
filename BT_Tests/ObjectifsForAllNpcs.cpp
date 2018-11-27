@@ -2,7 +2,7 @@
 #include "../BehaviorTree/BT_Noeud.h"
 
 BT_Noeud::ETAT_ELEMENT ObjectifsForAllNpcs::execute() noexcept {
-    GameManager::log("ObjectifsForAllNpcs");
+   GAME_MANAGER_LOG_DEBUG("ObjectifsForAllNpcs");
     if (manager.c.getObjectifs().size() >= manager.getNpcs().size()) {
         return ETAT_ELEMENT::REUSSI;
     } else {

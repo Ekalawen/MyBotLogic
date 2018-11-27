@@ -23,7 +23,7 @@ int Chemin::destination() const noexcept {
       return chemin[0];
    }
    else {
-      GameManager::log("Attention, on essaye de récupérer la destination d'un chemin vide !");
+      GAME_MANAGER_LOG_DEBUG("Attention, on essaye de récupérer la destination d'un chemin vide !");
       return -1;
    }
 }

@@ -110,7 +110,7 @@ vector<Mouvement> GameManager::getAllMouvements() {
             mouvements.push_back(Mouvement(npc.second.getId(), npc.second.getTileId(), npc.second.getTileId(), Tile::ETilePosition::CENTER));
         }
 
-        GameManager::log(ss.str());
+        GAME_MANAGER_LOG_DEBUG(ss.str());
     }
     return mouvements;
 }
@@ -182,7 +182,7 @@ void GameManager::stopNonPrioritaireMouvements(vector<Mouvement>& _mouvements, c
       }
    }
 
-   GameManager::log(ss.str());
+   GAME_MANAGER_LOG_DEBUG(ss.str());
 }
 
 void GameManager::gererCollisionsMemeCaseCible(vector<Mouvement>& _mouvements) {
@@ -308,7 +308,7 @@ void GameManager::reaffecterObjectifsSelonDistance() {
             }
         }
     }
-    GameManager::log(ss.str());
+    GAME_MANAGER_LOG_DEBUG(ss.str());
 }
 
 void GameManager::refreshFloodfill() {
