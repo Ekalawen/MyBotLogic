@@ -75,13 +75,13 @@ MyBotLogic::MyBotLogic() :
    Profiler profilerRelease{ GameManager::getLoggerRelease(), "FillActionList" };
    profilerRelease << "TURN =========================== " << _turnInfo.turnNb << endl;
 
-   // On compl�te notre mod�le avec l'information qu'on vient de d�couvrir !
+   // On complete notre modele avec l'information qu'on vient de decouvrir !
    manager.updateModel(_turnInfo);
 
-   // On d�finit notre strat�gie en ex�cutant notre arbre de comportement
+   // On definit notre strategie en executant notre arbre de comportement
    manager.execute();
 
-   // On fait se d�placer chaque Npc vers son objectif associ� =)
+   // On fait se deplacer chaque Npc vers son objectif associe =)
    manager.moveNpcs(_actionList);
 }
 

@@ -37,6 +37,7 @@ public:
     void InitializeBehaviorTree() noexcept; // Permet d'initialiser le BT
     void execute() noexcept { 
        Profiler profiler{ GameManager::getLogger(), "execute" }; 
+       Profiler profilerRelease{ GameManager::getLoggerRelease(), "execute" };
        behaviorTreeManager.execute(); 
     };
 
@@ -75,12 +76,7 @@ public:
 #endif
     }
     static Logger& getLoggerRelease() noexcept { // Permet d'initialiser le logger =)
-#ifndef _DEBUG
-       return;
-#endif
-#ifdef _DEBUG
        return loggerRelease;
-#endif
     }
 
 private:

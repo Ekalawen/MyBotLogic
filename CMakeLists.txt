@@ -73,6 +73,7 @@ SET( AIBOT_HEADERS
 	MyBotLogic/Strategies/ScoreStrategie.h
 	MyBotLogic/Tools/Minuteur.h
 	MyBotLogic/Tools/Profiler.h
+	MyBotLogic/Tools/ThreadPool.h
 )
 
 SET( AIBOT_SRC 
@@ -102,6 +103,7 @@ SET( AIBOT_SRC
 	MyBotLogic/Strategies/ScoreStrategie.cpp
 	MyBotLogic/Tools/Minuteur.cpp
 	MyBotLogic/Tools/Profiler.cpp
+	MyBotLogic/Tools/ThreadPool.cpp
 	
 	#Main
 	Main.cpp

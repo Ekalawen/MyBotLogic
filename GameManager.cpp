@@ -42,7 +42,7 @@ GameManager::GameManager(LevelInfo _info) :
 }
 
 void GameManager::InitializeBehaviorTree() noexcept {
-   //  Cr�ation du behaviorTree Manager
+   //  Creation du behaviorTree Manager
    unique_ptr<ObjectifsForAllNpcs> objectifs = make_unique<ObjectifsForAllNpcs>(*this);
    unique_ptr<CheminsForAllNpcs> chemins = make_unique< CheminsForAllNpcs>(*this);
    unique_ptr<Exploitation> exploitation = make_unique<Exploitation>(*this);
@@ -117,6 +117,7 @@ vector<Mouvement> GameManager::getAllMouvements() {
 
 void GameManager::moveNpcs(vector<Action*>& _actionList) noexcept {
    Profiler profiler{ getLogger(), "moveNpcs" };
+   Profiler profilerRelease{ getLoggerRelease(), "moveNpcs" };
    // TODO !
    // Il faut réordonner les chemins entre les npcs !
    // Cad que si deux Npcs peuvent échanger leurs objectifs et que cela diminue leurs chemins respectifs, alors il faut le faire !
@@ -248,6 +249,7 @@ void GameManager::addNewObjects(const TurnInfo& _tile) noexcept {
 void GameManager::updateModel(const TurnInfo &_tile) noexcept {
 
    Profiler profiler{ GameManager::getLogger(), "updateModel" };
+   Profiler profilerRelease{ GameManager::getLoggerRelease(), "updateModel" };
 
    // On essaye de rajouter les nouvelles tiles !
    addNewTiles(_tile);
