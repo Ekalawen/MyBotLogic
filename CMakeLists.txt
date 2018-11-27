@@ -7,13 +7,16 @@ include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-add_compile_options(/std:c++latest)
-add_compile_options(/MTd)
-
 set_property(GLOBAL PROPERTY CMAKE_SKIP_INSTALL_ALL_DEPENDENCY  ON)
 set_property(GLOBAL PROPERTY CMAKE_SKIP_PACKAGE_ALL_DEPENDENCY  ON)
 set_property(GLOBAL PROPERTY CMAKE_SUPPRESS_REGENERATION  ON)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+#Compile Option
+SET(MY_COMPILE_OPTIONS /std:c++latest)
+
+set(MY_RELEASE_OPTIONS ${MY_COMPILE_OPTIONS} /MT)
+set(MY_DEBUG_OPTIONS ${MY_COMPILE_OPTIONS} -D_DEBUG /MTd)
 
 # Filters
 include( Filters.cmake )
@@ -119,6 +122,9 @@ add_executable(
 	${AIBOT_HEADERS}
 	${AIBOT_SRC}
 )
+
+target_compile_options(aibot PUBLIC "$<$<CONFIG:RELEASE>:${MY_RELEASE_OPTIONS}>")
+target_compile_options(aibot PUBLIC "$<$<CONFIG:DEBUG>:${MY_DEBUG_OPTIONS}>")
 
 CREATE_VISUAL_STUDIO_FILTERS(AIBOT)
 
