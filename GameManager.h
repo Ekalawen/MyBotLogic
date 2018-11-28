@@ -23,6 +23,7 @@ class npc_deja_existant {};
 class GameManager {
     static Logger logger, loggerRelease;
     map<int, Npc> npcs; // Les npcs sont stockés par leurs ids
+
 #ifdef BOT_LOGIC_DEBUG
 #define GAME_MANAGER_LOG_DEBUG(text, autoEndLine) logger.Log(text, autoEndLine)
 #define GAME_MANAGER_LOG_DEBUG(text) logger.Log(text)
@@ -52,8 +53,8 @@ public:
     void updateModel(const TurnInfo&) noexcept; // Met à jour le modèle avec les informations que découvrent les NPCS
     void InitializeBehaviorTree() noexcept; // Permet d'initialiser le BT
     void execute() noexcept { 
-       Profiler profiler{ GameManager::getLogger(), "execute" }; 
-       Profiler profilerRelease{ GameManager::getLoggerRelease(), "execute" };
+       ProfilerDebug profiler{ GameManager::getLogger(), "execute" }; 
+       ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "execute" };
        behaviorTreeManager.execute(); 
     };
 

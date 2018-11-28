@@ -14,12 +14,14 @@
 
 #include "MyBotLogic/Tools/Minuteur.h"
 #include "MyBotLogic/Tools/Profiler.h"
+#include "MyBotLogic/Tools/ThreadPool.h"
 
 #include <algorithm>
 #include <tuple>
 #include <chrono>
 #include <sstream>
 #include <memory>
+#include <thread>
 
 using std::make_unique;
 using std::stringstream;
@@ -116,8 +118,8 @@ vector<Mouvement> GameManager::getAllMouvements() {
 }
 
 void GameManager::moveNpcs(vector<Action*>& _actionList) noexcept {
-   Profiler profiler{ getLogger(), "moveNpcs" };
-   Profiler profilerRelease{ getLoggerRelease(), "moveNpcs" };
+   ProfilerDebug profiler{ getLogger(), "moveNpcs" };
+   ProfilerRelease profilerRelease{ getLoggerRelease(), "moveNpcs" };
    // TODO !
    // Il faut réordonner les chemins entre les npcs !
    // Cad que si deux Npcs peuvent échanger leurs objectifs et que cela diminue leurs chemins respectifs, alors il faut le faire !
@@ -192,12 +194,12 @@ void GameManager::gererCollisionsMemeCaseCible(vector<Mouvement>& _mouvements) {
    while (continuer) {
       continuer = false;
       for (auto& mouvement : _mouvements) {
-         // On r�cup�re tous les indices des mouvements qui vont sur cette case
+         // On recupere tous les indices des mouvements qui vont sur cette case
          vector<int> indicesMouvementsSurMemeCaseCible = getIndicesMouvementsSurMemeCaseCible(_mouvements, mouvement.getTileDestination());
 
-         // Si ils sont plusieurs � vouloir aller sur cette case
+         // Si ils sont plusieurs a vouloir aller sur cette case
          if (indicesMouvementsSurMemeCaseCible.size() >= 2) {
-            // On r�cup�re le mouvement associ� au Npc ayant le plus de chemin � faire
+            // On recupere le mouvement associe au Npc ayant le plus de chemin a faire
             int indiceMouvementPrioritaire = getIndiceMouvementPrioritaire(_mouvements, indicesMouvementsSurMemeCaseCible);
 
             // On passe tous les autres mouvements en Center !
@@ -208,20 +210,20 @@ void GameManager::gererCollisionsMemeCaseCible(vector<Mouvement>& _mouvements) {
 }
 
 void GameManager::ordonnerMouvements(vector<Mouvement>& _mouvements) noexcept {
-   // Si deux npcs veulent aller sur la m�me case, alors celui qui a le plus de chemin � faire passe, et tous les autres restent sur place !
+   // Si deux npcs veulent aller sur la meme case, alors celui qui a le plus de chemin a faire passe, et tous les autres restent sur place !
    gererCollisionsMemeCaseCible(_mouvements);
 }
 
 void GameManager::addNewTiles(const TurnInfo& _tile) noexcept {
 
-   Profiler profiler{ GameManager::getLogger(), "addNewTiles" };
+   ProfilerDebug profiler{ GameManager::getLogger(), "addNewTiles" };
    
    if (c.getNbTilesDecouvertes() < c.getNbTiles()) {
       // pour tous les npcs
       for (auto& npc : _tile.npcs) {
          // On regarde les tuiles qu'ils voyent
          for (auto& tileId : npc.second.visibleTiles) {
-            // Si ces tuiles n'ont pas �t� d�couvertes
+            // Si ces tuiles n'ont pas ete decouvertes
             if (c.getTile(tileId).getStatut() == MapTile::INCONNU) {
                // On les setDecouverte
                c.addTile(_tile.tiles.at(tileId));
@@ -233,7 +235,7 @@ void GameManager::addNewTiles(const TurnInfo& _tile) noexcept {
 
 void GameManager::addNewObjects(const TurnInfo& _tile) noexcept {
 
-   Profiler profiler{ GameManager::getLogger(), "addNewObjects" };
+   ProfilerDebug profiler{ GameManager::getLogger(), "addNewObjects" };
 
    // Tous les objets visibles par tous les npcs ...
    for (auto npc : _tile.npcs) {
@@ -248,8 +250,8 @@ void GameManager::addNewObjects(const TurnInfo& _tile) noexcept {
 
 void GameManager::updateModel(const TurnInfo &_tile) noexcept {
 
-   Profiler profiler{ GameManager::getLogger(), "updateModel" };
-   Profiler profilerRelease{ GameManager::getLoggerRelease(), "updateModel" };
+   ProfilerDebug profiler{ GameManager::getLogger(), "updateModel" };
+   ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "updateModel" };
 
    // On essaye de rajouter les nouvelles tiles !
    addNewTiles(_tile);
@@ -257,7 +259,7 @@ void GameManager::updateModel(const TurnInfo &_tile) noexcept {
    // On essaye de rajouter les nouvelles tiles !
    addNewObjects(_tile);
 
-   // Mettre � jour nos NPCs
+   // Mettre a jour nos NPCs
    refreshFloodfill();
 }
 
@@ -312,9 +314,19 @@ void GameManager::reaffecterObjectifsSelonDistance() {
 }
 
 void GameManager::refreshFloodfill() {
-   Profiler profiler{ GameManager::getLogger(), "refreshFloodfill" };
+   ProfilerDebug profiler{ GameManager::getLogger(), "refreshFloodfill" };
+
+   ThreadPool workers;
 
    for (auto &npc : npcs) {
-      npc.second.floodfill(c);
+      //npc.second.floodfill(c);
+      std::thread th{
+         [&npc](Carte& carte) {
+            npc.second.floodfill(carte);
+         }
+         , c
+      };
+      workers.addThread(std::move(th));
    }
+   workers.joinAll();
 }

@@ -66,7 +66,7 @@ Chemin Npc::getCheminMinNonPris(const vector<int>& objectifsPris, const int tail
 }
 
 Scores::iterator Npc::chercherMeilleurScore(Scores& _scores) {
-   Profiler profiler2{ GameManager::getLogger(), "chercherMeilleurScore" };
+   ProfilerDebug profiler{ GameManager::getLogger(), "chercherMeilleurScore" };
 
    return max_element(begin(_scores), end(_scores),
       [](const ScoreType& scoreDroite, const ScoreType& scoreGauche) {
@@ -75,7 +75,7 @@ Scores::iterator Npc::chercherMeilleurScore(Scores& _scores) {
 }
 
 int Npc::affecterMeilleurChemin(const Carte&_carte) noexcept {
-   Profiler profiler{ GameManager::getLogger(), "affecterMeilleurChemin" };
+   ProfilerDebug profiler{ GameManager::getLogger(), "affecterMeilleurChemin" };
 
    if (scoresAssocies.empty()) {
       // Dans ce cas-l� on reste sur place !
@@ -96,6 +96,7 @@ int Npc::affecterMeilleurChemin(const Carte&_carte) noexcept {
 
    
 void Npc::floodfill(const Carte& c) {
+   ProfilerDebug profiler{ GameManager::getLogger(), "floodfill NPC "+id };
     ensembleAccessible.clear();
 
     vector<Noeud> fermees;
@@ -109,7 +110,7 @@ void Npc::floodfill(const Carte& c) {
 
         for (int voisin : courant.tile.getVoisinsIDParEtat(ACCESSIBLE)) {
             if (c.getTile(voisin).existe()) {
-                int cout = !c.getTile(courant.tile.getId()).hasDoorPoigneeVoisin(voisin, c) ? 1 : 2; // Si il y a une porte � poign�e c'est 2 fois plus long !
+                int cout = !c.getTile(courant.tile.getId()).hasDoorPoigneeVoisin(voisin, c) ? 1 : 2; // Si il y a une porte a poignee c'est 2 fois plus long !
                 Noeud nouveau{ c.getTile(voisin), courant.cout + cout };
                 auto itFermee = find(fermees.begin(), fermees.end(), nouveau);
                 auto itOuvert = find(ouverts.begin(), ouverts.end(), nouveau);
@@ -123,20 +124,20 @@ void Npc::floodfill(const Carte& c) {
                       (*itOuvert) = nouveau;
                    }
                 } else {
-                    GAME_MANAGER_LOG_DEBUG("Probl�me dans le floodfill !");
+                    GAME_MANAGER_LOG_DEBUG("Probleme dans le floodfill !");
                 }
             }
         }
 
-        // Donc celui qui minimise et le cout, et l'�valuation !
+        // Donc celui qui minimise et le cout, et l'evaluation !
         //sort(ouverts.begin(), ouverts.end(), [](const Noeud a, const Noeud b) {
-            //return a.cout > b.cout; // Par ordre d�croissant
+            //return a.cout > b.cout; // Par ordre decroissant
         //});
 
         fermees.push_back(courant);
     }
 
-    // On copie les ferm�es dans ensembleAccessible
+    // On copie les fermees dans ensembleAccessible
     for (auto noeud : fermees) {
         ensembleAccessible.emplace_back(noeud.tile.getId(), static_cast<int>(noeud.cout));
     }

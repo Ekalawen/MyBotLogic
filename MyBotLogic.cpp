@@ -70,9 +70,9 @@ MyBotLogic::MyBotLogic() :
 
 /*virtual*/ void MyBotLogic::FillActionList(TurnInfo& _turnInfo, vector<Action*>& _actionList)
 {
-   Profiler profiler{ GameManager::getLogger(), "FillActionList" };
+   ProfilerDebug profiler{ GameManager::getLogger(), "FillActionList" };
    profiler << "TURN =========================== " << _turnInfo.turnNb << endl;
-   Profiler profilerRelease{ GameManager::getLoggerRelease(), "FillActionList" };
+   ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "FillActionList" };
    profilerRelease << "TURN =========================== " << _turnInfo.turnNb << endl;
 
    // On complete notre modele avec l'information qu'on vient de decouvrir !
