@@ -24,19 +24,23 @@ class GameManager {
     static Logger logger, loggerRelease;
     map<int, Npc> npcs; // Les npcs sont stockés par leurs ids
 
+#ifdef _DEBUG
+#define BOT_LOGIC_DEBUG
+#endif
+
 #ifdef BOT_LOGIC_DEBUG
-#define GAME_MANAGER_LOG_DEBUG(text, autoEndLine) logger.Log(text, autoEndLine)
-#define GAME_MANAGER_LOG_DEBUG(text) logger.Log(text)
+#define GAME_MANAGER_LOG_DEBUG_ENDL(text, autoEndLine) GameManager::getLogger().Log(text, autoEndLine)
+#define GAME_MANAGER_LOG_DEBUG(text) GameManager::getLogger().Log(text)
 #else
-#define GAME_MANAGER_LOG_DEBUG(text, autoEndLine) 0
+#define GAME_MANAGER_LOG_DEBUG_ENDL(text, autoEndLine) 0
 #define GAME_MANAGER_LOG_DEBUG(text) 0
 #endif
 
 #ifndef BOT_LOGIC_DEBUG
-#define GAME_MANAGER_LOG_RELEASE(text, autoEndLine) loggerRelease.Log(text, autoEndLine)
-#define GAME_MANAGER_LOG_RELEASE(text) loggerRelease.Log(text)
+#define GAME_MANAGER_LOG_RELEASE_ENDL(text, autoEndLine) GameManager::getLoggerRelease().Log(text, autoEndLine)
+#define GAME_MANAGER_LOG_RELEASE(text) GameManager::getLoggerRelease().Log(text)
 #else
-#define GAME_MANAGER_LOG_RELEASE(text, autoEndLine) 0
+#define GAME_MANAGER_LOG_RELEASE_ENDL(text, autoEndLine) 0
 #define GAME_MANAGER_LOG_RELEASE(text) 0
 #endif
 
@@ -100,6 +104,7 @@ private:
     void gererCollisionsMemeCaseCible(vector<Mouvement>& mouvements);
     void stopNonPrioritaireMouvements(vector<Mouvement>& mouvements, const vector<int>& indicesMouvementsSurMemeCaseCible, const int indiceMouvementPrioritaire, bool& continuer);
     void refreshFloodfill();
+    bool permutationUtile(Npc& npc1, Npc& npc2);
 };
 
 #endif
