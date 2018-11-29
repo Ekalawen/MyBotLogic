@@ -67,7 +67,7 @@ public:
     Chemin& getChemin() noexcept;
     Distances& getEnsembleAccessible() noexcept;
     bool isAccessibleTile(const int tileId) const noexcept;
-    int distanceToTile(const int tileId);
+    int distanceToTile(const int tileId) const ;
     bool isArrived() const noexcept;
     void setArrived(const bool etat) noexcept;
 };

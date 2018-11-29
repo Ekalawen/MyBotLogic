@@ -78,7 +78,7 @@ int Npc::affecterMeilleurChemin(const Carte&_carte) noexcept {
    ProfilerDebug profiler{ GameManager::getLogger(), "affecterMeilleurChemin" };
 
    if (scoresAssocies.empty()) {
-      // Dans ce cas-l� on reste sur place !
+      // Dans ce cas-la on reste sur place !
       chemin = Chemin{};
       profiler << "Le Npc " << id << " n'a rien a rechercher et reste sur place !";
       return tileId;
@@ -206,7 +206,7 @@ bool Npc::isAccessibleTile(const int _tuileID) const noexcept {
    }) != end(ensembleAccessible);
 }
 
-int Npc::distanceToTile(const int _tuileID) {
+int Npc::distanceToTile(const int _tuileID) const {
    if (!isAccessibleTile(_tuileID))
       throw tile_inaccessible{};
 
