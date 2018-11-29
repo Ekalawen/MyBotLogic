@@ -281,8 +281,8 @@ void GameManager::addNpc(Npc npc) {
 }
 
 void GameManager::reaffecterObjectifsSelonDistance() {
+   ProfilerDebug profiler{ GameManager::getLogger(), "reaffecterObjectifsSelonDistance" };
    // Tant que l'on fait des modifications on continue ...
-   stringstream ss;
    bool continuer = true;
    while (continuer) {
       continuer = false;
@@ -299,38 +299,18 @@ void GameManager::reaffecterObjectifsSelonDistance() {
             Npc& autreNpc = autreNpcPair.second;
 
             if (npc.getId() != autreNpc.getId() && permutationUtile(*nouveauNpc, autreNpc)) {
-
                nouveauNpc = &autreNpc;
-               //int objectifNpc = npc.getChemin().empty() ? npc.getTileId() : npc.getChemin().destination();
-               ////objectifNpc = npc.getChemin().empty() ? npc.getTileId() : npc.getChemin().destination();
-               //int objectifAutreNpc = autreNpc.getChemin().empty() ? autreNpc.getTileId() : autreNpc.getChemin().destination();
-               //int tempsMaxChemins = max(npc.getChemin().distance(), autreNpc.getChemin().distance());
-
-               //// Si l'interversion des objectifs est benefique pour l'un deux et ne coute rien a l'autre (ou lui est aussi benefique)
-               //if (npc.isAccessibleTile(objectifAutreNpc) // Deja on verifie que l'intervertion est "possible"
-               //   && autreNpc.isAccessibleTile(objectifNpc)) {
-               //   //if (max(m.distanceHex(npc.getTileId(), objectifAutreNpc), m.distanceHex(autreNpc.getTileId(), objectifNpc))) {
-               //   //if (max(npc.distanceToTile(objectifAutreNpc), autreNpc.distanceToTile(objectifNpc)) < tempsMaxChemins) {// Ensuite que c'est rentable
-               //   if (max(autreNpcFinal.distanceToTile(objectifAutreNpc), autreNpc.distanceToTile(objectifNpc)) < tempsMaxChemins) {
-               //      // Alors on intervertit !                           
-               //      ss << "Npc " << npc.getId() << " et Npc " << autreNpc.getId() << " echangent leurs objectifs !" << std::endl;
-               //      //npc.getChemin() = c.aStar(npc.getTileId(), objectifAutreNpc);
-               //      //autreNpc.getChemin() = c.aStar(autreNpc.getTileId(), objectifNpc);
-               //      objectifAutreNpcFinal = objectifAutreNpc;
-               //      autreNpcFinal = autreNpc;
-               //      continuer = true; // Et on devra continuer pour verifier que cette intervertion n'en a pas entraine de nouvelles !
-               //   }
-               //}
             }
          }
          if (nouveauNpc->getId() != npc.getId()) {
+            profiler << "Npc " << npc.getId() << " et Npc " << nouveauNpc->getId() << " echangent leurs objectifs !" << std::endl;
             int objectifAutreNpcFinal = nouveauNpc->getChemin().empty() ? nouveauNpc->getTileId() : nouveauNpc->getChemin().destination();
             npc.getChemin() = c.aStar(npc.getTileId(), objectifAutreNpcFinal);
             nouveauNpc->getChemin() = c.aStar(nouveauNpc->getTileId(), objectifNpc);
+            continuer = true; // Et on devra continuer pour verifier que cette intervertion n'en a pas entraine de nouvelles !
          }
       }
    }
-   GAME_MANAGER_LOG_DEBUG(ss.str());
 }
 
 void GameManager::refreshFloodfill() {
@@ -352,18 +332,10 @@ void GameManager::refreshFloodfill() {
 }
 
 bool GameManager::permutationUtile(Npc& npc1, Npc& npc2) {
-   bool interessant = false;
-
    int objectifNpc = npc1.getChemin().empty() ? npc1.getTileId() : npc1.getChemin().destination();
    int objectifAutreNpc = npc2.getChemin().empty() ? npc2.getTileId() : npc2.getChemin().destination();
    int tempsMaxChemins = max(npc1.getChemin().distance(), npc2.getChemin().distance());
 
-   // Si l'interversion des objectifs est benefique pour l'un deux et ne coute rien a l'autre (ou lui est aussi benefique)
-   if (npc1.isAccessibleTile(objectifAutreNpc) // Deja on verifie que l'intervertion est "possible"
-      && npc2.isAccessibleTile(objectifNpc)) {
-      if (max(npc1.distanceToTile(objectifAutreNpc), npc2.distanceToTile(objectifNpc)) < tempsMaxChemins) {
-         interessant = true; // Et on devra continuer pour verifier que cette intervertion n'en a pas entraine de nouvelles !
-      }
-   }
-   return interessant;
+   // Si l'interversion des objectifs est possible et benefique pour l'un deux et ne coute rien a l'autre (ou lui est aussi benefique)
+   return npc1.isAccessibleTile(objectifAutreNpc) && npc2.isAccessibleTile(objectifNpc) && max(npc1.distanceToTile(objectifAutreNpc), npc2.distanceToTile(objectifNpc)) < tempsMaxChemins;
 }

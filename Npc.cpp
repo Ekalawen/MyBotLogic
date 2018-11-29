@@ -51,8 +51,8 @@ Chemin Npc::getCheminMinNonPris(const vector<int>& objectifsPris, const int tail
 
    for (int i = 0; i < cheminsPossibles.size(); ++i) {
       Chemin cheminTrouve = cheminsPossibles[i];
-      // Si le chemin n'est pas d�j� pris et qu'il est plus court !
-      int destination = (cheminTrouve.empty()) ? tileId : cheminTrouve.destination(); // si le npc est d�j� arriv� il reste l�
+      // Si le chemin n'est pas deja pris et qu'il est plus court !
+      int destination = (cheminTrouve.empty()) ? tileId : cheminTrouve.destination(); // si le npc est deja arrive il reste la
       if (cheminTrouve.isAccessible()
          && cheminTrouve.distance() < distMin
          && (objectifsPris.empty() || find(objectifsPris.begin(), objectifsPris.end(), destination) == objectifsPris.end())) {
