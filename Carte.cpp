@@ -59,79 +59,144 @@ vector<unsigned int> Carte::getObjectifs() const noexcept {
 Chemin Carte::aStar(const int depart, const int arrivee, const float coefEvaluation) const noexcept {
    ProfilerDebug profiler{ GameManager::getLogger(), "aStar" };
 
-   Noeud::coefEvaluation = coefEvaluation;
-    // On crée nos liste et notre noeud courrant
-   vector<Noeud> closedList{};
-   vector<Noeud> openList{};
+   //Noeud::coefEvaluation = coefEvaluation;
+   vector<Noeud> closedList;
+   vector<Noeud> openList;
+   openList.reserve(tiles.size());
+   openList.emplace_back(depart, -1, 0, distanceHex(depart, arrivee));
+
+   while (!openList.empty()) {
+
+       const auto noeudIndex = openList.size() - 1;
+       const auto noeudCourant = openList.back();
+
+       if (noeudCourant.tileID == arrivee)
+       {
+           closedList.push_back(noeudCourant);
+           break;
+       }
+
+       for (auto voisinID : tiles[noeudCourant.tileID].getVoisinsIDParEtat(Etats::ACCESSIBLE)) {
+           if (voisinID == noeudCourant.tileID) continue;
+
+           auto coutEstime = noeudCourant.cost_so_far + 1;
+
+           const auto recherche = [&noeudCourant](const Noeud& n) {
+               return n.tileID == noeudCourant.tileID;
+           };
+
+           auto closedIt = std::find_if(closedList.begin(), closedList.end(), recherche);
+           auto openIt = std::find_if(openList.begin(), openList.end(), recherche);
+
+           if (closedIt != closedList.end()) {
+               if (closedIt->estimated_total_cost <= coutEstime + distanceHex(voisinID, arrivee)) continue;
+
+               std::swap(*closedIt, closedList.back());
+               closedList.pop_back();
+           }
+           else if (openIt != openList.end()) {
+               if (openIt->cost_so_far <= coutEstime) continue;
+           }
+
+           openList.emplace_back(tiles[voisinID], coutEstime, coutEstime + distanceHex(voisinID, arrivee), noeudCourant.tileID);
+       }
+
+       closedList.push_back(noeudCourant);
+       std::swap(openList[noeudIndex], openList.back());
+       openList.pop_back();
+
+       if (!openList.empty()) {
+           auto plusPetitIt = std::min_element(openList.begin(), openList.end(), [](const Noeud& nL, const Noeud& nR) {
+               return nL.estimated_total_cost < nR.estimated_total_cost;
+           });
+           std::swap(*plusPetitIt, openList.back());
+       }
+   }
+
    Chemin path;
-   Noeud noeudCourant = Noeud(tiles[depart], 0, distanceL2(depart, arrivee), depart);
+   if (!closedList.empty() && closedList.back().tileID == arrivee) {
+        auto noeud = closedList.back();
 
-    // On ajoute le noeud initial
-    openList.push_back(noeudCourant);
-    // Tant qu'il reste des noeuds à traiter ...
-    while (!openList.empty() && noeudCourant.tile.getId() != arrivee) {
-        // On récupère le premier noeud de notre liste
-        noeudCourant = openList.back();
-        openList.pop_back();
-        // Pour tous les voisins du noeud courant ...
-        for (auto voisinID : noeudCourant.tile.getVoisinsIDParEtat(Etats::ACCESSIBLE)) {
-            // On vérifie que le voisin existe ...
-            if (tiles[voisinID].existe()) {
-                // On construit le nouveau noeud
-                Noeud nouveauNoeud = Noeud(tiles[voisinID], noeudCourant.cout + 1, distanceL2(voisinID, arrivee), noeudCourant.tile.getId());
-                // On vérifie s'il existe dans closedList avec un cout inférieur ou dans openList avec un cout inférieur
-                auto itClose = find(closedList.begin(), closedList.end(), nouveauNoeud);
-                auto itOpen = find(openList.begin(), openList.end(), nouveauNoeud);
-
-                if (itClose == closedList.end() && itOpen == openList.end()) {
-                    openList.push_back(nouveauNoeud);
-                }
-                else if (itClose != closedList.end() && itOpen == openList.end()) {
-                    // Do nothing
-                }
-                else if (itClose == closedList.end() && itOpen != openList.end()) {
-                    if ((*itOpen).heuristique > nouveauNoeud.heuristique) {
-                        (*itOpen) = nouveauNoeud;
-                    }
-                }
-                else {
-                    GAME_MANAGER_LOG_DEBUG("OMG On a fait n'imp !");
-                }
-            }
-        }
-        // On trie notre openList pour que le dernier soit le meilleur !
-        // Donc celui qui minimise et le cout, et l'évaluation !
-        sort(openList.begin(), openList.end(), [](const Noeud a, const Noeud b) {
-            return a.heuristique > b.heuristique; // Par ordre décroissant
-        });
-
-        // On ferme notre noeud
-        closedList.push_back(noeudCourant);
-    }
-
-    // On test si on a atteint l'objectif ou pas
-    if (noeudCourant.tile.getId() == arrivee) {
-        // Si oui on reconstruit le path !
-        while (noeudCourant.tile.getId() != depart) {
+        while (noeud.tileID != -1) {
             // On enregistre dans le path ...
-            path.addFirst(noeudCourant.tile.getId());
+            path.addFirst(noeud.tileID);
             // On cherche l'antécédant ...
             for (auto n : closedList) {
-                if (n.tile.getId() == noeudCourant.idPrecedant) {
+                if (n.tile.getId() == noeud.idPrecedant) {
                     // On remet à jour le noeud ...
-                    noeudCourant = n;
+                    noeud = n;
                     break;
                 }
             }
         }
+   }
+   else {
+       path.setInaccessible();
+   }
 
-    }
-    else {
-        // Si non le path est inaccessible !
-        path.setInaccessible();
-    }
+   /*
+      MapGraph::Path path;
 
-    return path;
+   // A path was found
+   if (!nodes.empty() && nodes.back().tile == end) {
+      PathNode& current_node = nodes.back();
+
+      while (current_node.previous != Tile::INVALID_TILE_ID) {
+         path.push_back(graph.tile_position(current_node.tile));
+
+         auto it = std::find_if(std::begin(nodes), std::end(nodes), [&current_node](const PathNode& node) {
+            return node.tile == current_node.previous;
+         });
+
+         if (it != std::end(nodes)) {
+            current_node = *it;
+         }
+         else {
+            throw MapGraph::NodeNotFoundInCloseList{};
+         }
+      }
+   }
+
+   return path;
+   
+   */
+
+   return path;
+
+
+    //    // On trie notre openList pour que le dernier soit le meilleur !
+    //    // Donc celui qui minimise et le cout, et l'évaluation !
+    //    sort(openList.begin(), openList.end(), [](const Noeud a, const Noeud b) {
+    //        return a.heuristique > b.heuristique; // Par ordre décroissant
+    //    });
+
+    //    // On ferme notre noeud
+    //    closedList.push_back(noeudCourant);
+    //}
+
+    //// On test si on a atteint l'objectif ou pas
+    //if (noeudCourant.tile.getId() == arrivee) {
+    //    // Si oui on reconstruit le path !
+    //    while (noeudCourant.tile.getId() != depart) {
+    //        // On enregistre dans le path ...
+    //        path.addFirst(noeudCourant.tile.getId());
+    //        // On cherche l'antécédant ...
+    //        for (auto n : closedList) {
+    //            if (n.tile.getId() == noeudCourant.idPrecedant) {
+    //                // On remet à jour le noeud ...
+    //                noeudCourant = n;
+    //                break;
+    //            }
+    //        }
+    //    }
+
+    //}
+    //else {
+    //    // Si non le path est inaccessible !
+    //    path.setInaccessible();
+    //}
+
+    //return path;
 }
 
 Tile::ETilePosition Carte::getDirection(const int ind1, const int ind2) const noexcept {
