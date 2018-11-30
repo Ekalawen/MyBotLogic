@@ -287,31 +287,27 @@ void GameManager::reaffecterObjectifsSelonDistance() {
    while (continuer) {
       continuer = false;
 
-      // Pour tous les npcs ...
       for (auto& npcPair : npcs) {
          Npc& npc = npcPair.second;
-
-         int objectifNpc = npc.getChemin().empty() ? npc.getTileId() : npc.getChemin().destination();
-         Npc* nouveauNpc = &npc;
-
          for (auto& autreNpcPair : npcs) {
-
             Npc& autreNpc = autreNpcPair.second;
+            int objectifActuelNpc = npc.getChemin().empty() ? npc.getTileId() : npc.getChemin().destination();
 
-            if (npc.getId() != autreNpc.getId() && permutationUtile(*nouveauNpc, autreNpc)) {
-               nouveauNpc = &autreNpc;
+            if (npc.getId() != autreNpc.getId() && permutationUtile(npc, autreNpc)) {
+               int objectifAutreNpc = autreNpc.getChemin().empty() ? autreNpc.getTileId() : autreNpc.getChemin().destination();
+               profiler << "Npc " << npc.getId() << " et Npc " << autreNpc.getId() << " echangent leurs objectifs !" << std::endl;
+               profiler << "Npc " << npc.getId() << " vers " << objectifAutreNpc << " et " << "Npc " << autreNpc.getId() << " vers " << objectifActuelNpc << std::endl;
+               
+               npc.getChemin() = c.aStar(npc.getTileId(), objectifAutreNpc);
+               autreNpc.getChemin() = c.aStar(autreNpc.getTileId(), objectifActuelNpc);
+
+               continuer = true; // Et on devra continuer pour v�rifier que cette intervertion n'en a pas entrain� de nouvelles !
             }
-         }
-         if (nouveauNpc->getId() != npc.getId()) {
-            profiler << "Npc " << npc.getId() << " et Npc " << nouveauNpc->getId() << " echangent leurs objectifs !" << std::endl;
-            int objectifAutreNpcFinal = nouveauNpc->getChemin().empty() ? nouveauNpc->getTileId() : nouveauNpc->getChemin().destination();
-            npc.getChemin() = c.aStar(npc.getTileId(), objectifAutreNpcFinal);
-            nouveauNpc->getChemin() = c.aStar(nouveauNpc->getTileId(), objectifNpc);
-            continuer = true; // Et on devra continuer pour verifier que cette intervertion n'en a pas entraine de nouvelles !
          }
       }
    }
 }
+
 
 void GameManager::refreshFloodfill() {
    ProfilerDebug profiler{ GameManager::getLogger(), "refreshFloodfill" };
@@ -332,10 +328,10 @@ void GameManager::refreshFloodfill() {
 }
 
 bool GameManager::permutationUtile(Npc& npc1, Npc& npc2) {
-   int objectifNpc = npc1.getChemin().empty() ? npc1.getTileId() : npc1.getChemin().destination();
-   int objectifAutreNpc = npc2.getChemin().empty() ? npc2.getTileId() : npc2.getChemin().destination();
+   int objectifNpc1 = npc1.getChemin().empty() ? npc1.getTileId() : npc1.getChemin().destination();
+   int objectifNpc2 = npc2.getChemin().empty() ? npc2.getTileId() : npc2.getChemin().destination();
    int tempsMaxChemins = max(npc1.getChemin().distance(), npc2.getChemin().distance());
 
    // Si l'interversion des objectifs est possible et benefique pour l'un deux et ne coute rien a l'autre (ou lui est aussi benefique)
-   return npc1.isAccessibleTile(objectifAutreNpc) && npc2.isAccessibleTile(objectifNpc) && max(npc1.distanceToTile(objectifAutreNpc), npc2.distanceToTile(objectifNpc)) < tempsMaxChemins;
+   return npc1.isAccessibleTile(objectifNpc2) && npc2.isAccessibleTile(objectifNpc1) && (max(npc1.distanceToTile(objectifNpc2), npc2.distanceToTile(objectifNpc1)) < tempsMaxChemins);
 }

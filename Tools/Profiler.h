@@ -28,7 +28,9 @@ using std::endl;
 #define PROFILER_LOG() 0
 #endif
 
+#ifndef PROFILER_DEBUG
 //#define VERSION_LIVRAISON
+#endif
 
 #ifndef VERSION_LIVRAISON
 
