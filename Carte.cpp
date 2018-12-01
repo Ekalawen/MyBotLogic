@@ -57,69 +57,68 @@ vector<unsigned int> Carte::getObjectifs() const noexcept {
 // Par défaut sa valeur est 1. Si on l'augmente l'algorithme ira plus vite au détriment de trouver un chemin optimal.
 // Si on le diminue l'algorithme se rapproche de plus en plus d'un parcours en largeur.
 Chemin Carte::aStar(const int depart, const int arrivee, const float coefEvaluation) const noexcept {
-   ProfilerDebug profiler{ GameManager::getLogger(), "aStar" };
+    //Noeud::coefEvaluation = coefEvaluation;
+    vector<Noeud> closedList;
+    vector<Noeud> openList;
+    openList.reserve(tiles.size());
+    openList.emplace_back(tiles[depart], 0, distanceL2(depart, arrivee), -1);
 
-   //Noeud::coefEvaluation = coefEvaluation;
-   vector<Noeud> closedList;
-   vector<Noeud> openList;
-   openList.reserve(tiles.size());
-   openList.emplace_back(depart, -1, 0, distanceHex(depart, arrivee));
+    while (!openList.empty()) {
 
-   while (!openList.empty()) {
+        const auto noeudIndex = openList.size() - 1;
+        const auto noeudCourant = openList.back();
 
-       const auto noeudIndex = openList.size() - 1;
-       const auto noeudCourant = openList.back();
+        if (noeudCourant.tile.getId() == arrivee)
+        {
+            closedList.push_back(noeudCourant);
+            break;
+        }
 
-       if (noeudCourant.tileID == arrivee)
-       {
-           closedList.push_back(noeudCourant);
-           break;
-       }
+        for (auto voisinID : tiles[noeudCourant.tile.getId()].getVoisinsIDParEtat(Etats::ACCESSIBLE)) {
+            if (voisinID == noeudCourant.tile.getId()) continue;
 
-       for (auto voisinID : tiles[noeudCourant.tileID].getVoisinsIDParEtat(Etats::ACCESSIBLE)) {
-           if (voisinID == noeudCourant.tileID) continue;
+            auto coutEstime = noeudCourant.cout + 1;
 
-           auto coutEstime = noeudCourant.cost_so_far + 1;
+            const auto recherche = [&noeudCourant](const Noeud& n) {
+                return n.tile.getId() == noeudCourant.tile.getId();
+            };
 
-           const auto recherche = [&noeudCourant](const Noeud& n) {
-               return n.tileID == noeudCourant.tileID;
-           };
+            auto closedIt = std::find_if(closedList.begin(), closedList.end(), recherche);
+            auto openIt = std::find_if(openList.begin(), openList.end(), recherche);
 
-           auto closedIt = std::find_if(closedList.begin(), closedList.end(), recherche);
-           auto openIt = std::find_if(openList.begin(), openList.end(), recherche);
+            if (closedIt != closedList.end()) {
+                if (closedIt->heuristique <= coutEstime + distanceL2(voisinID, arrivee)) continue;
 
-           if (closedIt != closedList.end()) {
-               if (closedIt->estimated_total_cost <= coutEstime + distanceHex(voisinID, arrivee)) continue;
+                std::swap(*closedIt, closedList.back());
+                closedList.pop_back();
+            }
+            else if (openIt != openList.end()) {
+                if (openIt->cout > coutEstime) continue;
+            }
 
-               std::swap(*closedIt, closedList.back());
-               closedList.pop_back();
-           }
-           else if (openIt != openList.end()) {
-               if (openIt->cost_so_far <= coutEstime) continue;
-           }
+            openList.emplace_back(tiles[voisinID], coutEstime, distanceL2(voisinID, arrivee), noeudCourant.tile.getId());
+        }
 
-           openList.emplace_back(tiles[voisinID], coutEstime, coutEstime + distanceHex(voisinID, arrivee), noeudCourant.tileID);
-       }
+        closedList.push_back(noeudCourant);
+        std::swap(openList[noeudIndex], openList.back());
+        openList.pop_back();
 
-       closedList.push_back(noeudCourant);
-       std::swap(openList[noeudIndex], openList.back());
-       openList.pop_back();
+        if (!openList.empty()) {
+            auto plusPetitIt = std::min_element(openList.begin(), openList.end(), [](const Noeud& nL, const Noeud& nR) {
+                return nL.heuristique < nR.heuristique;
+            });
+            std::swap(*plusPetitIt, openList.back());
+        }
+    }
 
-       if (!openList.empty()) {
-           auto plusPetitIt = std::min_element(openList.begin(), openList.end(), [](const Noeud& nL, const Noeud& nR) {
-               return nL.estimated_total_cost < nR.estimated_total_cost;
-           });
-           std::swap(*plusPetitIt, openList.back());
-       }
-   }
-
-   Chemin path;
-   if (!closedList.empty() && closedList.back().tileID == arrivee) {
+    Chemin path;
+    if (!closedList.empty() && closedList.back().tile.getId() == arrivee) {
         auto noeud = closedList.back();
+        auto id = noeud.tile.getId();
 
-        while (noeud.tileID != -1) {
+        while (noeud.tile.getId() != depart) {
             // On enregistre dans le path ...
-            path.addFirst(noeud.tileID);
+            path.addFirst(noeud.tile.getId());
             // On cherche l'antécédant ...
             for (auto n : closedList) {
                 if (n.tile.getId() == noeud.idPrecedant) {
@@ -129,37 +128,10 @@ Chemin Carte::aStar(const int depart, const int arrivee, const float coefEvaluat
                 }
             }
         }
-   }
-   else {
-       path.setInaccessible();
-   }
-
-   /*
-      MapGraph::Path path;
-
-   // A path was found
-   if (!nodes.empty() && nodes.back().tile == end) {
-      PathNode& current_node = nodes.back();
-
-      while (current_node.previous != Tile::INVALID_TILE_ID) {
-         path.push_back(graph.tile_position(current_node.tile));
-
-         auto it = std::find_if(std::begin(nodes), std::end(nodes), [&current_node](const PathNode& node) {
-            return node.tile == current_node.previous;
-         });
-
-         if (it != std::end(nodes)) {
-            current_node = *it;
-         }
-         else {
-            throw MapGraph::NodeNotFoundInCloseList{};
-         }
-      }
-   }
-
-   return path;
-   
-   */
+    }
+    else {
+        path.setInaccessible();
+    }
 
    return path;
 
