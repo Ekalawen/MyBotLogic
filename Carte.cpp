@@ -57,7 +57,6 @@ vector<unsigned int> Carte::getObjectifs() const noexcept {
 // Par défaut sa valeur est 1. Si on l'augmente l'algorithme ira plus vite au détriment de trouver un chemin optimal.
 // Si on le diminue l'algorithme se rapproche de plus en plus d'un parcours en largeur.
 Chemin Carte::aStar(const int depart, const int arrivee, int npcActif, GameManager& gm, const vector<Contrainte>& contraintesDejaNecessaires) const noexcept {
-    // CA COMMENCE ICI
     Noeud::coefEvaluation = 1.f;
     // On crée nos liste et notre noeud courrant
     vector<Noeud> closedList{};
