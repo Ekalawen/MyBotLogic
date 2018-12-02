@@ -65,6 +65,6 @@ void Mouvement::apply(vector<Action*>& actionList, map<int, Npc>& npcs, Carte& c
         // On envoie l'évènement d'ouverture de porte !
         actionList.push_back(new Interact(getNpcId(), porte.getId(), Interact::EInteraction::Interaction_OpenDoor));
         stringstream ss; ss << "Le Npc " << getNpcId() << " a ouvert la porte " << porte.getId() << " !";
-        GameManager::log(ss.str());
+        LOG(ss.str());
     }
 }

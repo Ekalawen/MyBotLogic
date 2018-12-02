@@ -219,7 +219,7 @@ bool MapTile::canPassDoor(const int tileVoisineId, const int npcActif, const int
         if (porte.isVoisine(tileVoisineId))
             return porte.canPassDoor(npcActif, caseAvantPorte, gm, tempsAvantOuverture, contraintesNecessaires);
     }
-    GameManager::log("Ce n'est pas normal que l'on soit ici !");
+    LOG("Ce n'est pas normal que l'on soit ici !");
     exit(0);
 }
 

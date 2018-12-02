@@ -58,6 +58,7 @@ public:
     Chemin getCheminMinNonPris(const vector<int>& _objectifsPris, const int _tailleCheminMax) const noexcept; // Permet de trouver le chemin le plus court qui ne soit pas déjà pris
     int affecterMeilleurChemin(GameManager& gm) noexcept; // Affecte au npc le chemin avec le meilleur score et renvoie la destination de ce chemin !
     void floodfill(GameManager& gm); // Calcule le coût et l'ensemble des tiles accessibles pour un npcs, et MAJ ses attributs.
+    Scores::iterator chercherMeilleurScore(Scores& _scores);
 
     int getId() const noexcept;
     int getTileId() const noexcept;
@@ -67,7 +68,7 @@ public:
     void setChemin(Chemin& _chemin) noexcept;
     Distances& getEnsembleAccessible() noexcept;
     bool isAccessibleTile(const int tileId) const noexcept;
-    int distanceToTile(const int tileId);
+    int distanceToTile(const int tileId) const ;
     bool isArrived() const noexcept;
     void setArrived(const bool etat) noexcept;
 };

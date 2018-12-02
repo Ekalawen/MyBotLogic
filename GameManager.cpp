@@ -14,6 +14,8 @@
 #include "MyBotLogic/Tools/Minuteur.h"
 #include "TurnInfo.h"
 #include "Chemin.h"
+#include "MyBotLogic/Tools/Profiler.h"
+#include "MyBotLogic/Tools/ThreadPool.h"
 
 #include <algorithm>
 #include <tuple>
@@ -21,6 +23,7 @@
 #include <sstream>
 #include <memory>
 #include <string>
+#include <thread>
 
 using std::make_unique;
 using std::stringstream;
@@ -36,7 +39,7 @@ GameManager::GameManager(LevelInfo _info) :
    c{ Carte(_info) },
    objectifPris{ vector<int>{} }
 {
-   // On récupére l'ensemble des npcs !
+   // On rï¿½cupï¿½re l'ensemble des npcs !
    for (auto pair_npc : _info.npcs) {
       NPCInfo npc = pair_npc.second;
       npcs[npc.npcID] = Npc(npc);
@@ -44,7 +47,7 @@ GameManager::GameManager(LevelInfo _info) :
 }
 
 void GameManager::InitializeBehaviorTree() noexcept {
-   //  Création du behaviorTree Manager
+   //  Creation du behaviorTree Manager
    unique_ptr<ObjectifsForAllNpcs> objectifs = make_unique<ObjectifsForAllNpcs>(*this);
    unique_ptr<CheminsForAllNpcs> chemins = make_unique< CheminsForAllNpcs>(*this);
    unique_ptr<Exploitation> exploitation = make_unique<Exploitation>(*this);
@@ -119,29 +122,31 @@ vector<Mouvement> GameManager::getAllMouvements() {
             mouvements.push_back(Mouvement(npc.second.getId(), npc.second.getTileId(), npc.second.getTileId(), Tile::ETilePosition::CENTER));
         }
 
-        GameManager::log(ss.str());
+        LOG(ss.str());
     }
     return mouvements;
 }
 
 void GameManager::moveNpcs(vector<Action*>& actionList) noexcept {
-    // Code déplace juste après l'execute, il faudra peut-être aussi le laisser ici, à voir !!!
+    ProfilerDebug profiler{ getLogger(), "MOVE NPCS" };
+    ProfilerRelease profilerRelease{ getLoggerRelease(), "moveNpcs" };
+    // Code déplace juste après l'execute, il faudra peut-être aussi le laisser ici, à voir !!! Finalement j'ai dû le laisser ici aussi, c'est nécessaire mais ça coûte !
     //// Il faut réordonner les chemins entre les npcs !
     //// Cad que si deux Npcs peuvent échanger leurs objectifs et que cela diminue leurs chemins respectifs, alors il faut le faire !
-    reafecterObjectifsSelonDistance();
+    reaffecterObjectifsSelonDistance();
 
-    // On récupère tous les mouvements
-    vector<Mouvement> mouvements = getAllMouvements();
+   // On recupere tous les mouvements
+   vector<Mouvement> mouvements = getAllMouvements();
 
-    // Puis on va l'ordonner pour laisser la priorité à celui qui va le plus loin !
-	ordonnerMouvements(mouvements);
+   // Puis on va l'ordonner pour laisser la priorite a celui qui va le plus loin !
+   ordonnerMouvements(mouvements);
 
-    // Puis pour chaque mouvement
-    for (auto mouvement : mouvements) {
+   // Puis pour chaque mouvement
+   for (auto mouvement : mouvements) {
 
-        // On applique notre mouvement
-        mouvement.apply(actionList, npcs, c);
-    }
+      // On applique notre mouvement
+      mouvement.apply(actionList, npcs, c);
+   }
 }
 
 vector<int> getIndicesMouvementsSurMemeCaseCible(vector<Mouvement>& _mouvements, int _caseCible) {
@@ -156,7 +161,7 @@ int GameManager::getIndiceMouvementPrioritaire(vector<Mouvement>& _mouvements, c
    int indiceMax = _indicesAConsiderer[0];
    int distanceMax = getNpcById(_mouvements[_indicesAConsiderer[0]].getNpcId()).getChemin().distance();
    for (int i = 0; i < _indicesAConsiderer.size(); ++i) {
-      // Si un mouvement est stationnaire, alors personne n'est autorisé à passer !
+      // Si un mouvement est stationnaire, alors personne n'est autorisï¿½ ï¿½ passer !
       if (!_mouvements[_indicesAConsiderer[i]].isNotStopped())
          return -1;
       int dist = getNpcById(_mouvements[_indicesAConsiderer[i]].getNpcId()).getChemin().distance();
@@ -174,7 +179,7 @@ void GameManager::stopNonPrioritaireMouvements(vector<Mouvement>& _mouvements, c
    for (int i = 0; i < _indicesMouvementsSurMemeCaseCible.size(); ++i) {
       if (_indicesMouvementsSurMemeCaseCible[i] != _indiceMouvementPrioritaire) {
          int indice = _indicesMouvementsSurMemeCaseCible[i];
-         // Si le mouvement n'était pas déjà à l'arrêt alors on a réellement effectué un changement !
+         // Si le mouvement n'ï¿½tait pas dï¿½jï¿½ ï¿½ l'arrï¿½t alors on a rï¿½ellement effectuï¿½ un changement !
          if (_mouvements[indice].isNotStopped())
             _continuer = true;
          _mouvements[indice].stop();
@@ -182,13 +187,13 @@ void GameManager::stopNonPrioritaireMouvements(vector<Mouvement>& _mouvements, c
 
          ss << "Npc " << _mouvements[indice].getNpcId();
          if (_indiceMouvementPrioritaire != -1)
-            ss << " a stoppé son mouvement pour laisser la place à Npc " << _mouvements[_indiceMouvementPrioritaire].getNpcId();
+            ss << " a stoppï¿½ son mouvement pour laisser la place ï¿½ Npc " << _mouvements[_indiceMouvementPrioritaire].getNpcId();
          else
-            ss << " a stoppé son mouvement car quelqu'un est immobile.";
+            ss << " a stoppï¿½ son mouvement car quelqu'un est immobile.";
       }
    }
 
-   GameManager::log(ss.str());
+   LOG(ss.str());
 }
 
 void GameManager::gererCollisionsMemeCaseCible(vector<Mouvement>& _mouvements) {
@@ -199,12 +204,12 @@ void GameManager::gererCollisionsMemeCaseCible(vector<Mouvement>& _mouvements) {
    while (continuer) {
       continuer = false;
       for (auto& mouvement : _mouvements) {
-         // On récupére tous les indices des mouvements qui vont sur cette case
+         // On recupere tous les indices des mouvements qui vont sur cette case
          vector<int> indicesMouvementsSurMemeCaseCible = getIndicesMouvementsSurMemeCaseCible(_mouvements, mouvement.getTileDestination());
 
-         // Si ils sont plusieurs à vouloir aller sur cette case
+         // Si ils sont plusieurs a vouloir aller sur cette case
          if (indicesMouvementsSurMemeCaseCible.size() >= 2) {
-            // On récupére le mouvement associé au Npc ayant le plus de chemin à faire
+            // On recupere le mouvement associe au Npc ayant le plus de chemin a faire
             int indiceMouvementPrioritaire = getIndiceMouvementPrioritaire(_mouvements, indicesMouvementsSurMemeCaseCible);
 
             // On passe tous les autres mouvements en Center !
@@ -217,8 +222,9 @@ void GameManager::gererCollisionsMemeCaseCible(vector<Mouvement>& _mouvements) {
 void GameManager::ordonnerMouvements(vector<Mouvement>& _mouvements) noexcept {
     // Ordonner les mouvements pour que ceux qui vont sur des switchs soient les premiers ! Et les derniers s'ils en sortent !
     ordonnerMouvementsSelonSwitchs(_mouvements);
-   // Si deux npcs veulent aller sur la même case, alors celui qui a le plus de chemin à faire passe, et tous les autres restent sur place !
-   gererCollisionsMemeCaseCible(_mouvements);
+
+    // Si deux npcs veulent aller sur la même case, alors celui qui a le plus de chemin à faire passe, et tous les autres restent sur place !
+    gererCollisionsMemeCaseCible(_mouvements);
 }
 
 void GameManager::ordonnerMouvementsSelonSwitchs(vector<Mouvement>& mouvements) {
@@ -258,6 +264,9 @@ void GameManager::ordonnerMouvementsSelonSwitchs(vector<Mouvement>& mouvements) 
 
 
 void GameManager::addNewTiles(const TurnInfo& _tile) noexcept {
+
+   ProfilerDebug profiler{ GameManager::getLogger(), "addNewTiles" };
+
    if (c.getNbTilesDecouvertes() < c.getNbTiles()) {
       // pour tous les npcs
       for (auto& npc : _tile.npcs) {
@@ -274,6 +283,9 @@ void GameManager::addNewTiles(const TurnInfo& _tile) noexcept {
 }
 
 void GameManager::addNewObjects(const TurnInfo& _tile) noexcept {
+
+   ProfilerDebug profiler{ GameManager::getLogger(), "addNewObjects" };
+
    // Tous les objets visibles par tous les npcs ...
    for (auto npc : _tile.npcs) {
       for (auto objet : npc.second.visibleObjects) {
@@ -286,37 +298,25 @@ void GameManager::addNewObjects(const TurnInfo& _tile) noexcept {
 }
 
 void GameManager::updateModel(const TurnInfo &_tile) noexcept {
-
-   stringstream ss;
+   ProfilerDebug profiler{ GameManager::getLogger(), "UPDATE MODEL" };
+   ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "updateModel" };
 
    // On essaye de rajouter les nouvelles tiles !
-   auto pre = Minuteur::now();
    addNewTiles(_tile);
-   auto post = Minuteur::now();
-   ss << "Durée AddTile = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms" << endl;
 
    // On essaye de rajouter les nouvelles tiles !
-   pre = Minuteur::now();
    addNewObjects(_tile);
-   post = Minuteur::now();
-   ss << "Durée AddObjects = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms" << endl;
 
    // On met à jour les portes à switchs 
    majPortesASwitch();
 
-   // Mettre à jour nos NPCs
-   pre = Minuteur::now();
-   for (auto &npc : npcs) {
-      npc.second.floodfill(*this);
-   }
-   post = Minuteur::now();
-   ss << "Durée FloodFill = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms";
-
-   GameManager::log(ss.str());
-
+   // Mettre a jour nos NPCs
+   refreshFloodfill();
 }
 
 void GameManager::majPortesASwitch() noexcept {
+    ProfilerDebug profiler{ GameManager::getLogger(), "majPortesASwitch" };
+
     // Pour chaque porte à switch, on regarde pour tous ses interrupteurs s'il y a un npc dessus
     for (auto& pair : c.getPortes()) {
         Porte& porte = pair.second;
@@ -348,7 +348,7 @@ int GameManager::getNpcIdAtTileId(int tileId) {
         if (npc.getTileId() == tileId)
             return npc.getId();
     }
-    log("Mauvaise utilisation de la fonction getNpcIdAtTileId() !");
+    LOG("Mauvaise utilisation de la fonction getNpcIdAtTileId() !");
 }
 map<int, Npc>& GameManager::getNpcs() {
    return npcs;
@@ -359,46 +359,31 @@ void GameManager::addNpc(Npc npc) {
    npcs[npc.getId()] = npc;
 }
 
-void GameManager::reafecterObjectifsSelonDistance() {
-   // Tant que l'on fait des modifications on continue ...
-   stringstream ss;
-   bool continuer = true;
-   int k = 0;
-   int kmax = 20;
+void GameManager::reaffecterObjectifsSelonDistance() {
+    ProfilerDebug profiler{ GameManager::getLogger(), "REAFECTER OBJECTIFS SELON DISTANCE" };
+    ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "reaffecterObjectifsSelonDistance" };
+    // Tant que l'on fait des modifications on continue ...
+    bool continuer = true;
+    int k = 0;
+    int kmax = 20;
     while (continuer) {
         continuer = false;
 
-        // Pour toutes les pair de npc
         for (auto& npcPair : npcs) {
             Npc& npc = npcPair.second;
             for (auto& autreNpcPair : npcs) {
                 Npc& autreNpc = autreNpcPair.second;
+                int objectifActuelNpc = npc.getChemin().empty() ? npc.getTileId() : npc.getChemin().destination();
 
-                int objectifNpc = npc.getChemin().empty() ? npc.getTileId() : npc.getChemin().destination();
-                int objectifAutreNpc = autreNpc.getChemin().empty() ? autreNpc.getTileId() : autreNpc.getChemin().destination();
-                int tempsMaxChemins = max(npc.getChemin().distance(), autreNpc.getChemin().distance());
+                if (npc.getId() != autreNpc.getId() && permutationUtile(npc, autreNpc)) {
+                    int objectifAutreNpc = autreNpc.getChemin().empty() ? autreNpc.getTileId() : autreNpc.getChemin().destination();
+                    profiler << "Npc " << npc.getId() << " et Npc " << autreNpc.getId() << " echangent leurs objectifs !";
+                    profiler << "Npc " << npc.getId() << " vers " << objectifAutreNpc << " et " << "Npc " << autreNpc.getId() << " vers " << objectifActuelNpc << std::endl;
 
-                // Si les npcs sont différents
-                if (npc.getId() != autreNpc.getId()) {
+                    npc.getChemin() = c.aStar(npc.getTileId(), objectifAutreNpc, npc.getId(), *this);
+                    autreNpc.getChemin() = c.aStar(autreNpc.getTileId(), objectifActuelNpc, autreNpc.getId(), *this);
 
-                    // Si l'interversion des objectifs est bénéfique pour l'un des deux et ne coûte rien à l'autre (ou lui est aussi bénéfique)
-                    // Déjà on vérifie que l'intervertion est "possible"
-                    if (npc.isAccessibleTile(objectifAutreNpc) 
-                        && autreNpc.isAccessibleTile(objectifNpc)) {
-
-                        //if (max(m.distanceHex(npc.getTileId(), objectifAutreNpc), m.distanceHex(autreNpc.getTileId(), objectifNpc))) {
-                        // Ensuite que c'est rentable
-                        if (max(npc.distanceToTile(objectifAutreNpc), autreNpc.distanceToTile(objectifNpc)) < tempsMaxChemins) {
-
-                            // Alors on intervertit !                           
-                            ss.clear();
-                            ss << "Npc " << npc.getId() << " et Npc " << autreNpc.getId() << " échangent leurs objectifs !" << std::endl;
-                            GameManager::log(ss.str());
-                            npc.getChemin() = c.aStar(npc.getTileId(), objectifAutreNpc, npc.getId(), *this);
-                            autreNpc.getChemin() = c.aStar(autreNpc.getTileId(), objectifNpc, autreNpc.getId(), *this);
-                            continuer = true; // Et on devra continuer pour vérifier que cette intervertion n'en a pas entrainé de nouvelles !
-                        }
-                    }
+                    continuer = true; // Et on devra continuer pour vérifier que cette intervertion n'en a pas entrainé de nouvelles !
                 }
             }
         }
@@ -408,9 +393,11 @@ void GameManager::reafecterObjectifsSelonDistance() {
 }
 
 void GameManager::affecterContraintes() noexcept {
+    ProfilerDebug profiler{ GameManager::getLogger(), "AFFECTER CONTRAINTES" };
+    ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "affecterContraintes" };
     for (auto pair : npcs) {
         Npc npc = pair.second;
-        GameManager::log("Npc " + to_string(npc.getId()) + " veut aller en " + to_string(npc.getChemin().destination()));
+        profiler << "Npc " << npc.getId() << " veut aller en " << npc.getChemin().destination() << endl;
     }
 
     // On va clean les contraintes non résolues qui trainent
@@ -446,7 +433,7 @@ void GameManager::affecterContraintes() noexcept {
     //        if (it != npcsSelonTailleChemin.end())
     //            npcsSelonTailleChemin.erase(it);
     //        else
-    //            GameManager::log("Erreur pas normal ! x)");
+    //            LOG("Erreur pas normal ! x)");
     //    }
     //}
 }
@@ -457,3 +444,37 @@ void GameManager::cleanContraintes() noexcept {
         npc.getChemin().cleanContraintes();
     }
 }
+
+
+void GameManager::refreshFloodfill() {
+   ProfilerDebug profiler{ GameManager::getLogger(), "refreshFloodfill" };
+
+   ThreadPool workers;
+
+   for (auto &npc : npcs) {
+      //npc.second.floodfill(c);
+      std::thread th{
+         [&npc](GameManager& gm) {
+            npc.second.floodfill(gm);
+         }
+         , std::ref(*this)
+      };
+      workers.addThread(std::move(th));
+   }
+   workers.joinAll();
+}
+
+bool GameManager::permutationUtile(Npc& npc1, Npc& npc2) {
+   int objectifNpc1 = npc1.getChemin().empty() ? npc1.getTileId() : npc1.getChemin().destination();
+   int objectifNpc2 = npc2.getChemin().empty() ? npc2.getTileId() : npc2.getChemin().destination();
+   int tempsMaxChemins = max(npc1.getChemin().distance(), npc2.getChemin().distance());
+
+   // Si l'interversion des objectifs est possible et benefique pour l'un deux et ne coute rien a l'autre (ou lui est aussi benefique)
+   return npc1.isAccessibleTile(objectifNpc2) && npc2.isAccessibleTile(objectifNpc1) && (max(npc1.distanceToTile(objectifNpc2), npc2.distanceToTile(objectifNpc1)) < tempsMaxChemins);
+}
+
+void GameManager::execute() noexcept { 
+   ProfilerDebug profiler{ GameManager::getLogger(), "EXECUTE" }; 
+   ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "execute" };
+   behaviorTreeManager.execute(); 
+};

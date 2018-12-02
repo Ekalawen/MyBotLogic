@@ -31,13 +31,13 @@ int Chemin::distance() const noexcept {
                         ralentissementMax = ralentissement;
                     }
                 } else {
-                    //GameManager::log("Appel de distance sur un chemin avec des contraintes non-résolues !");
+                    //LOG("Appel de distance sur un chemin avec des contraintes non-résolues !");
                 }
             }
             return static_cast<int>(chemin.size()) + ralentissementMax;
         }
     } else {
-        GameManager::log("Distance appelée sur un chemin inacessible !");
+        LOG("Distance appelée sur un chemin inacessible !");
         exit(0);
         //return -1;
     }
@@ -47,7 +47,7 @@ int Chemin::distanceBrute() const noexcept {
     if (!inaccessible) {
             return static_cast<int>(chemin.size());
     } else {
-        GameManager::log("Distance appelée sur un chemin inacessible !");
+        LOG("Distance appelée sur un chemin inacessible !");
         exit(0);
         //return -1;
     }
@@ -58,7 +58,7 @@ int Chemin::destination() const noexcept {
       return chemin[0];
    }
    else {
-      GameManager::log("Attention, on essaye de récupérer la destination d'un chemin vide !");
+      LOG("Attention, on essaye de récupérer la destination d'un chemin vide !");
       return -1;
    }
 }
@@ -155,18 +155,18 @@ vector<int> Chemin::affecterContraintes(int npcAffecte, GameManager& gm) {
         // On vérifie que la contrainte est déjà résolue !
         if (!contrainte.estResolue()) {
             estApplicable = false;
-            GameManager::log("Erreur ! Des contraintes n'ont pas étés résolues !");
+            LOG("Erreur ! Des contraintes n'ont pas étés résolues !");
         }
 
         // On vérifie que le npc est dispo
         if (contrainte.getNpcAssocie() == npcAffecte) {
             estApplicable = false;
-            GameManager::log("Erreur ! J'ai fais n'imp !");
+            LOG("Erreur ! J'ai fais n'imp !");
         }
 
         // Si c'est bon alors on applique la première contrainte
         if (estApplicable) {
-            GameManager::log("Contrainte affectée au Npc " + to_string(contrainte.getNpcAssocie()) + " par le Npc " + to_string(npcAffecte) + " où il faut aller en " + to_string(contrainte.getCheminAssocie()->destination()));
+            LOG("Contrainte affectée au Npc " + to_string(contrainte.getNpcAssocie()) + " par le Npc " + to_string(npcAffecte) + " où il faut aller en " + to_string(contrainte.getCheminAssocie()->destination()));
             gm.getNpcById(contrainte.getNpcAssocie()).setChemin(*contrainte.getCheminAssocie());
             npcNecessaires.push_back(contrainte.getNpcAssocie());
 
@@ -185,7 +185,7 @@ vector<int> Chemin::affecterContraintes(int npcAffecte, GameManager& gm) {
     //    // On vérifie que la contrainte est déjà résolue !
     //    if (!contrainte.estResolue()) {
     //        sontApplicables = false;
-    //        GameManager::log("Erreur ! Des contraintes n'ont pas étés résolues !");
+    //        LOG("Erreur ! Des contraintes n'ont pas étés résolues !");
     //        break;
     //    }
 

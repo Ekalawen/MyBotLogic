@@ -8,10 +8,9 @@
 #include "Chemin.h"
 #include "LevelInfo.h"
 #include "ObjectInfo.h"
-#include "Contrainte.h"
-#include <map>
-#include <vector>
+#include "Porte.h"
 using std::vector;
+using std::map;
 
 class tile_inexistante {};
 class porte_inexistante {};
@@ -22,20 +21,20 @@ class Carte {
     int rowCount;
     int colCount;
     int nbTilesDecouvertes;
-    std::vector<MapTile> tiles;
+    vector<MapTile> tiles;
 
-    std::vector<unsigned int> objectifs;
+    vector<unsigned int> objectifs;
 
-    std::map<unsigned int, ObjectInfo> murs;
-    std::map<int, Porte> portes;
-    std::map<unsigned int, ObjectInfo> fenetres;
-    std::map<unsigned int, Activateur> activateurs;
+    map<unsigned int, ObjectInfo> murs;
+    map<int, Porte> portes;
+    map<unsigned int, ObjectInfo> fenetres;
+    map<unsigned int, Activateur> activateurs;
 
 public:
     Carte() = default;
     Carte(const LevelInfo&);
     bool isInMap(const int idTile) const noexcept;
-    std::vector<unsigned int> getObjectifs() const noexcept;
+    vector<unsigned int> getObjectifs() const noexcept;
 
     Chemin aStar(const int depart, const int arrivee, int npcActif, GameManager& gm, const vector<Contrainte>& contraintesDejaNecessaires = vector<Contrainte>{}) const noexcept;
     //Chemin aStar(const int depart, const int arrivee, GameManager& gm, const vector<int>& npcsOccupesIds = vector<int>{}, vector<Contrainte>& contraintesNecessaires = vector<Contrainte>{}) const noexcept; // Renvoie le chemin à parcourir pour aller du départ à l'arrivée
@@ -60,13 +59,13 @@ public:
     MapTile& getTile(const int id);
     const MapTile& getTile(const int id) const;
 
-    std::vector<unsigned int> getObjectifs();
-    std::map<unsigned int, ObjectInfo> getMurs();
-    std::map<int, Porte>& getPortes();
+    vector<unsigned int> getObjectifs();
+    map<unsigned int, ObjectInfo> getMurs();
+    map<int, Porte>& getPortes();
     Porte getPorte(const int id) const noexcept;
     Porte& getPorte(const int tileIdVoisine1, const int tileIdVoisine2);
-    std::map<unsigned int, ObjectInfo> getFenetres();
-    std::map<unsigned int, Activateur> getActivateurs() const noexcept;
+    map<unsigned int, ObjectInfo> getFenetres();
+    map<unsigned int, Activateur> getActivateurs() const noexcept;
     bool isKnownActivateur(const int activateurId) const noexcept;
     bool isActivateurUnderTileId(const int tileId) const noexcept;
 

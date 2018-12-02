@@ -6,12 +6,16 @@
 #include "Voisin.h"
 #include "Porte.h"
 #include "Noeud.h"
+#include "MyBotLogic/Tools/Profiler.h"
 
 #include <algorithm>
 #include <chrono>
 #include <sstream>
+
 using std::stringstream;
 using std::max;
+using std::vector;
+using std::endl;
 
 Carte::Carte(const LevelInfo& _levelInfo) :
     rowCount{ _levelInfo.rowCount },
@@ -53,25 +57,35 @@ vector<unsigned int> Carte::getObjectifs() const noexcept {
 // Par défaut sa valeur est 1. Si on l'augmente l'algorithme ira plus vite au détriment de trouver un chemin optimal.
 // Si on le diminue l'algorithme se rapproche de plus en plus d'un parcours en largeur.
 Chemin Carte::aStar(const int depart, const int arrivee, int npcActif, GameManager& gm, const vector<Contrainte>& contraintesDejaNecessaires) const noexcept {
+    // CA COMMENCE ICI
     Noeud::coefEvaluation = 1.f;
     // On crée nos liste et notre noeud courrant
     vector<Noeud> closedList{};
     vector<Noeud> openList{};
-    Noeud noeudCourant = Noeud(tiles[depart], 0, distanceL2(depart, arrivee), depart);
     Chemin path;
     vector<Contrainte> allContraintes{};
+
+    // On rajoute le noeud courant
+    Noeud noeudCourant{ tiles[depart], 0, distanceL2(depart, arrivee), -1 };
+    openList.reserve(tiles.size());
+    openList.push_back(noeudCourant);
 
     // Il nous faut ajouter toutes les contraintes déjà nécessaires à notre chemin !
     for (Contrainte contrainte : contraintesDejaNecessaires)
         path.addContrainte(contrainte);
 
-    // On ajoute le noeud initial
-    openList.push_back(noeudCourant);
     // Tant qu'il reste des noeuds à traiter ...
-    while (!openList.empty() && noeudCourant.tile.getId() != arrivee) {
-        // On récupère le premier noeud de notre liste
+    while (!openList.empty()) {
+
+        const int noeudIndex = openList.size() - 1;
         noeudCourant = openList.back();
-        openList.pop_back();
+        // On ne fait pas popback ?
+
+        if (noeudCourant.tile.getId() == arrivee) {
+            closedList.push_back(noeudCourant);
+            break;
+        }
+
         // Pour tous les voisins du noeud courant ...
         for (int tileVoisineID : noeudCourant.tile.getVoisinsIDParEtat(Etats::ACCESSIBLE)) {
             // On vérifie que le voisin existe ...
@@ -93,22 +107,26 @@ Chemin Carte::aStar(const int depart, const int arrivee, int npcActif, GameManag
                     //    });
                     //}
                     //if (!npcsOccupesIds.empty() || it == contraintesNecessaires.end()) {
-                        doorOk = voisinTile.canPassDoor(tileVoisineID, npcActif, noeudCourant.tile.getId(), gm, tempsAvantOuverture, contraintesForPassingDoor);
-                        if (doorOk)
-                            allContraintes.insert(allContraintes.end(), contraintesForPassingDoor.begin(), contraintesForPassingDoor.end());
+                    doorOk = voisinTile.canPassDoor(tileVoisineID, npcActif, noeudCourant.tile.getId(), gm, tempsAvantOuverture, contraintesForPassingDoor);
+                    if (doorOk) {
+                        allContraintes.insert(allContraintes.end(), contraintesForPassingDoor.begin(), contraintesForPassingDoor.end());
+                    }
                     //} else {
                     //    doorOk = false;
                     //}
                 }
 
-                //// On vérifie que on peut passer par les portes ici qui gêneront !
-                //// TODO !
-                //int nbToursAvantOuverture = 0;
-                //if (!getTile(noeudCourant.tile.getId()).hasClosedDoorSwitch(voisinID, *this) // On vérifie qu'il n'y a pas de porte à switch devant
-                //    || getTile(noeudCourant.tile.getId()).getContrainte(voisinID, *this).isSolvableWithout(npcsOccupesIds, gm, nbToursAvantOuverture)) { // Où qu'elle n'est pas génante !
-
                 // On construit le nouveau noeud
-                if(doorOk) {
+                if (doorOk) {
+
+                    // VERIFIER SI C'EST PLUS OPTI QUE LE FIND
+                    //const auto recherche = [&noeudCourant](const Noeud& n) {
+                    //    return n.tile.getId() == noeudCourant.tile.getId();
+                    //};
+
+                    //auto closedIt = std::find_if(closedList.begin(), closedList.end(), recherche);
+                    //auto openIt = std::find_if(openList.begin(), openList.end(), recherche);
+
                     int nouveauCout = std::max(static_cast<int>(noeudCourant.cout + 1), tempsAvantOuverture);
                     Noeud nouveauNoeud = Noeud(tiles[tileVoisineID], nouveauCout, distanceL2(tileVoisineID, arrivee), noeudCourant.tile.getId());
                     // On vérifie s'il existe dans closedList avec un cout inférieur ou dans openList avec un cout inférieur
@@ -127,19 +145,22 @@ Chemin Carte::aStar(const int depart, const int arrivee, int npcActif, GameManag
                         }
                     }
                     else {
-                        GameManager::log("OMG On a fait n'imp !");
+                        LOG("OMG On a fait n'imp !");
                     }
                 }
             }
         }
-        // On trie notre openList pour que le dernier soit le meilleur !
-        // Donc celui qui minimise et le cout, et l'évaluation !
-        sort(openList.begin(), openList.end(), [](const Noeud a, const Noeud b) {
-            return a.heuristique > b.heuristique; // Par ordre décroissant
-        });
 
-        // On ferme notre noeud
         closedList.push_back(noeudCourant);
+        std::swap(openList[noeudIndex], openList.back());
+        openList.pop_back();
+
+        if (!openList.empty()) {
+            auto plusPetitIt = std::min_element(openList.begin(), openList.end(), [](const Noeud& nL, const Noeud& nR) {
+                return nL.heuristique < nR.heuristique;
+            });
+            std::swap(*plusPetitIt, openList.back());
+        }
     }
 
     // On test si on a atteint l'objectif ou pas
@@ -172,12 +193,9 @@ Chemin Carte::aStar(const int depart, const int arrivee, int npcActif, GameManag
                     break;
                 }
             }
-
         }
-
     }
     else {
-        // Si non le path est inaccessible !
         path.setInaccessible();
     }
 
@@ -228,7 +246,7 @@ Tile::ETilePosition Carte::getDirection(const int ind1, const int ind2) const no
         }
     }
 
-    GameManager::log("Erreur dans l'appel de getDirection() !");
+    LOG("Erreur dans l'appel de getDirection() !");
     return Tile::CENTER;
 }
 
@@ -344,7 +362,7 @@ void Carte::addTile(const TileInfo& tile) noexcept {
     // On le note !
     stringstream ss;
     ss << "Decouverte de la tile " << tile.tileID;
-    GameManager::log(ss.str());
+    LOG(ss.str());
 }
 
 // Il ne faut pas ajouter un objet qui est déjà dans la map !
@@ -428,7 +446,7 @@ void Carte::addObject(const ObjectInfo& object) noexcept {
 
     stringstream ss;
     ss << "Decouverte de l'objet " << object.objectID << " sur la tuile " << object.tileID << " orienté en " << object.position;
-    GameManager::log(ss.str());
+    LOG(ss.str());
 }
 
 void Carte::presumerConnu(const int idTile) noexcept {
@@ -439,7 +457,7 @@ void Carte::presumerConnu(const int idTile) noexcept {
         // On le note !
         stringstream ss;
         ss << "Présomption de connaissance de la tile " << idTile;
-        GameManager::log(ss.str());
+        LOG(ss.str());
     }
 }
 

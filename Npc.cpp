@@ -6,11 +6,14 @@
 #include "Noeud.h"
 #include <chrono>
 #include "MyBotLogic/Tools/Minuteur.h"
+#include "MyBotLogic/Tools/Profiler.h"
+
 #include <algorithm>
 #include <sstream>
 #include <vector>
 #include <memory>
 
+using namespace std;
 using std::stringstream;
 using std::vector;
 using std::to_string;
@@ -47,56 +50,53 @@ Chemin Npc::getCheminMinNonPris(const vector<int>& objectifsPris, const int tail
     cheminMin.setInaccessible();
     int distMin = tailleCheminMax;
 
-    for (int i = 0; i < cheminsPossibles.size(); ++i) {
-        Chemin chemin = cheminsPossibles[i];
-        // Si le chemin n'est pas déjà pris et qu'il est plus court !
-		int destination = (chemin.empty()) ? tileId : chemin.destination(); // si le npc est déjà arrivé il reste là
-        if (chemin.isAccessible()
-        && chemin.distance() < distMin
-        && (objectifsPris.empty() || find(objectifsPris.begin(), objectifsPris.end(), destination) == objectifsPris.end())) {
-            cheminMin = chemin;
-            distMin = chemin.distance();
-        }
-    }
+   for (int i = 0; i < cheminsPossibles.size(); ++i) {
+      Chemin cheminTrouve = cheminsPossibles[i];
+      // Si le chemin n'est pas deja pris et qu'il est plus court !
+      int destination = (cheminTrouve.empty()) ? tileId : cheminTrouve.destination(); // si le npc est deja arrive il reste la
+      if (cheminTrouve.isAccessible()
+         && cheminTrouve.distance() < distMin
+         && (objectifsPris.empty() || find(objectifsPris.begin(), objectifsPris.end(), destination) == objectifsPris.end())) {
+         cheminMin = cheminTrouve;
+         distMin = cheminTrouve.distance();
+      }
+   }
 
     return cheminMin;
 
 }
 
+Scores::iterator Npc::chercherMeilleurScore(Scores& _scores) {
+   ProfilerDebug profiler{ GameManager::getLogger(), "chercherMeilleurScore", false};
+
+   return max_element(begin(_scores), end(_scores),
+      [](const ScoreType& scoreDroite, const ScoreType& scoreGauche) {
+      return scoreDroite.score < scoreGauche.score;
+   });
+}
+
 int Npc::affecterMeilleurChemin(GameManager& gm) noexcept {
-    stringstream ss;
+   ProfilerDebug profiler{ GameManager::getLogger(), "affecterMeilleurChemin", false};
 
-    if (scoresAssocies.empty()) {
-        // Dans ce cas-là on reste sur place !
-        chemin = Chemin{};
-        ss << "Le Npc " << id << " n'a rien a rechercher et reste sur place !";
-        GameManager::log(ss.str());
-        return tileId;
-    }
-	
-    // On cherche le meilleur score
-    auto preScore = std::chrono::high_resolution_clock::now();
-    auto bestIter = std::max_element(begin(scoresAssocies), end(scoresAssocies),
-        [](const ScoreType& scoreDroite, const ScoreType& scoreGauche){
-            return scoreDroite.score < scoreGauche.score;
-        });
-    auto postScore = std::chrono::high_resolution_clock::now();
-    ss << "Durée chercher meilleur score = " << std::chrono::duration_cast<std::chrono::microseconds>(postScore - preScore).count() / 1000.f << "ms" <<std::endl;
+   if (scoresAssocies.empty()) {
+      // Dans ce cas-la on reste sur place !
+      chemin = Chemin{};
+      profiler << "Le Npc " << id << " n'a rien a rechercher et reste sur place !";
+      return tileId;
+   }
 
-    // On affecte son chemin, mais il nous faut le calculer ! =)
-    auto preAStar = std::chrono::high_resolution_clock::now();
-    chemin = gm.c.aStar(tileId, bestIter->tuileID, getId(), gm);
-    auto postAStar = std::chrono::high_resolution_clock::now();
+   // On cherche le meilleur score
+   auto bestIter = chercherMeilleurScore(scoresAssocies);
 
-    ss << "Le Npc " << to_string(id) << " va rechercher la tile " << chemin.destination() << std::endl;
-    ss << "Durée a* = " << std::chrono::duration_cast<std::chrono::microseconds>(postAStar - preAStar).count() / 1000.f << "ms" << std::endl;
-    GameManager::log(ss.str());
-
+   // On affecte son chemin, mais il nous faut le calculer ! =)
+   chemin = gm.c.aStar(tileId, bestIter->tuileID, getId(), gm);
+   profiler << "Le Npc " << to_string(id) << " va rechercher la tile " << chemin.destination() << endl;
     // On renvoie la destination
     return chemin.destination();
 }
 
 void Npc::floodfill(GameManager& gm) {
+   ProfilerDebug profiler{ GameManager::getLogger(), "floodfill NPC " + to_string(getId()) };
     ensembleAccessible.clear();
 
     vector<Noeud> fermees;
@@ -142,23 +142,23 @@ void Npc::floodfill(GameManager& gm) {
                         }
                     }
                     else {
-                        GameManager::log("Problème dans le floodfill !");
+                        LOG("Problème dans le floodfill !");
                     }
                 }
             }
         }
 
-        // Donc celui qui minimise et le cout, et l'évaluation !
+        // Donc celui qui minimise et le cout, et l'evaluation !
         //sort(ouverts.begin(), ouverts.end(), [](const Noeud a, const Noeud b) {
-            //return a.cout > b.cout; // Par ordre décroissant
+            //return a.cout > b.cout; // Par ordre decroissant
         //});
 
         fermees.push_back(courant);
     }
 
-    // On copie les fermées dans ensembleAccessible
+    // On copie les fermees dans ensembleAccessible
     for (auto noeud : fermees) {
-        ensembleAccessible.emplace_back(noeud.tile.getId(), noeud.cout);
+        ensembleAccessible.emplace_back(noeud.tile.getId(), static_cast<int>(noeud.cout));
     }
 
     //ensembleAccessible.clear();
@@ -167,16 +167,16 @@ void Npc::floodfill(GameManager& gm) {
     //vector<int> newOpen { tileId };
 
     //int cout = 0;
-    //// Tant qu'il reste des noeuds à traiter ...
+    //// Tant qu'il reste des noeuds ï¿½ traiter ...
     //while (!newOpen.empty()) {
     //    oldOpen = newOpen;
     //    newOpen = vector<int>();
-    //    // On regarde les voisins des dernieres tuiles ajoutées
+    //    // On regarde les voisins des dernieres tuiles ajoutï¿½es
     //    for (int tileID : oldOpen) {
     //        for (auto voisinID : c.getTile(tileID).getVoisinsIDParEtat(Etats::ACCESSIBLE)) {
     //            // Si elle est connu
     //            if (c.getTile(voisinID).existe()) {
-    //                // Si elle n'est pas déjà ajouté
+    //                // Si elle n'est pas dï¿½jï¿½ ajoutï¿½
     //                if (find_if(ensembleAccessible.begin(), ensembleAccessible.end(), [&voisinID](const DistanceType& type) {
     //                    return type.tuileID == voisinID; }) == ensembleAccessible.end()) {
     //                    // On l'ajoute comme nouvelle tuile ouverte
@@ -185,7 +185,7 @@ void Npc::floodfill(GameManager& gm) {
     //            }
     //        }
 
-    //        // On définit les dernières tuiles ajoutés avec leur coût courant
+    //        // On dï¿½finit les derniï¿½res tuiles ajoutï¿½s avec leur coï¿½t courant
     //        if (find_if(ensembleAccessible.begin(), ensembleAccessible.end(), [&](const DistanceType& type) {
     //            return type.tuileID == tileID; }) == ensembleAccessible.end()) {
     //            ensembleAccessible.emplace_back(tileID, cout);
@@ -229,7 +229,7 @@ bool Npc::isAccessibleTile(const int _tuileID) const noexcept {
    }) != end(ensembleAccessible);
 }
 
-int Npc::distanceToTile(const int _tuileID) {
+int Npc::distanceToTile(const int _tuileID) const {
    if (!isAccessibleTile(_tuileID))
       throw tile_inaccessible{};
 
