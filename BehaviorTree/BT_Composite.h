@@ -1,5 +1,6 @@
 #ifndef BT_COMPOSITE_H
 #define BT_COMPOSITE_H
+
 #include "BT_Noeud.h"
 
 #include <vector>

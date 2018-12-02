@@ -1,6 +1,7 @@
 
 #include "Expedition.h"
 #include "MyBotLogic/MapTile.h"
+#include "../GameManager.h"
 
 #include <string>
 #include <vector>

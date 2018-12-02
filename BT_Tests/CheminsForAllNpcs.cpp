@@ -1,6 +1,7 @@
 #include "CheminsForAllNpcs.h"
 #include "../BehaviorTree/BT_Noeud.h"
 #include "MyBotLogic/Tools/Minuteur.h"
+#include "../GameManager.h"
 
 #include <sstream>
 #include <vector>

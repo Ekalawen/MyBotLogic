@@ -86,6 +86,8 @@ MyBotLogic::MyBotLogic() :
     // On définit notre stratégie en exécutant notre arbre de comportement
     pre = Minuteur::now();
     manager.execute();
+    manager.reafecterObjectifsSelonDistance();
+    manager.affecterContraintes();
     post = Minuteur::now();
     ss << "Durée Execute = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms" << endl;
     

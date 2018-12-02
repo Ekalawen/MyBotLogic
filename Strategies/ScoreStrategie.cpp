@@ -47,7 +47,7 @@ BT_Noeud::ETAT_ELEMENT ScoreStrategie::execute() noexcept {
 
       // Choisir la meilleure tile pour ce npc et lui affecter son chemin
       auto preAffect = Minuteur::now();
-      int tileChoisi = npc.affecterMeilleurChemin(manager.c);
+      int tileChoisi = npc.affecterMeilleurChemin(manager);
       auto postAffect = Minuteur::now();
       ss << "Durée AffectationChemin = " << Minuteur::dureeMicroseconds(preAffect, postAffect) / 1000.f << "ms" << endl;
 
@@ -66,7 +66,7 @@ BT_Noeud::ETAT_ELEMENT ScoreStrategie::execute() noexcept {
 void ScoreStrategie::calculerScore1Tile(int _tileID, Carte& _carte, Npc& _npc, const vector<int>& _tilesAVisiter) {
    MapTile tile = _carte.getTile(_tileID);
    // On ne considère la tile que si on ne la visite pas déjà !
-   if (tile.getStatut() == MapTile::Statut::CONNU && find(_tilesAVisiter.begin(), _tilesAVisiter.end(), tile.getId()) == _tilesAVisiter.end()) {
+   if ((tile.getStatut() == MapTile::Statut::CONNU || tile.getStatut() == MapTile::Statut::PRESUME_CONNU) && find(_tilesAVisiter.begin(), _tilesAVisiter.end(), tile.getId()) == _tilesAVisiter.end()) {
       saveScore(tile, _npc, _tilesAVisiter);
    }
 }

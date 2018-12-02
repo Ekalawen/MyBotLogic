@@ -2,8 +2,8 @@
 #define OBJECTIFS_FOR_ALL_NPCS_H
 
 #include "MyBotLogic/BehaviorTree/BT_Feuille.h"
-#include "../GameManager.h"
 
+class GameManager;
 class ObjectifsForAllNpcs : public BT_Feuille {
    GameManager& gm;
 public:

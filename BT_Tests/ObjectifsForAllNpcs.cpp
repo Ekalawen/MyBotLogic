@@ -1,5 +1,6 @@
 #include "ObjectifsForAllNpcs.h"
 #include "../BehaviorTree/BT_Noeud.h"
+#include "../GameManager.h"
 
 BT_Noeud::ETAT_ELEMENT ObjectifsForAllNpcs::execute() noexcept {
     GameManager::log("ObjectifsForAllNpcs");

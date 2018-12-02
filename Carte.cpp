@@ -52,13 +52,18 @@ vector<unsigned int> Carte::getObjectifs() const noexcept {
 // Il s'agit de l'algorithme AStar auquel on peut rajouter un coefficiant à l'évaluation pour modifier l'heuristique.
 // Par défaut sa valeur est 1. Si on l'augmente l'algorithme ira plus vite au détriment de trouver un chemin optimal.
 // Si on le diminue l'algorithme se rapproche de plus en plus d'un parcours en largeur.
-Chemin Carte::aStar(const int depart, const int arrivee, const float coefEvaluation) const noexcept {
-    Noeud::coefEvaluation = coefEvaluation;
+Chemin Carte::aStar(const int depart, const int arrivee, int npcActif, GameManager& gm, const vector<Contrainte>& contraintesDejaNecessaires) const noexcept {
+    Noeud::coefEvaluation = 1.f;
     // On crée nos liste et notre noeud courrant
     vector<Noeud> closedList{};
     vector<Noeud> openList{};
     Noeud noeudCourant = Noeud(tiles[depart], 0, distanceL2(depart, arrivee), depart);
     Chemin path;
+    vector<Contrainte> allContraintes{};
+
+    // Il nous faut ajouter toutes les contraintes déjà nécessaires à notre chemin !
+    for (Contrainte contrainte : contraintesDejaNecessaires)
+        path.addContrainte(contrainte);
 
     // On ajoute le noeud initial
     openList.push_back(noeudCourant);
@@ -68,28 +73,62 @@ Chemin Carte::aStar(const int depart, const int arrivee, const float coefEvaluat
         noeudCourant = openList.back();
         openList.pop_back();
         // Pour tous les voisins du noeud courant ...
-        for (auto voisinID : noeudCourant.tile.getVoisinsIDParEtat(Etats::ACCESSIBLE)) {
+        for (int tileVoisineID : noeudCourant.tile.getVoisinsIDParEtat(Etats::ACCESSIBLE)) {
             // On vérifie que le voisin existe ...
-            if (tiles[voisinID].existe()) {
-                // On construit le nouveau noeud
-                Noeud nouveauNoeud = Noeud(tiles[voisinID], noeudCourant.cout + 1, distanceL2(voisinID, arrivee), noeudCourant.tile.getId());
-                // On vérifie s'il existe dans closedList avec un cout inférieur ou dans openList avec un cout inférieur
-                auto itClose = find(closedList.begin(), closedList.end(), nouveauNoeud);
-                auto itOpen = find(openList.begin(), openList.end(), nouveauNoeud);
+            MapTile& voisinTile = gm.c.getTile(noeudCourant.tile.getId());
+            if (voisinTile.existe()) {
 
-                if (itClose == closedList.end() && itOpen == openList.end()) {
-                    openList.push_back(nouveauNoeud);
+                // On vérifie que l'on peut passer à travers nos portes
+                bool doorOk = true;
+                int tempsAvantOuverture = 0;
+                vector<Contrainte> contraintesForPassingDoor = contraintesDejaNecessaires;
+                if (voisinTile.hasDoor(tileVoisineID, gm.c)) {
+                    // On vérifie que on a pas déjà essayé de faire cette contrainte !
+                    //vector<Contrainte>::iterator it;
+                    //if (!npcsOccupesIds.empty()) {
+                    //     it = find_if(contraintesNecessaires.begin(), contraintesNecessaires.end(), [caseAvant = noeudCourant.tile.getId(),
+                    //                                                                                 caseApres = voisinID,
+                    //                                                                                 npcId = npcsOccupesIds[0]](Contrainte& contrainte) { // Je fais le [0] car pour le moment la liste des npcsOccupes est toujours au maximum de taille 1
+                    //        return contrainte.getCaseAvantPorte() == caseAvant && contrainte.getCaseApresPorte() == caseApres && contrainte.getNpcAssocie() == npcId;
+                    //    });
+                    //}
+                    //if (!npcsOccupesIds.empty() || it == contraintesNecessaires.end()) {
+                        doorOk = voisinTile.canPassDoor(tileVoisineID, npcActif, noeudCourant.tile.getId(), gm, tempsAvantOuverture, contraintesForPassingDoor);
+                        if (doorOk)
+                            allContraintes.insert(allContraintes.end(), contraintesForPassingDoor.begin(), contraintesForPassingDoor.end());
+                    //} else {
+                    //    doorOk = false;
+                    //}
                 }
-                else if (itClose != closedList.end() && itOpen == openList.end()) {
-                    // Do nothing
-                }
-                else if (itClose == closedList.end() && itOpen != openList.end()) {
-                    if ((*itOpen).heuristique > nouveauNoeud.heuristique) {
-                        (*itOpen) = nouveauNoeud;
+
+                //// On vérifie que on peut passer par les portes ici qui gêneront !
+                //// TODO !
+                //int nbToursAvantOuverture = 0;
+                //if (!getTile(noeudCourant.tile.getId()).hasClosedDoorSwitch(voisinID, *this) // On vérifie qu'il n'y a pas de porte à switch devant
+                //    || getTile(noeudCourant.tile.getId()).getContrainte(voisinID, *this).isSolvableWithout(npcsOccupesIds, gm, nbToursAvantOuverture)) { // Où qu'elle n'est pas génante !
+
+                // On construit le nouveau noeud
+                if(doorOk) {
+                    int nouveauCout = std::max(static_cast<int>(noeudCourant.cout + 1), tempsAvantOuverture);
+                    Noeud nouveauNoeud = Noeud(tiles[tileVoisineID], nouveauCout, distanceL2(tileVoisineID, arrivee), noeudCourant.tile.getId());
+                    // On vérifie s'il existe dans closedList avec un cout inférieur ou dans openList avec un cout inférieur
+                    auto itClose = find(closedList.begin(), closedList.end(), nouveauNoeud);
+                    auto itOpen = find(openList.begin(), openList.end(), nouveauNoeud);
+
+                    if (itClose == closedList.end() && itOpen == openList.end()) {
+                        openList.push_back(nouveauNoeud);
                     }
-                }
-                else {
-                    GameManager::log("OMG On a fait n'imp !");
+                    else if (itClose != closedList.end() && itOpen == openList.end()) {
+                        // Do nothing
+                    }
+                    else if (itClose == closedList.end() && itOpen != openList.end()) {
+                        if ((*itOpen).heuristique > nouveauNoeud.heuristique) {
+                            (*itOpen) = nouveauNoeud;
+                        }
+                    }
+                    else {
+                        GameManager::log("OMG On a fait n'imp !");
+                    }
                 }
             }
         }
@@ -105,18 +144,35 @@ Chemin Carte::aStar(const int depart, const int arrivee, const float coefEvaluat
 
     // On test si on a atteint l'objectif ou pas
     if (noeudCourant.tile.getId() == arrivee) {
+
         // Si oui on reconstruit le path !
         while (noeudCourant.tile.getId() != depart) {
+
             // On enregistre dans le path ...
             path.addFirst(noeudCourant.tile.getId());
+
             // On cherche l'antécédant ...
-            for (auto n : closedList) {
+            for (Noeud n : closedList) {
                 if (n.tile.getId() == noeudCourant.idPrecedant) {
+
+                    // TODO : il faut récupérer les contraintes des aStars intermédiaire également ??
+
+                    // On regarde si on est passé par une contrainte !
+                    auto it = find_if(allContraintes.begin(), allContraintes.end(), [noeudCourant, n](const Contrainte& contrainte) {
+                        return (contrainte.getCaseAvantPorte() == noeudCourant.tile.getId() && contrainte.getCaseApresPorte() == n.tile.getId())
+                            || (contrainte.getCaseApresPorte() == noeudCourant.tile.getId() && contrainte.getCaseAvantPorte() == n.tile.getId());
+                    });
+                    // Si oui on ajoute nos contraintes à notre chemin !
+                    if (it != allContraintes.end()) {
+                        path.addContrainte(*it);
+                    }
+
                     // On remet à jour le noeud ...
                     noeudCourant = n;
                     break;
                 }
             }
+
         }
 
     }
@@ -329,11 +385,13 @@ void Carte::addObject(const ObjectInfo& object) noexcept {
         // On l'ajoute à ses voisins et on les sets comme existants, car les voisins d'une porte existent forcément !
         if (isInMap(voisin1)) {
             tiles[voisin1].addPorte(object.objectID);
-            tiles[voisin1].setStatut(MapTile::Statut::CONNU);
+            //tiles[voisin1].setStatut(MapTile::Statut::CONNU); // Attention ça c'est pas top top !
+            presumerConnu(voisin1);
         }
         if (isInMap(voisin2)) {
             tiles[voisin2].addPorte(object.objectID);
-            tiles[voisin2].setStatut(MapTile::Statut::CONNU);
+            //tiles[voisin2].setStatut(MapTile::Statut::CONNU); // Attention ça c'est pas top top !
+            presumerConnu(voisin2);
         }
         //Porte Ferme
         if (object.objectStates.find(Object::ObjectState_Closed) != object.objectStates.end()) {
@@ -361,9 +419,9 @@ void Carte::addObject(const ObjectInfo& object) noexcept {
             // Si la porte est ouverte et est accessible ET visible ! =)
         }
     }
+    // Activateur
     if (object.objectTypes.find(Object::ObjectType_PressurePlate) != object.objectTypes.end()) {
-        activateurs[object.objectID] = object;
-        // prout !
+        activateurs[object.objectID] = Activateur(object.objectID, object.tileID);
     }
 
     // On le note !
@@ -371,6 +429,18 @@ void Carte::addObject(const ObjectInfo& object) noexcept {
     stringstream ss;
     ss << "Decouverte de l'objet " << object.objectID << " sur la tuile " << object.tileID << " orienté en " << object.position;
     GameManager::log(ss.str());
+}
+
+void Carte::presumerConnu(const int idTile) noexcept {
+    // Si on ne la connaissais pas déjà
+    if (!tiles[idTile].existe()) {
+        tiles[idTile].presumerConnu();
+
+        // On le note !
+        stringstream ss;
+        ss << "Présomption de connaissance de la tile " << idTile;
+        GameManager::log(ss.str());
+    }
 }
 
 int Carte::getX(const int id) const noexcept {
@@ -415,7 +485,7 @@ map<unsigned int, ObjectInfo> Carte::getMurs() {
     return murs;
 }
 
-map<int, Porte> Carte::getPortes() {
+map<int, Porte>& Carte::getPortes() {
     return portes;
 }
 
@@ -436,8 +506,21 @@ map<unsigned int, ObjectInfo> Carte::getFenetres() {
     return fenetres;
 }
 
-map<unsigned int, ObjectInfo> Carte::getActivateurs() {
+map<unsigned int, Activateur> Carte::getActivateurs() const noexcept {
     return activateurs;
+}
+
+bool Carte::isKnownActivateur(const int activateurId) const noexcept {
+    return activateurs.find(activateurId) != activateurs.end();
+}
+
+bool Carte::isActivateurUnderTileId(const int tileId) const noexcept {
+    for (auto& pair : activateurs) {
+        Activateur activateur = pair.second;
+        if (activateur.getTileId() == tileId)
+            return true;
+    }
+    return false;
 }
 
 bool Carte::objectExist(const int objet) const noexcept {

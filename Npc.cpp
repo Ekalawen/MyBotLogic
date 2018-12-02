@@ -63,7 +63,7 @@ Chemin Npc::getCheminMinNonPris(const vector<int>& objectifsPris, const int tail
 
 }
 
-int Npc::affecterMeilleurChemin(const Carte& c) noexcept {
+int Npc::affecterMeilleurChemin(GameManager& gm) noexcept {
     stringstream ss;
 
     if (scoresAssocies.empty()) {
@@ -85,7 +85,7 @@ int Npc::affecterMeilleurChemin(const Carte& c) noexcept {
 
     // On affecte son chemin, mais il nous faut le calculer ! =)
     auto preAStar = std::chrono::high_resolution_clock::now();
-    chemin = c.aStar(tileId, bestIter->tuileID);
+    chemin = gm.c.aStar(tileId, bestIter->tuileID, getId(), gm);
     auto postAStar = std::chrono::high_resolution_clock::now();
 
     ss << "Le Npc " << to_string(id) << " va rechercher la tile " << chemin.destination() << std::endl;
@@ -96,35 +96,54 @@ int Npc::affecterMeilleurChemin(const Carte& c) noexcept {
     return chemin.destination();
 }
 
-void Npc::floodfill(const Carte& c) {
+void Npc::floodfill(GameManager& gm) {
     ensembleAccessible.clear();
 
     vector<Noeud> fermees;
     vector<Noeud> ouverts;
 
-    ouverts.push_back(Noeud(c.getTile(tileId), 0));
+    ouverts.push_back(Noeud(gm.c.getTile(tileId), 0));
 
     while (!ouverts.empty()) {
         Noeud courant = ouverts[0];
         ouverts.erase(ouverts.begin());
 
-        for (int voisin : courant.tile.getVoisinsIDParEtat(ACCESSIBLE)) {
-            if (c.getTile(voisin).existe()) {
-                int cout = !c.getTile(courant.tile.getId()).hasDoorPoigneeVoisin(voisin, c) ? 1 : 2; // Si il y a une porte à poignée c'est 2 fois plus long !
-                Noeud nouveau{ c.getTile(voisin), courant.cout + cout };
-                auto itFermee = find(fermees.begin(), fermees.end(), nouveau);
-                auto itOuvert = find(ouverts.begin(), ouverts.end(), nouveau);
+        for (int voisin : courant.tile.getVoisinsIDParEtat(ACCESSIBLE)) { // Pour chaque voisins du noeud courant
+            if (gm.c.getTile(voisin).existe()) { // Si le voisin existe
+                MapTile& voisinTile = gm.c.getTile(courant.tile.getId());
 
-                if (itFermee == fermees.end() && itOuvert == ouverts.end()) {
-                    ouverts.push_back(nouveau);
-                } else if (itFermee != fermees.end() && itOuvert == ouverts.end()) {
-                    // Do nothing
-                } else if (itFermee == fermees.end() && itOuvert != ouverts.end()) {
-                   if ((*itOuvert).cout > nouveau.cout) {
-                      (*itOuvert) = nouveau;
-                   }
-                } else {
-                    GameManager::log("Problème dans le floodfill !");
+                // On gère les potentielles portes
+                bool doorOk = true;
+                int tempsAvantOuverture = 0;
+                vector<Contrainte> contraintes{};
+                if (voisinTile.hasDoor(voisin, gm.c)) {
+                    doorOk = voisinTile.canPassDoor(voisin, { getId() }, courant.tile.getId(), gm, tempsAvantOuverture, contraintes);
+                }
+
+                //if (!voisinTile.hasClosedDoorSwitch(voisin, gm.c) // On vérifie qu'il n'y a pas de porte à switch devant
+                //    || voisinTile.getContrainte(voisin, gm.c).isSolvableWithout(vector<int>{getId()}, gm, cout)) { // Où qu'elle n'est pas génante !
+
+                // Si toutes les contraintes avec les portes sont favorables
+                if(doorOk) {
+                    int cout = std::max(!gm.c.getTile(courant.tile.getId()).hasDoorPoigneeVoisin(voisin, gm.c) ? 1 : 2, tempsAvantOuverture); // Si il y a une porte à poignée c'est 2 fois plus long !
+                    Noeud nouveau{ gm.c.getTile(voisin), courant.cout + cout };
+                    auto itFermee = find(fermees.begin(), fermees.end(), nouveau);
+                    auto itOuvert = find(ouverts.begin(), ouverts.end(), nouveau);
+
+                    if (itFermee == fermees.end() && itOuvert == ouverts.end()) {
+                        ouverts.push_back(nouveau);
+                    }
+                    else if (itFermee != fermees.end() && itOuvert == ouverts.end()) {
+                        // Do nothing
+                    }
+                    else if (itFermee == fermees.end() && itOuvert != ouverts.end()) {
+                        if ((*itOuvert).cout > nouveau.cout) {
+                            (*itOuvert) = nouveau;
+                        }
+                    }
+                    else {
+                        GameManager::log("Problème dans le floodfill !");
+                    }
                 }
             }
         }
@@ -194,6 +213,10 @@ void Npc::setTileObjectif(const int idTile) noexcept {
 
 Chemin& Npc::getChemin() noexcept {
    return chemin;
+}
+
+void Npc::setChemin(Chemin& _chemin) noexcept {
+    chemin = _chemin;
 }
 
 Distances& Npc::getEnsembleAccessible() noexcept {

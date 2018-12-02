@@ -1,8 +1,6 @@
 #ifndef EXPLORATION_H
 #define EXPLORATION_H
 
-#include "MyBotLogic/BehaviorTree/BT_Feuille.h"
-#include "MyBotLogic/GameManager.h"
 #include "MyBotLogic/Strategies/ScoreStrategie.h"
 
 #include <vector>
@@ -11,6 +9,9 @@
 using std::vector;
 using std::string;
 
+class MapTile;
+class Npc;
+class GameManager;
 class Exploration : public ScoreStrategie {
 public:
     void saveScore(const MapTile& tile, Npc& npc, const vector<int>& tilesAVisiter) const noexcept;

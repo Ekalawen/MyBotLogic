@@ -1,10 +1,10 @@
 #pragma once
 #include "Globals.h"
 #include "Npc.h"
-#include "Carte.h"
 #include <vector>
 using std::map;
 
+class Carte;
 class Mouvement {
 	int npcID;
 	int tileSource;

@@ -1,22 +1,23 @@
 #ifndef CARTE_H
 #define CARTE_H
 
-#include "LevelInfo.h"
-#include "TileInfo.h"
-#include "ObjectInfo.h"
-#include "Chemin.h"
+#include "Porte.h"
+#include "Activateur.h"
 #include "Npc.h"
-#include "MyBotLogic/MapTile.h"
+#include "MapTile.h"
+#include "Chemin.h"
+#include "LevelInfo.h"
+#include "ObjectInfo.h"
+#include "Contrainte.h"
 #include <map>
 #include <vector>
-#include "Porte.h"
+using std::vector;
 
 class tile_inexistante {};
 class porte_inexistante {};
 
-class MapTile;
-class Npc;
-class Porte;
+struct TileInfo;
+class GameManager;
 class Carte {
     int rowCount;
     int colCount;
@@ -28,7 +29,7 @@ class Carte {
     std::map<unsigned int, ObjectInfo> murs;
     std::map<int, Porte> portes;
     std::map<unsigned int, ObjectInfo> fenetres;
-    std::map<unsigned int, ObjectInfo> activateurs;
+    std::map<unsigned int, Activateur> activateurs;
 
 public:
     Carte() = default;
@@ -36,7 +37,8 @@ public:
     bool isInMap(const int idTile) const noexcept;
     std::vector<unsigned int> getObjectifs() const noexcept;
 
-    Chemin aStar(const int depart, const int arrivee, const float coefEvaluation = 1) const noexcept; // Renvoie le chemin à parcourir pour aller du départ à l'arrivée
+    Chemin aStar(const int depart, const int arrivee, int npcActif, GameManager& gm, const vector<Contrainte>& contraintesDejaNecessaires = vector<Contrainte>{}) const noexcept;
+    //Chemin aStar(const int depart, const int arrivee, GameManager& gm, const vector<int>& npcsOccupesIds = vector<int>{}, vector<Contrainte>& contraintesNecessaires = vector<Contrainte>{}) const noexcept; // Renvoie le chemin à parcourir pour aller du départ à l'arrivée
 
     float distanceL2(const int depart, const int arrivee) const noexcept; // Renvoie la distance L2 à vol d'oiseau !
     int distanceHex(const int depart, const int arrivee) const noexcept;
@@ -46,6 +48,7 @@ public:
 
     void addTile(const TileInfo&) noexcept; // Permet de rajouter une tile à la map
     void addObject(const ObjectInfo&) noexcept; // Permet de rajouter un object à la map
+    void presumerConnu(const int idTile) noexcept; // Permet de présumer qu'une tuile existe, mais de la découvrir quand même le jour où on la verra réellement !
 
     int getX(const int id) const noexcept; // Permet de récupérer x et y à partir d'un indice
     int getY(const int id) const noexcept;
@@ -59,11 +62,13 @@ public:
 
     std::vector<unsigned int> getObjectifs();
     std::map<unsigned int, ObjectInfo> getMurs();
-    std::map<int, Porte> getPortes();
+    std::map<int, Porte>& getPortes();
     Porte getPorte(const int id) const noexcept;
     Porte& getPorte(const int tileIdVoisine1, const int tileIdVoisine2);
     std::map<unsigned int, ObjectInfo> getFenetres();
-    std::map<unsigned int, ObjectInfo> getActivateurs();
+    std::map<unsigned int, Activateur> getActivateurs() const noexcept;
+    bool isKnownActivateur(const int activateurId) const noexcept;
+    bool isActivateurUnderTileId(const int tileId) const noexcept;
 
     bool objectExist(const int id) const noexcept; // Permet de savoir si un objet existe déjà ou pas
 };
