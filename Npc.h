@@ -5,6 +5,8 @@
 #include "NPCInfo.h"
 #include "Chemin.h"
 #include "Carte.h"
+#include "MapTile.h"
+#include"Noeud.h"
 #include <vector>
 
 using std::vector;
@@ -31,6 +33,9 @@ using Distances = vector<DistanceType>;
 
 class Carte;
 class GameManager;
+class MapTile;
+struct Noeud;
+
 class Npc {
 private:
     vector<Chemin> cheminsPossibles; // Ceci est une variable temporaire permettant de stocker les chemins parmis lesquelles choisirs un objectif
@@ -71,6 +76,10 @@ public:
     int distanceToTile(const int tileId) const ;
     bool isArrived() const noexcept;
     void setArrived(const bool etat) noexcept;
+
+private:
+   bool porteNonBloquante(GameManager& gm, const MapTile& voisinTile, const int voisin, const Noeud& courant, int& tempsAvantOuverture) const noexcept;
+   void ajoutNoeudPorte(GameManager& gm, const int voisin, const Noeud& courant, int& tempsAvantOuverture, vector<Noeud>& fermees, vector<Noeud>& ouverts) const noexcept;
 };
 
 #endif

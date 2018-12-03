@@ -19,11 +19,11 @@ using std::vector;
 using std::to_string;
 
 Npc::Npc(const NPCInfo info) :
-	id{ static_cast<int>(info.npcID) },
-	tileId{ static_cast<int>(info.tileID) },
-	tileObjectif{ -1 },
-	chemin{ Chemin{} },
-	estArrive{ false }
+   id{ static_cast<int>(info.npcID) },
+   tileId{ static_cast<int>(info.tileID) },
+   tileObjectif{ -1 },
+   chemin{ Chemin{} },
+   estArrive{ false }
 {
 }
 
@@ -46,9 +46,9 @@ void Npc::addScore(ScoreType _score) noexcept {
 }
 
 Chemin Npc::getCheminMinNonPris(const vector<int>& objectifsPris, const int tailleCheminMax) const noexcept {
-    Chemin cheminMin;
-    cheminMin.setInaccessible();
-    int distMin = tailleCheminMax;
+   Chemin cheminMin;
+   cheminMin.setInaccessible();
+   int distMin = tailleCheminMax;
 
    for (int i = 0; i < cheminsPossibles.size(); ++i) {
       Chemin cheminTrouve = cheminsPossibles[i];
@@ -62,12 +62,12 @@ Chemin Npc::getCheminMinNonPris(const vector<int>& objectifsPris, const int tail
       }
    }
 
-    return cheminMin;
+   return cheminMin;
 
 }
 
 Scores::iterator Npc::chercherMeilleurScore(Scores& _scores) {
-   ProfilerDebug profiler{ GameManager::getLogger(), "chercherMeilleurScore", false};
+   ProfilerDebug profiler{ GameManager::getLogger(), "chercherMeilleurScore", false };
 
    return max_element(begin(_scores), end(_scores),
       [](const ScoreType& scoreDroite, const ScoreType& scoreGauche) {
@@ -76,7 +76,7 @@ Scores::iterator Npc::chercherMeilleurScore(Scores& _scores) {
 }
 
 int Npc::affecterMeilleurChemin(GameManager& gm) noexcept {
-   ProfilerDebug profiler{ GameManager::getLogger(), "affecterMeilleurChemin", false};
+   ProfilerDebug profiler{ GameManager::getLogger(), "affecterMeilleurChemin", false };
 
    if (scoresAssocies.empty()) {
       // Dans ce cas-la on reste sur place !
@@ -91,108 +91,110 @@ int Npc::affecterMeilleurChemin(GameManager& gm) noexcept {
    // On affecte son chemin, mais il nous faut le calculer ! =)
    chemin = gm.c.aStar(tileId, bestIter->tuileID, getId(), gm);
    profiler << "Le Npc " << to_string(id) << " va rechercher la tile " << chemin.destination() << endl;
-    // On renvoie la destination
-    return chemin.destination();
+   // On renvoie la destination
+   return chemin.destination();
 }
 
 void Npc::floodfill(GameManager& gm) {
    ProfilerDebug profiler{ GameManager::getLogger(), "floodfill NPC " + to_string(getId()) };
-    ensembleAccessible.clear();
+   ensembleAccessible.clear();
 
-    vector<Noeud> fermees;
-    vector<Noeud> ouverts;
+   vector<Noeud> fermees;
+   vector<Noeud> ouverts;
 
-    ouverts.push_back(Noeud(gm.c.getTile(tileId), 0));
+   ouverts.push_back(Noeud(gm.c.getTile(tileId), 0));
 
-    while (!ouverts.empty()) {
-        Noeud courant = ouverts[0];
-        ouverts.erase(ouverts.begin());
+   while (!ouverts.empty()) {
+      Noeud courant = ouverts[0];
+      ouverts.erase(ouverts.begin());
 
-        for (int voisin : courant.tile.getVoisinsIDParEtat(ACCESSIBLE)) { // Pour chaque voisins du noeud courant
-            if (gm.c.getTile(voisin).existe()) { // Si le voisin existe
-                MapTile& voisinTile = gm.c.getTile(courant.tile.getId());
+      for (int voisin : courant.tile.getVoisinsIDParEtat(ACCESSIBLE)) { // Pour chaque voisins du noeud courant
+         if (gm.c.getTile(voisin).existe()) { // Si le voisin existe
+            MapTile& voisinTile = gm.c.getTile(courant.tile.getId());
 
-                // On gère les potentielles portes
-                bool doorOk = true;
-                int tempsAvantOuverture = 0;
-                vector<Contrainte> contraintes{};
-                if (voisinTile.hasDoor(voisin, gm.c)) {
-                    doorOk = voisinTile.canPassDoor(voisin, { getId() }, courant.tile.getId(), gm, tempsAvantOuverture, contraintes);
-                }
+            // On gère les potentielles portes
+            int tempsAvantOuverture = 0;
+            //bool doorOk = true;
+            //vector<Contrainte> contraintes{};
+            //if (voisinTile.hasDoor(voisin, gm.c)) {
+            //    doorOk = voisinTile.canPassDoor(voisin, { getId() }, courant.tile.getId(), gm, tempsAvantOuverture, contraintes);
+            //}
 
-                //if (!voisinTile.hasClosedDoorSwitch(voisin, gm.c) // On vérifie qu'il n'y a pas de porte à switch devant
-                //    || voisinTile.getContrainte(voisin, gm.c).isSolvableWithout(vector<int>{getId()}, gm, cout)) { // Où qu'elle n'est pas génante !
+            //if (!voisinTile.hasClosedDoorSwitch(voisin, gm.c) // On vérifie qu'il n'y a pas de porte à switch devant
+            //    || voisinTile.getContrainte(voisin, gm.c).isSolvableWithout(vector<int>{getId()}, gm, cout)) { // Où qu'elle n'est pas génante !
 
-                // Si toutes les contraintes avec les portes sont favorables
-                if(doorOk) {
-                    int cout = std::max(!gm.c.getTile(courant.tile.getId()).hasDoorPoigneeVoisin(voisin, gm.c) ? 1 : 2, tempsAvantOuverture); // Si il y a une porte à poignée c'est 2 fois plus long !
-                    Noeud nouveau{ gm.c.getTile(voisin), courant.cout + cout };
-                    auto itFermee = find(fermees.begin(), fermees.end(), nouveau);
-                    auto itOuvert = find(ouverts.begin(), ouverts.end(), nouveau);
+            // Si toutes les contraintes avec les portes sont favorables
+            //if(doorOk) {
+            if (porteNonBloquante(gm, voisinTile, voisin, courant, tempsAvantOuverture)) {
+               //int cout = std::max(!gm.c.getTile(courant.tile.getId()).hasDoorPoigneeVoisin(voisin, gm.c) ? 1 : 2, tempsAvantOuverture); // Si il y a une porte à poignée c'est 2 fois plus long !
+               //Noeud nouveau{ gm.c.getTile(voisin), courant.cout + cout };
+               //auto itFermee = find(fermees.begin(), fermees.end(), nouveau);
+               //auto itOuvert = find(ouverts.begin(), ouverts.end(), nouveau);
 
-                    if (itFermee == fermees.end() && itOuvert == ouverts.end()) {
-                        ouverts.push_back(nouveau);
-                    }
-                    else if (itFermee != fermees.end() && itOuvert == ouverts.end()) {
-                        // Do nothing
-                    }
-                    else if (itFermee == fermees.end() && itOuvert != ouverts.end()) {
-                        if ((*itOuvert).cout > nouveau.cout) {
-                            (*itOuvert) = nouveau;
-                        }
-                    }
-                    else {
-                        LOG("Problème dans le floodfill !");
-                    }
-                }
+               //if (itFermee == fermees.end() && itOuvert == ouverts.end()) {
+               //    ouverts.push_back(nouveau);
+               //}
+               //else if (itFermee != fermees.end() && itOuvert == ouverts.end()) {
+               //    // Do nothing
+               //}
+               //else if (itFermee == fermees.end() && itOuvert != ouverts.end()) {
+               //    if ((*itOuvert).cout > nouveau.cout) {
+               //        (*itOuvert) = nouveau;
+               //    }
+               //}
+               //else {
+               //    LOG("Problème dans le floodfill !");
+               //}
+               ajoutNoeudPorte(gm, voisin, courant, tempsAvantOuverture, fermees, ouverts);
             }
-        }
+         }
+      }
 
-        // Donc celui qui minimise et le cout, et l'evaluation !
-        //sort(ouverts.begin(), ouverts.end(), [](const Noeud a, const Noeud b) {
-            //return a.cout > b.cout; // Par ordre decroissant
-        //});
+      // Donc celui qui minimise et le cout, et l'evaluation !
+      //sort(ouverts.begin(), ouverts.end(), [](const Noeud a, const Noeud b) {
+          //return a.cout > b.cout; // Par ordre decroissant
+      //});
 
-        fermees.push_back(courant);
-    }
+      fermees.push_back(courant);
+   }
 
-    // On copie les fermees dans ensembleAccessible
-    for (auto noeud : fermees) {
-        ensembleAccessible.emplace_back(noeud.tile.getId(), static_cast<int>(noeud.cout));
-    }
+   // On copie les fermees dans ensembleAccessible
+   for (auto noeud : fermees) {
+      ensembleAccessible.emplace_back(noeud.tile.getId(), static_cast<int>(noeud.cout));
+   }
 
-    //ensembleAccessible.clear();
-    //vector<int> oldOpen;
-    //// On ajoute le noeud initial
-    //vector<int> newOpen { tileId };
+   //ensembleAccessible.clear();
+   //vector<int> oldOpen;
+   //// On ajoute le noeud initial
+   //vector<int> newOpen { tileId };
 
-    //int cout = 0;
-    //// Tant qu'il reste des noeuds ï¿½ traiter ...
-    //while (!newOpen.empty()) {
-    //    oldOpen = newOpen;
-    //    newOpen = vector<int>();
-    //    // On regarde les voisins des dernieres tuiles ajoutï¿½es
-    //    for (int tileID : oldOpen) {
-    //        for (auto voisinID : c.getTile(tileID).getVoisinsIDParEtat(Etats::ACCESSIBLE)) {
-    //            // Si elle est connu
-    //            if (c.getTile(voisinID).existe()) {
-    //                // Si elle n'est pas dï¿½jï¿½ ajoutï¿½
-    //                if (find_if(ensembleAccessible.begin(), ensembleAccessible.end(), [&voisinID](const DistanceType& type) {
-    //                    return type.tuileID == voisinID; }) == ensembleAccessible.end()) {
-    //                    // On l'ajoute comme nouvelle tuile ouverte
-    //                    newOpen.push_back(voisinID);
-    //                }
-    //            }
-    //        }
+   //int cout = 0;
+   //// Tant qu'il reste des noeuds ï¿½ traiter ...
+   //while (!newOpen.empty()) {
+   //    oldOpen = newOpen;
+   //    newOpen = vector<int>();
+   //    // On regarde les voisins des dernieres tuiles ajoutï¿½es
+   //    for (int tileID : oldOpen) {
+   //        for (auto voisinID : c.getTile(tileID).getVoisinsIDParEtat(Etats::ACCESSIBLE)) {
+   //            // Si elle est connu
+   //            if (c.getTile(voisinID).existe()) {
+   //                // Si elle n'est pas dï¿½jï¿½ ajoutï¿½
+   //                if (find_if(ensembleAccessible.begin(), ensembleAccessible.end(), [&voisinID](const DistanceType& type) {
+   //                    return type.tuileID == voisinID; }) == ensembleAccessible.end()) {
+   //                    // On l'ajoute comme nouvelle tuile ouverte
+   //                    newOpen.push_back(voisinID);
+   //                }
+   //            }
+   //        }
 
-    //        // On dï¿½finit les derniï¿½res tuiles ajoutï¿½s avec leur coï¿½t courant
-    //        if (find_if(ensembleAccessible.begin(), ensembleAccessible.end(), [&](const DistanceType& type) {
-    //            return type.tuileID == tileID; }) == ensembleAccessible.end()) {
-    //            ensembleAccessible.emplace_back(tileID, cout);
-    //        }
-    //    }
-    //    cout++;
-    //}
+   //        // On dï¿½finit les derniï¿½res tuiles ajoutï¿½s avec leur coï¿½t courant
+   //        if (find_if(ensembleAccessible.begin(), ensembleAccessible.end(), [&](const DistanceType& type) {
+   //            return type.tuileID == tileID; }) == ensembleAccessible.end()) {
+   //            ensembleAccessible.emplace_back(tileID, cout);
+   //        }
+   //    }
+   //    cout++;
+   //}
 }
 
 int Npc::getId() const noexcept {
@@ -216,7 +218,7 @@ Chemin& Npc::getChemin() noexcept {
 }
 
 void Npc::setChemin(Chemin& _chemin) noexcept {
-    chemin = _chemin;
+   chemin = _chemin;
 }
 
 Distances& Npc::getEnsembleAccessible() noexcept {
@@ -244,4 +246,35 @@ bool Npc::isArrived() const noexcept {
 
 void Npc::setArrived(const bool etat) noexcept {
    estArrive = etat;
+}
+
+bool Npc::porteNonBloquante(GameManager& gm, const MapTile& voisinTile, const int voisin, const Noeud& courant, int& tempsAvantOuverture) const noexcept {
+   bool doorOk = true;
+   vector<Contrainte> contraintes{};
+   if (voisinTile.hasDoor(voisin, gm.c)) {
+      doorOk = voisinTile.canPassDoor(voisin, { getId() }, courant.tile.getId(), gm, tempsAvantOuverture, contraintes);
+   }
+   return doorOk;
+}
+
+void Npc::ajoutNoeudPorte(GameManager& gm, const int voisin, const Noeud& courant, int& tempsAvantOuverture, vector<Noeud>& fermees, vector<Noeud>& ouverts) const noexcept {
+   int cout = std::max(!gm.c.getTile(courant.tile.getId()).hasDoorPoigneeVoisin(voisin, gm.c) ? 1 : 2, tempsAvantOuverture); // Si il y a une porte à poignée c'est 2 fois plus long !
+   Noeud nouveau{ gm.c.getTile(voisin), courant.cout + cout };
+   auto itFermee = find(fermees.begin(), fermees.end(), nouveau);
+   auto itOuvert = find(ouverts.begin(), ouverts.end(), nouveau);
+
+   if (itFermee == fermees.end() && itOuvert == ouverts.end()) {
+      ouverts.push_back(nouveau);
+   }
+   else if (itFermee != fermees.end() && itOuvert == ouverts.end()) {
+      // Do nothing
+   }
+   else if (itFermee == fermees.end() && itOuvert != ouverts.end()) {
+      if ((*itOuvert).cout > nouveau.cout) {
+         (*itOuvert) = nouveau;
+      }
+   }
+   else {
+      LOG("Problème dans le floodfill !");
+   }
 }

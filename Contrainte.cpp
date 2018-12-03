@@ -26,25 +26,26 @@ bool Contrainte::isSolvableWithout(const vector<int> npcsOccupesIds, GameManager
     if (estNonContraignante())
         return true;
     else {
-        // Si la contrainte est contraingante, alors il faut voir si un autre Npc peut y accéder à notre place !
+        // Si la contrainte est contraignante, alors il faut voir si un autre Npc peut y accéder à notre place !
 
-        for (auto& npc_pair : gm.getNpcs()) {
-            Npc& npcSuppleant = npc_pair.second;
-            // On vérifie que le Npc n'est pas déjà occupé
-            if (find(npcsOccupesIds.begin(), npcsOccupesIds.end(), npcSuppleant.getId()) == npcsOccupesIds.end()) {
-                // On vérifie qu'il peut atteindre au moins l'un des interupteurs
-                for (int switchTileId : casesDesSwitchs) {
-                    vector<int> newNpcsOccupesIds = npcsOccupesIds; newNpcsOccupesIds.push_back(npcSuppleant.getId()); // Not used in A* for the moment !
-                    Chemin chemin = gm.c.aStar(npcSuppleant.getTileId(), switchTileId, npcSuppleant.getId(), gm);
-                    if (chemin.isAccessible()) {
-                        nbToursAvantOuverture = chemin.distance();
-                        return true;
-                    }
-                }
-            }
-        }
+        //for (auto& npc_pair : gm.getNpcs()) {
+        //    Npc& npcSuppleant = npc_pair.second;
+        //    // On vérifie que le Npc n'est pas déjà occupé
+        //    if (find(npcsOccupesIds.begin(), npcsOccupesIds.end(), npcSuppleant.getId()) == npcsOccupesIds.end()) {
+        //        // On vérifie qu'il peut atteindre au moins l'un des interupteurs
+        //        for (int switchTileId : casesDesSwitchs) {
+        //            vector<int> newNpcsOccupesIds = npcsOccupesIds; newNpcsOccupesIds.push_back(npcSuppleant.getId()); // Not used in A* for the moment !
+        //            Chemin chemin = gm.c.aStar(npcSuppleant.getTileId(), switchTileId, npcSuppleant.getId(), gm);
+        //            if (chemin.isAccessible()) {
+        //                nbToursAvantOuverture = chemin.distance();
+        //                return true;
+        //            }
+        //        }
+        //    }
+        //}
 
-        return false;
+        //return false;
+       return autreNpcPossibleSwitch(npcsOccupesIds, gm, nbToursAvantOuverture);
     }
 }
 
@@ -99,4 +100,24 @@ int Contrainte::prixContraintes(const vector<Contrainte>& contraintes) {
         prix += Contrainte::prixContrainte(contrainte);
     }
     return prix;
+}
+
+bool Contrainte::autreNpcPossibleSwitch(const vector<int> npcsOccupesIds, GameManager& gm, int& nbToursAvantOuverture) const noexcept {
+   for (auto& npc_pair : gm.getNpcs()) {
+      Npc& npcSuppleant = npc_pair.second;
+      // On vérifie que le Npc n'est pas déjà occupé
+      if (find(npcsOccupesIds.begin(), npcsOccupesIds.end(), npcSuppleant.getId()) == npcsOccupesIds.end()) {
+         // On vérifie qu'il peut atteindre au moins l'un des interupteurs
+         for (int switchTileId : casesDesSwitchs) {
+            vector<int> newNpcsOccupesIds = npcsOccupesIds; newNpcsOccupesIds.push_back(npcSuppleant.getId()); // Not used in A* for the moment !
+            Chemin chemin = gm.c.aStar(npcSuppleant.getTileId(), switchTileId, npcSuppleant.getId(), gm);
+            if (chemin.isAccessible()) {
+               nbToursAvantOuverture = chemin.distance();
+               return true;
+            }
+         }
+      }
+   }
+
+   return false;
 }

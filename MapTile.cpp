@@ -10,79 +10,79 @@
 using std::vector;
 
 MapTile::MapTile(unsigned int id, Carte &c) :
-    id{ static_cast<int>(id) },
-    x{ static_cast<int>(id) % c.getColCount() },
-    y{ static_cast<int>(id) / c.getColCount() },
-    type{ Tile::ETileType::TileAttribute_Default },
-    statut{ INCONNU }
+   id{ static_cast<int>(id) },
+   x{ static_cast<int>(id) % c.getColCount() },
+   y{ static_cast<int>(id) / c.getColCount() },
+   type{ Tile::ETileType::TileAttribute_Default },
+   statut{ INCONNU }
 {
-	voisins.reserve(6);
-    // On regarde sur quelle ligne on est, car ça change les indices
-    int indice;
-    if (y % 2 == 0) { // Ligne paire
-                      // NE
-        indice = id - c.getColCount();
-        if (c.isInMap(indice) && y > 0) {
-            voisins.emplace_back(indice, Tile::NE);
-        }
-        // E
-        indice = id + 1;
-        if (c.isInMap(indice) && x < c.getColCount() - 1) {
-           voisins.emplace_back(indice, Tile::E);
-        }
-        // SE
-        indice = id + c.getColCount();
-        if (c.isInMap(indice) && y < c.getRowCount() - 1) {
-           voisins.emplace_back(indice, Tile::SE);
-        }
-        // SW 
-        indice = id + c.getColCount() - 1;
-        if (c.isInMap(indice) && y < c.getRowCount() - 1 && x > 0) {
-           voisins.emplace_back(indice, Tile::SW);
-        }
-        // W
-        indice = id - 1;
-        if (c.isInMap(indice) && x > 0) {
-           voisins.emplace_back(indice, Tile::W);
-        }
-        // NW
-        indice = id - c.getColCount() - 1;
-        if (c.isInMap(indice) && y > 0 && x > 0) {
-           voisins.emplace_back(indice, Tile::NW);
-        }
-    }
-    else { // Ligne impaire !
-           // NE
-        indice = id - c.getColCount() + 1;
-        if (c.isInMap(indice) && x < c.getColCount() - 1) {
-           voisins.emplace_back(indice, Tile::NE);
-        }
-        // E
-        indice = id + 1;
-        if (c.isInMap(indice) && x < c.getColCount() - 1) {
-           voisins.emplace_back(indice, Tile::E);
-        }
-        // SE
-        indice = id + c.getColCount() + 1;
-        if (c.isInMap(indice) && x < c.getColCount() - 1 && y < c.getRowCount() - 1) {
-           voisins.emplace_back(indice, Tile::SE);
-        }
-        // SW
-        indice = id + c.getColCount();
-        if (c.isInMap(indice) && y < c.getRowCount() - 1) {
-           voisins.emplace_back(indice, Tile::SW);
-        }
-        // W
-        indice = id - 1;
-        if (c.isInMap(indice) && x > 0) {
-           voisins.emplace_back(indice, Tile::W);
-        }
-        // NW
-        indice = id - c.getColCount();
-        if (c.isInMap(indice)) { // Pas de conditions, c'est marrant ! :smiley:
-           voisins.emplace_back(indice, Tile::NW);
-        }
-    }
+   voisins.reserve(6);
+   // On regarde sur quelle ligne on est, car ça change les indices
+   int indice;
+   if (y % 2 == 0) { // Ligne paire
+                     // NE
+      indice = id - c.getColCount();
+      if (c.isInMap(indice) && y > 0) {
+         voisins.emplace_back(indice, Tile::NE);
+      }
+      // E
+      indice = id + 1;
+      if (c.isInMap(indice) && x < c.getColCount() - 1) {
+         voisins.emplace_back(indice, Tile::E);
+      }
+      // SE
+      indice = id + c.getColCount();
+      if (c.isInMap(indice) && y < c.getRowCount() - 1) {
+         voisins.emplace_back(indice, Tile::SE);
+      }
+      // SW 
+      indice = id + c.getColCount() - 1;
+      if (c.isInMap(indice) && y < c.getRowCount() - 1 && x > 0) {
+         voisins.emplace_back(indice, Tile::SW);
+      }
+      // W
+      indice = id - 1;
+      if (c.isInMap(indice) && x > 0) {
+         voisins.emplace_back(indice, Tile::W);
+      }
+      // NW
+      indice = id - c.getColCount() - 1;
+      if (c.isInMap(indice) && y > 0 && x > 0) {
+         voisins.emplace_back(indice, Tile::NW);
+      }
+   }
+   else { // Ligne impaire !
+          // NE
+      indice = id - c.getColCount() + 1;
+      if (c.isInMap(indice) && x < c.getColCount() - 1) {
+         voisins.emplace_back(indice, Tile::NE);
+      }
+      // E
+      indice = id + 1;
+      if (c.isInMap(indice) && x < c.getColCount() - 1) {
+         voisins.emplace_back(indice, Tile::E);
+      }
+      // SE
+      indice = id + c.getColCount() + 1;
+      if (c.isInMap(indice) && x < c.getColCount() - 1 && y < c.getRowCount() - 1) {
+         voisins.emplace_back(indice, Tile::SE);
+      }
+      // SW
+      indice = id + c.getColCount();
+      if (c.isInMap(indice) && y < c.getRowCount() - 1) {
+         voisins.emplace_back(indice, Tile::SW);
+      }
+      // W
+      indice = id - 1;
+      if (c.isInMap(indice) && x > 0) {
+         voisins.emplace_back(indice, Tile::W);
+      }
+      // NW
+      indice = id - c.getColCount();
+      if (c.isInMap(indice)) { // Pas de conditions, c'est marrant ! :smiley:
+         voisins.emplace_back(indice, Tile::NW);
+      }
+   }
 }
 
 void MapTile::setTileDecouverte(const TileInfo& tile) noexcept {
@@ -91,7 +91,7 @@ void MapTile::setTileDecouverte(const TileInfo& tile) noexcept {
 }
 
 void MapTile::presumerConnu() noexcept {
-    statut = PRESUME_CONNU;
+   statut = PRESUME_CONNU;
 }
 
 bool MapTile::isVoisinAvecEtat(const Etats etat, const int id) const noexcept {
@@ -119,11 +119,11 @@ int MapTile::getId() const noexcept {
 }
 
 int MapTile::getX() const noexcept {
-    return x;
+   return x;
 }
 
 int MapTile::getY() const noexcept {
-    return y;
+   return y;
 }
 
 Tile::ETileType MapTile::getType() const noexcept {
@@ -135,11 +135,11 @@ vector<Voisin> MapTile::getVoisins() const noexcept {
 }
 
 vector<int> MapTile::getVoisinsId() const noexcept {
-    vector<int> ids;
-    for (auto voisin : getVoisins()) {
-        ids.push_back(voisin.getTuileIndex());
-    }
-    return ids;
+   vector<int> ids;
+   for (auto voisin : getVoisins()) {
+      ids.push_back(voisin.getTuileIndex());
+   }
+   return ids;
 }
 
 vector<int> MapTile::getVoisinsIDParEtat(const Etats _etat) const noexcept {
@@ -163,74 +163,74 @@ void MapTile::setStatut(MapTile::Statut new_statut) {
 }
 
 void MapTile::addPorte(int porteId) {
-    portesAdjacentes.push_back(porteId);
+   portesAdjacentes.push_back(porteId);
 }
 
 bool MapTile::hasDoorPoigneeVoisin(const int voisinId, const Carte& c) const noexcept {
-    for (int porteId : portesAdjacentes) {
-        Porte porte = c.getPorte(porteId);
-        if (porte.getType() == Porte::A_POIGNEE && porte.getEtat() == Object::ObjectState_Closed) {
-            if (porte.isVoisine(voisinId))
-                return true;
-            // On ne veut pas renvoyer false ici
-        }
-    }
-    return false;
+   for (int porteId : portesAdjacentes) {
+      Porte porte = c.getPorte(porteId);
+      if (porte.getType() == Porte::A_POIGNEE && porte.getEtat() == Object::ObjectState_Closed) {
+         if (porte.isVoisine(voisinId))
+            return true;
+         // On ne veut pas renvoyer false ici
+      }
+   }
+   return false;
 }
 
 bool MapTile::hasDoor(const int voisinId, const Carte& c) const noexcept {
-    for (int porteId : portesAdjacentes) {
-        Porte porte = c.getPorte(porteId);
-        if (porte.isVoisine(voisinId))
-            return true;
-        // On ne veut pas renvoyer false ici
-    }
-    return false; // Mais ici
+   for (int porteId : portesAdjacentes) {
+      Porte porte = c.getPorte(porteId);
+      if (porte.isVoisine(voisinId))
+         return true;
+      // On ne veut pas renvoyer false ici
+   }
+   return false; // Mais ici
 }
 
 bool MapTile::hasClosedDoor(const int voisinId, const Carte& c) const noexcept {
-    for (int porteId : portesAdjacentes) {
-        Porte porte = c.getPorte(porteId);
-        if (porte.getEtat() == Object::ObjectState_Closed) {
-            if (porte.isVoisine(voisinId))
-                return true;
-            // On ne veut pas renvoyer false ici
-        }
-    }
-    return false; // Mais ici
+   for (int porteId : portesAdjacentes) {
+      Porte porte = c.getPorte(porteId);
+      if (porte.getEtat() == Object::ObjectState_Closed) {
+         if (porte.isVoisine(voisinId))
+            return true;
+         // On ne veut pas renvoyer false ici
+      }
+   }
+   return false; // Mais ici
 }
 
 bool MapTile::hasClosedDoorSwitch(const int voisinId, const Carte& c) const noexcept {
-    for (int porteId : portesAdjacentes) {
-        Porte porte = c.getPorte(porteId);
-        if (porte.getType() == Porte::A_SWITCH && porte.getEtat() == Object::ObjectState_Closed) {
-            if (porte.isVoisine(voisinId))
-                return true;
-            // On ne veut pas renvoyer false ici
-        }
-    }
-    return false; // Mais ici
+   for (int porteId : portesAdjacentes) {
+      Porte porte = c.getPorte(porteId);
+      if (porte.getType() == Porte::A_SWITCH && porte.getEtat() == Object::ObjectState_Closed) {
+         if (porte.isVoisine(voisinId))
+            return true;
+         // On ne veut pas renvoyer false ici
+      }
+   }
+   return false; // Mais ici
 }
 
 bool MapTile::canPassDoor(const int tileVoisineId, const int npcActif, const int caseAvantPorte, GameManager& gm, int& tempsAvantOuverture, vector<Contrainte>& contraintesNecessaires) const noexcept {
-    for (int porteId : portesAdjacentes) {
-        Porte porte = gm.c.getPorte(porteId);
-        // Si c'est la porte qui nous intéresse
-        if (porte.isVoisine(tileVoisineId))
-            return porte.canPassDoor(npcActif, caseAvantPorte, gm, tempsAvantOuverture, contraintesNecessaires);
-    }
-    LOG("Ce n'est pas normal que l'on soit ici !");
-    exit(0);
+   for (int porteId : portesAdjacentes) {
+      Porte porte = gm.c.getPorte(porteId);
+      // Si c'est la porte qui nous intéresse
+      if (porte.isVoisine(tileVoisineId))
+         return porte.canPassDoor(npcActif, caseAvantPorte, gm, tempsAvantOuverture, contraintesNecessaires);
+   }
+   LOG("Ce n'est pas normal que l'on soit ici !");
+   exit(0);
 }
 
-Contrainte MapTile::getContrainte(const int voisinId, const Carte& c) const noexcept {
-    for (int porteId : portesAdjacentes) {
-        Porte porte = c.getPorte(porteId);
-        if (porte.getType() == Porte::A_SWITCH && porte.getEtat() == Object::ObjectState_Closed) {
-            if (porte.isVoisine(voisinId)) {
-                return Contrainte{ getId(), voisinId, porte.getSwitchsTilesIds(c), c };
-            }
-        }
-    }
-    throw contrainte_inexistante{};
+Contrainte MapTile::getContrainte(const int voisinId, const Carte& c) const {
+   for (int porteId : portesAdjacentes) {
+      Porte porte = c.getPorte(porteId);
+      if (porte.getType() == Porte::A_SWITCH
+         && porte.getEtat() == Object::ObjectState_Closed
+         && porte.isVoisine(voisinId)) {
+         return Contrainte{ getId(), voisinId, porte.getSwitchsTilesIds(c), c };
+      }
+   }
+   throw contrainte_inexistante{};
 }

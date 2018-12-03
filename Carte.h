@@ -18,6 +18,8 @@ class porte_inexistante {};
 
 struct TileInfo;
 class GameManager;
+class Porte;
+
 class Carte {
     int rowCount;
     int colCount;

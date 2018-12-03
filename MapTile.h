@@ -47,7 +47,7 @@ public:
     bool hasClosedDoor(const int voisinId, const Carte& c) const noexcept; // Permet de savoir s'il y a une porte fermée
     bool hasClosedDoorSwitch(const int voisinId, const Carte& c) const noexcept; // Permet de savoir s'il y a une porte à switch fermée entre cette tile et sa voisine.
     bool canPassDoor(const int tileVoisineId, const int npcActif, const int caseAvantPorte, GameManager& gm, int& tempsAvantOuverture, vector<Contrainte>& contraintesNecessaires) const noexcept;
-    Contrainte getContrainte(const int voisinId, const Carte& c) const noexcept; // Retourne la contrainte associée à ce voisin si elle existe !
+    Contrainte getContrainte(const int voisinId, const Carte& c) const; // Retourne la contrainte associée à ce voisin si elle existe !
     Statut getStatut() const noexcept;
     void setStatut(Statut new_statut);
     void addPorte(int porteId);

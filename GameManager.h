@@ -32,7 +32,7 @@ class GameManager {
 #define LOG(text) GameManager::getLogger().Log(text, true)
 #define LOG_NOEND(text) GameManager::getLogger().Log(text, false)
 #else
-#define LOG(text, autoEndLine) 0
+#define LOG(text) 0
 #define LOG_NOEND(text) 0
 #endif
 

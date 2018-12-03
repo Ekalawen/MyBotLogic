@@ -43,6 +43,9 @@ public:
 
     static int prixContraintes(const vector<Contrainte>& contraintes);
     static int prixContrainte(Contrainte& contrainte);
+
+private:
+   bool autreNpcPossibleSwitch(const vector<int> npcsOccupesIds, GameManager& gm, int& nbToursAvantOuverture) const noexcept;
 };
 
 
