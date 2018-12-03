@@ -5,7 +5,6 @@
 #include "Globals.h"
 #include "Voisin.h"
 #include "Porte.h"
-#include "Noeud.h"
 #include "MyBotLogic/Tools/Profiler.h"
 
 #include <algorithm>
@@ -52,6 +51,107 @@ vector<unsigned int> Carte::getObjectifs() const noexcept {
     return objectifs;
 }
 
+void Carte::aStarBoucleVoisins(GameManager& gm, Noeud& noeudCourant, const vector<Contrainte>& contraintesDejaNecessaire, int& tileVoisineID, int& npcActif, vector<Contrainte>& allContraintes, int& arrivee, vector<Noeud>& openList, vector<Noeud>& closedList) const noexcept {
+    // On vérifie que le voisin existe ...
+    MapTile& voisinTile = gm.c.getTile(noeudCourant.tile.getId());
+    if (voisinTile.existe()) {
+
+        // On vérifie que l'on peut passer à travers nos portes
+        bool doorOk = true;
+        int tempsAvantOuverture = 0;
+        vector<Contrainte> contraintesForPassingDoor = contraintesDejaNecessaire;
+        if (voisinTile.hasDoor(tileVoisineID, gm.c)) {
+            // On vérifie que on a pas déjà essayé de faire cette contrainte !
+            //vector<Contrainte>::iterator it;
+            //if (!npcsOccupesIds.empty()) {
+            //     it = find_if(contraintesNecessaires.begin(), contraintesNecessaires.end(), [caseAvant = noeudCourant.tile.getId(),
+            //                                                                                 caseApres = voisinID,
+            //                                                                                 npcId = npcsOccupesIds[0]](Contrainte& contrainte) { // Je fais le [0] car pour le moment la liste des npcsOccupes est toujours au maximum de taille 1
+            //        return contrainte.getCaseAvantPorte() == caseAvant && contrainte.getCaseApresPorte() == caseApres && contrainte.getNpcAssocie() == npcId;
+            //    });
+            //}
+            //if (!npcsOccupesIds.empty() || it == contraintesNecessaires.end()) {
+            doorOk = voisinTile.canPassDoor(tileVoisineID, npcActif, noeudCourant.tile.getId(), gm, tempsAvantOuverture, contraintesForPassingDoor);
+            if (doorOk) {
+                allContraintes.insert(allContraintes.end(), contraintesForPassingDoor.begin(), contraintesForPassingDoor.end());
+            }
+            //} else {
+            //    doorOk = false;
+            //}
+        }
+
+        // On construit le nouveau noeud
+        if (doorOk) {
+
+            // VERIFIER SI C'EST PLUS OPTI QUE LE FIND
+            //const auto recherche = [&noeudCourant](const Noeud& n) {
+            //    return n.tile.getId() == noeudCourant.tile.getId();
+            //};
+
+            //auto closedIt = std::find_if(closedList.begin(), closedList.end(), recherche);
+            //auto openIt = std::find_if(openList.begin(), openList.end(), recherche);
+
+            int nouveauCout = std::max(static_cast<int>(noeudCourant.cout + 1), tempsAvantOuverture);
+            Noeud nouveauNoeud = Noeud(tiles[tileVoisineID], nouveauCout, distanceL2(tileVoisineID, arrivee), noeudCourant.tile.getId());
+            // On vérifie s'il existe dans closedList avec un cout inférieur ou dans openList avec un cout inférieur
+            auto itClose = find(closedList.begin(), closedList.end(), nouveauNoeud);
+            auto itOpen = find(openList.begin(), openList.end(), nouveauNoeud);
+
+            if (itClose == closedList.end() && itOpen == openList.end()) {
+                openList.push_back(nouveauNoeud);
+            }
+            else if (itClose != closedList.end() && itOpen == openList.end()) {
+                // Do nothing
+            }
+            else if (itClose == closedList.end() && itOpen != openList.end()) {
+                if ((*itOpen).heuristique > nouveauNoeud.heuristique) {
+                    (*itOpen) = nouveauNoeud;
+                }
+            }
+            else {
+                LOG("OMG On a fait n'imp !");
+            }
+        }
+    }
+}
+
+void Carte::aStarBouclePrincipale(
+    vector<Noeud>& openList,
+    vector<Noeud>& closedList,
+    Noeud& noeudCourant, int arrivee,
+    GameManager& gm,
+    const vector<Contrainte>& contraintesDejaNecessaire,
+    int npcActif,
+    vector<Contrainte>& allContraintes,
+    bool& exit) const noexcept {
+
+    const int noeudIndex = openList.size() - 1;
+    noeudCourant = openList.back();
+    // On ne fait pas popback ?
+
+    if (noeudCourant.tile.getId() == arrivee) {
+        closedList.push_back(noeudCourant);
+        exit = true;
+        return;
+    }
+
+    // Pour tous les voisins du noeud courant ...
+    for (int tileVoisineID : noeudCourant.tile.getVoisinsIDParEtat(Etats::ACCESSIBLE)) {
+        aStarBoucleVoisins(gm, noeudCourant, contraintesDejaNecessaire, tileVoisineID, npcActif, allContraintes, arrivee, openList, closedList);
+    }
+
+    closedList.push_back(noeudCourant);
+    std::swap(openList[noeudIndex], openList.back());
+    openList.pop_back();
+
+    if (!openList.empty()) {
+        auto plusPetitIt = std::min_element(openList.begin(), openList.end(), [](const Noeud& nL, const Noeud& nR) {
+            return nL.heuristique < nR.heuristique;
+        });
+        std::swap(*plusPetitIt, openList.back());
+    }
+}
+
 
 // Il s'agit de l'algorithme AStar auquel on peut rajouter un coefficiant à l'évaluation pour modifier l'heuristique.
 // Par défaut sa valeur est 1. Si on l'augmente l'algorithme ira plus vite au détriment de trouver un chemin optimal.
@@ -74,92 +174,9 @@ Chemin Carte::aStar(const int depart, const int arrivee, int npcActif, GameManag
         path.addContrainte(contrainte);
 
     // Tant qu'il reste des noeuds à traiter ...
-    while (!openList.empty()) {
-
-        const int noeudIndex = openList.size() - 1;
-        noeudCourant = openList.back();
-        // On ne fait pas popback ?
-
-        if (noeudCourant.tile.getId() == arrivee) {
-            closedList.push_back(noeudCourant);
-            break;
-        }
-
-        // Pour tous les voisins du noeud courant ...
-        for (int tileVoisineID : noeudCourant.tile.getVoisinsIDParEtat(Etats::ACCESSIBLE)) {
-            // On vérifie que le voisin existe ...
-            MapTile& voisinTile = gm.c.getTile(noeudCourant.tile.getId());
-            if (voisinTile.existe()) {
-
-                // On vérifie que l'on peut passer à travers nos portes
-                bool doorOk = true;
-                int tempsAvantOuverture = 0;
-                vector<Contrainte> contraintesForPassingDoor = contraintesDejaNecessaires;
-                if (voisinTile.hasDoor(tileVoisineID, gm.c)) {
-                    // On vérifie que on a pas déjà essayé de faire cette contrainte !
-                    //vector<Contrainte>::iterator it;
-                    //if (!npcsOccupesIds.empty()) {
-                    //     it = find_if(contraintesNecessaires.begin(), contraintesNecessaires.end(), [caseAvant = noeudCourant.tile.getId(),
-                    //                                                                                 caseApres = voisinID,
-                    //                                                                                 npcId = npcsOccupesIds[0]](Contrainte& contrainte) { // Je fais le [0] car pour le moment la liste des npcsOccupes est toujours au maximum de taille 1
-                    //        return contrainte.getCaseAvantPorte() == caseAvant && contrainte.getCaseApresPorte() == caseApres && contrainte.getNpcAssocie() == npcId;
-                    //    });
-                    //}
-                    //if (!npcsOccupesIds.empty() || it == contraintesNecessaires.end()) {
-                    doorOk = voisinTile.canPassDoor(tileVoisineID, npcActif, noeudCourant.tile.getId(), gm, tempsAvantOuverture, contraintesForPassingDoor);
-                    if (doorOk) {
-                        allContraintes.insert(allContraintes.end(), contraintesForPassingDoor.begin(), contraintesForPassingDoor.end());
-                    }
-                    //} else {
-                    //    doorOk = false;
-                    //}
-                }
-
-                // On construit le nouveau noeud
-                if (doorOk) {
-
-                    // VERIFIER SI C'EST PLUS OPTI QUE LE FIND
-                    //const auto recherche = [&noeudCourant](const Noeud& n) {
-                    //    return n.tile.getId() == noeudCourant.tile.getId();
-                    //};
-
-                    //auto closedIt = std::find_if(closedList.begin(), closedList.end(), recherche);
-                    //auto openIt = std::find_if(openList.begin(), openList.end(), recherche);
-
-                    int nouveauCout = std::max(static_cast<int>(noeudCourant.cout + 1), tempsAvantOuverture);
-                    Noeud nouveauNoeud = Noeud(tiles[tileVoisineID], nouveauCout, distanceL2(tileVoisineID, arrivee), noeudCourant.tile.getId());
-                    // On vérifie s'il existe dans closedList avec un cout inférieur ou dans openList avec un cout inférieur
-                    auto itClose = find(closedList.begin(), closedList.end(), nouveauNoeud);
-                    auto itOpen = find(openList.begin(), openList.end(), nouveauNoeud);
-
-                    if (itClose == closedList.end() && itOpen == openList.end()) {
-                        openList.push_back(nouveauNoeud);
-                    }
-                    else if (itClose != closedList.end() && itOpen == openList.end()) {
-                        // Do nothing
-                    }
-                    else if (itClose == closedList.end() && itOpen != openList.end()) {
-                        if ((*itOpen).heuristique > nouveauNoeud.heuristique) {
-                            (*itOpen) = nouveauNoeud;
-                        }
-                    }
-                    else {
-                        LOG("OMG On a fait n'imp !");
-                    }
-                }
-            }
-        }
-
-        closedList.push_back(noeudCourant);
-        std::swap(openList[noeudIndex], openList.back());
-        openList.pop_back();
-
-        if (!openList.empty()) {
-            auto plusPetitIt = std::min_element(openList.begin(), openList.end(), [](const Noeud& nL, const Noeud& nR) {
-                return nL.heuristique < nR.heuristique;
-            });
-            std::swap(*plusPetitIt, openList.back());
-        }
+    bool exit = false;
+    while (!openList.empty() && !exit) {
+        aStarBouclePrincipale(openList, closedList, noeudCourant, arrivee, gm, contraintesDejaNecessaires, npcActif, allContraintes, exit);
     }
 
     // On test si on a atteint l'objectif ou pas
@@ -167,31 +184,7 @@ Chemin Carte::aStar(const int depart, const int arrivee, int npcActif, GameManag
 
         // Si oui on reconstruit le path !
         while (noeudCourant.tile.getId() != depart) {
-
-            // On enregistre dans le path ...
-            path.addFirst(noeudCourant.tile.getId());
-
-            // On cherche l'antécédant ...
-            for (Noeud n : closedList) {
-                if (n.tile.getId() == noeudCourant.idPrecedant) {
-
-                    // TODO : il faut récupérer les contraintes des aStars intermédiaire également ??
-
-                    // On regarde si on est passé par une contrainte !
-                    auto it = find_if(allContraintes.begin(), allContraintes.end(), [noeudCourant, n](const Contrainte& contrainte) {
-                        return (contrainte.getCaseAvantPorte() == noeudCourant.tile.getId() && contrainte.getCaseApresPorte() == n.tile.getId())
-                            || (contrainte.getCaseApresPorte() == noeudCourant.tile.getId() && contrainte.getCaseAvantPorte() == n.tile.getId());
-                    });
-                    // Si oui on ajoute nos contraintes à notre chemin !
-                    if (it != allContraintes.end()) {
-                        path.addContrainte(*it);
-                    }
-
-                    // On remet à jour le noeud ...
-                    noeudCourant = n;
-                    break;
-                }
-            }
+            aStarBoucleReconstructionChemin(path, noeudCourant, closedList, allContraintes);
         }
     }
     else {
@@ -200,6 +193,37 @@ Chemin Carte::aStar(const int depart, const int arrivee, int npcActif, GameManag
 
     return path;
 }
+
+void Carte::aStarBoucleReconstructionChemin(Chemin& path, Noeud& noeudCourant, vector<Noeud>& closedList, vector<Contrainte>& allContraintes) const noexcept {
+    // On enregistre dans le path ...
+    path.addFirst(noeudCourant.tile.getId());
+
+    // On cherche l'antécédant ...
+    for (Noeud n : closedList) {
+        if (n.tile.getId() == noeudCourant.idPrecedant) {
+            aStarBoucleReconstructionCheminInterieur(n, noeudCourant, allContraintes, path);
+            break;
+        }
+    }
+}
+
+void Carte::aStarBoucleReconstructionCheminInterieur(Noeud& n, Noeud& noeudCourant, vector<Contrainte>& allContraintes, Chemin& path) const noexcept {
+    // TODO : il faut récupérer les contraintes des aStars intermédiaire également ??
+
+    // On regarde si on est passé par une contrainte !
+    auto it = find_if(allContraintes.begin(), allContraintes.end(), [noeudCourant, n](const Contrainte& contrainte) {
+        return (contrainte.getCaseAvantPorte() == noeudCourant.tile.getId() && contrainte.getCaseApresPorte() == n.tile.getId())
+            || (contrainte.getCaseApresPorte() == noeudCourant.tile.getId() && contrainte.getCaseAvantPorte() == n.tile.getId());
+    });
+    // Si oui on ajoute nos contraintes à notre chemin !
+    if (it != allContraintes.end()) {
+        path.addContrainte(*it);
+    }
+
+    // On remet à jour le noeud ...
+    noeudCourant = n;
+}
+
 
 Tile::ETilePosition Carte::getDirection(const int ind1, const int ind2) const noexcept {
     int y = getY(ind1);

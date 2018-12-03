@@ -9,6 +9,7 @@
 #include "LevelInfo.h"
 #include "ObjectInfo.h"
 #include "Porte.h"
+#include "Noeud.h"
 using std::vector;
 using std::map;
 
@@ -36,6 +37,11 @@ public:
     bool isInMap(const int idTile) const noexcept;
     vector<unsigned int> getObjectifs() const noexcept;
 
+
+    void aStarBoucleReconstructionCheminInterieur(Noeud& n, Noeud& noeudCourant, vector<Contrainte>& allContraintes, Chemin& path) const noexcept ;
+    void aStarBoucleReconstructionChemin(Chemin& path, Noeud& noeudCourant, vector<Noeud>& closedList, vector<Contrainte>& allContraintes) const noexcept ;
+    void aStarBoucleVoisins(GameManager& gm, Noeud& noeudCourant, const vector<Contrainte>& contraintesDejaNecessaire, int& tileVoisineID, int& npcActif, vector<Contrainte>& allContraintes, int& arrivee, vector<Noeud>& openList, vector<Noeud>& closedList) const noexcept;
+    void aStarBouclePrincipale(vector<Noeud>& openList, vector<Noeud>& closedList, Noeud& noeudCourant, int arrivee, GameManager& gm, const vector<Contrainte>& contraintesDejaNecessaire, int npcActif, vector<Contrainte>& allContraintes, bool& exit) const noexcept;
     Chemin aStar(const int depart, const int arrivee, int npcActif, GameManager& gm, const vector<Contrainte>& contraintesDejaNecessaires = vector<Contrainte>{}) const noexcept;
     //Chemin aStar(const int depart, const int arrivee, GameManager& gm, const vector<int>& npcsOccupesIds = vector<int>{}, vector<Contrainte>& contraintesNecessaires = vector<Contrainte>{}) const noexcept; // Renvoie le chemin à parcourir pour aller du départ à l'arrivée
 
