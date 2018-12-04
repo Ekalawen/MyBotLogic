@@ -18,12 +18,13 @@ using std::stringstream;
 using std::vector;
 using std::to_string;
 
-Npc::Npc(const NPCInfo info) :
+Npc::Npc(const NPCInfo info, GameManager* gm) :
 	id{ static_cast<int>(info.npcID) },
 	tileId{ static_cast<int>(info.tileID) },
 	tileObjectif{ -1 },
 	chemin{ Chemin{} },
-	estArrive{ false }
+	estArrive{ false },
+    gm{gm}
 {
 }
 
@@ -110,29 +111,29 @@ int Npc::affecterMeilleurObjectif(GameManager& gm) noexcept {
    return bestIter->tuileID;
 }
 
-void Npc::floodfill(GameManager& gm) {
+void Npc::floodfill() {
    ProfilerDebug profiler{ GameManager::getLogger(), "floodfill NPC " + to_string(getId()) };
     ensembleAccessible.clear();
 
     vector<Noeud> fermees;
     vector<Noeud> ouverts;
 
-    ouverts.push_back(Noeud(gm.c.getTile(tileId), 0));
+    ouverts.push_back(Noeud(gm->c.getTile(tileId), 0));
 
     while (!ouverts.empty()) {
         Noeud courant = ouverts[0];
         ouverts.erase(ouverts.begin());
 
         for (int voisin : courant.tile.getVoisinsIDParEtat(ACCESSIBLE)) { // Pour chaque voisins du noeud courant
-            if (gm.c.getTile(voisin).existe()) { // Si le voisin existe
-                MapTile& voisinTile = gm.c.getTile(courant.tile.getId());
+            if (gm->c.getTile(voisin).existe()) { // Si le voisin existe
+                MapTile& voisinTile = gm->c.getTile(courant.tile.getId());
 
                 // On gère les potentielles portes
                 bool doorOk = true;
                 int tempsAvantOuverture = 0;
                 vector<Contrainte> contraintes{};
-                if (voisinTile.hasDoor(voisin, gm.c)) {
-                    doorOk = voisinTile.canPassDoor(voisin, { getId() }, courant.tile.getId(), gm, tempsAvantOuverture, contraintes);
+                if (voisinTile.hasDoor(voisin, gm->c)) {
+                    doorOk = voisinTile.canPassDoor(voisin, { getId() }, courant.tile.getId(), *gm, tempsAvantOuverture, contraintes);
                 }
 
                 //if (!voisinTile.hasClosedDoorSwitch(voisin, gm.c) // On vérifie qu'il n'y a pas de porte à switch devant
@@ -140,8 +141,8 @@ void Npc::floodfill(GameManager& gm) {
 
                 // Si toutes les contraintes avec les portes sont favorables
                 if(doorOk) {
-                    int cout = std::max(!gm.c.getTile(courant.tile.getId()).hasDoorPoigneeVoisin(voisin, gm.c) ? 1 : 2, tempsAvantOuverture); // Si il y a une porte à poignée c'est 2 fois plus long !
-                    Noeud nouveau{ gm.c.getTile(voisin), courant.cout + cout };
+                    int cout = std::max(!gm->c.getTile(courant.tile.getId()).hasDoorPoigneeVoisin(voisin, gm->c) ? 1 : 2, tempsAvantOuverture); // Si il y a une porte à poignée c'est 2 fois plus long !
+                    Noeud nouveau{ gm->c.getTile(voisin), courant.cout + cout };
                     auto itFermee = find(fermees.begin(), fermees.end(), nouveau);
                     auto itOuvert = find(ouverts.begin(), ouverts.end(), nouveau);
 
