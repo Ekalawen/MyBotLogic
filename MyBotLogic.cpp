@@ -53,8 +53,9 @@ MyBotLogic::MyBotLogic() :
    // Le logger
    GameManager::setLog(logpath, "MyLog.log");
    GameManager::setLogRelease(logpath, "MyLogRelease.log");
-   manager = GameManager(_levelInfo);
+   manager.Init(_levelInfo);
    manager.InitializeBehaviorTree();
+   manager.refreshFloodfill();
    auto post = Minuteur::now();
     // On associe à chaque npc son objectif !
    //gm.associateNpcsWithObjectiv();
@@ -85,6 +86,8 @@ MyBotLogic::MyBotLogic() :
 
    // On fait se deplacer chaque Npc vers son objectif associe =)
    manager.moveNpcs(_actionList);
+
+   manager.refreshFloodfill();
 }
 
 /*virtual*/ void MyBotLogic::Exit()

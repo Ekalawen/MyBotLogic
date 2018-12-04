@@ -37,15 +37,15 @@ using namespace std;
 Logger GameManager::logger{};
 Logger GameManager::loggerRelease{};
 
-GameManager::GameManager(LevelInfo _info) :
-   c{ Carte(_info) },
-   objectifPris{ vector<int>{} }
+void GameManager::Init(LevelInfo _info)
 {
+    c = { Carte(_info) };
    // On rï¿½cupï¿½re l'ensemble des npcs !
    for (auto pair_npc : _info.npcs) {
       NPCInfo npc = pair_npc.second;
-      npcs[npc.npcID] = Npc(npc);
+      npcs[npc.npcID] = Npc(npc, this);
    }
+   threads.init();
 }
 
 void GameManager::InitializeBehaviorTree() noexcept {
@@ -326,8 +326,10 @@ void GameManager::updateModel(const TurnInfo &_tile) noexcept {
    // On met à jour les portes à switchs 
    majPortesASwitch();
 
+  // threads.join();
+
    // Mettre a jour nos NPCs
-   refreshFloodfill();
+  // refreshFloodfill();
 }
 
 void GameManager::majPortesASwitch() noexcept {
@@ -465,22 +467,25 @@ void GameManager::cleanContraintes() noexcept {
 void GameManager::refreshFloodfill() {
    ProfilerDebug profiler{ GameManager::getLogger(), "refreshFloodfill" };
 
-   ThreadPool workers;
+  // ThreadPool workers;
 
    for (auto &npc : npcs) {
+
+       threads.ajouter([&npc]() {  npc.second.floodfill(); });
+
       //npc.second.floodfill(c);
-      std::thread th{
+   /*   std::thread th{
          [&npc](GameManager& gm) {
             npc.second.floodfill(gm);
          }
          , std::ref(*this)
       };
-      workers.addThread(std::move(th));
+      workers.addThread(std::move(th));*/
 
       // On en profite pour réinitialiser un attribut par npcs :)
       npc.second.setIsCheckingDoor(false);
    }
-   workers.joinAll();
+  // workers.joinAll();
 }
 
 bool GameManager::permutationUtile(Npc& npc1, Npc& npc2) {

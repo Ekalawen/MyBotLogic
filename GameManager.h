@@ -10,6 +10,7 @@
 #include "TurnInfo.h"
 #include "MyBotLogic/Tools/Profiler.h"
 #include "BehaviorTree/Composite/Selecteur.h"
+#include "MyBotLogic/Tools/ThreadPool.cpp"
 #include <map>
 
 using std::map;
@@ -49,9 +50,10 @@ public:
     Carte c;
     Selecteur behaviorTreeManager; // Arbre de comportement du GameManager pour déterminer la stratégie à suivre
     vector<int> objectifPris; // Permet de savoir quels sont les objectifs actuellement assignés à des npcs
+    th_pool threads;
 
     GameManager() = default;
-    GameManager(LevelInfo);
+    void Init(LevelInfo);
     void moveNpcs(vector<Action*>& actionList) noexcept; // Remplie l'action liste !
     void reaffecterObjectifsSelonDistance(); // Réaffecte les objectifs des Npcs entre
     void ordonnerMouvements(vector<Mouvement>& mouvements) noexcept; // Permet d'ordonner les mouvements pour éviter les collisions et gérer les politesses de priorités =)
@@ -96,7 +98,7 @@ public:
     static Logger& getLoggerRelease() noexcept { // Permet d'initialiser le logger =)
        return loggerRelease;
     }
-
+    void refreshFloodfill();
 private:
     void addNewTiles(const TurnInfo& ti) noexcept;
     void addNewObjects(const TurnInfo& ti) noexcept;
@@ -105,7 +107,6 @@ private:
     int getIndiceMouvementPrioritaire(vector<Mouvement>& mouvements, const vector<int>& indicesAConsiderer);
     void gererCollisionsMemeCaseCible(vector<Mouvement>& mouvements);
     void stopNonPrioritaireMouvements(vector<Mouvement>& mouvements, const vector<int>& indicesMouvementsSurMemeCaseCible, const int indiceMouvementPrioritaire, bool& continuer);
-    void refreshFloodfill();
     bool permutationUtile(Npc& npc1, Npc& npc2);
 };
 

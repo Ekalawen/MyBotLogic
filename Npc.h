@@ -36,6 +36,7 @@ private:
     vector<Chemin> cheminsPossibles; // Ceci est une variable temporaire permettant de stocker les chemins parmis lesquelles choisirs un objectif
     Scores scoresAssocies; // Les scores associés aux tiles !
     Distances ensembleAccessible; // ensemble des tuiles auquel un npc à accés avec la distance
+    GameManager* gm;
 
     int id;
     int tileId; // Sa position sur la carte
@@ -50,7 +51,7 @@ private:
 public:
 
     Npc() = default;
-    Npc(const NPCInfo);
+    Npc(const NPCInfo, GameManager*);
 
     void move(const Tile::ETilePosition, Carte&) noexcept; // Permet de faire bouger notre npc dans notre modèle =)
 
@@ -59,7 +60,7 @@ public:
     void addScore(ScoreType score) noexcept;
     Chemin getCheminMinNonPris(const vector<int>& _objectifsPris, const int _tailleCheminMax) const noexcept; // Permet de trouver le chemin le plus court qui ne soit pas déjà pris
     int affecterMeilleurChemin(GameManager& gm) noexcept; // Affecte au npc le chemin avec le meilleur score et renvoie la destination de ce chemin !
-    void floodfill(GameManager& gm); // Calcule le coût et l'ensemble des tiles accessibles pour un npcs, et MAJ ses attributs.
+    void floodfill(); // Calcule le coût et l'ensemble des tiles accessibles pour un npcs, et MAJ ses attributs.
     Scores::iterator chercherMeilleurScore(Scores& _scores);
 
     int getId() const noexcept;

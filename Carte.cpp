@@ -100,9 +100,6 @@ void Carte::aStarBoucleVoisins(GameManager& gm, Noeud& noeudCourant, const vecto
             if (itClose == closedList.end() && itOpen == openList.end()) {
                 openList.push_back(nouveauNoeud);
             }
-            else if (itClose != closedList.end() && itOpen == openList.end()) {
-                // Do nothing
-            }
             else if (itClose == closedList.end() && itOpen != openList.end()) {
                 if ((*itOpen).heuristique > nouveauNoeud.heuristique) {
                     (*itOpen) = nouveauNoeud;
