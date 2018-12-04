@@ -32,38 +32,51 @@ void Npc::move(const Tile::ETilePosition _direction, Carte& _carte) noexcept {
    _carte.getTile(tileId).setStatut(MapTile::Statut::VISITE);
 }
 
-void Npc::resetChemins() noexcept {
-   cheminsPossibles.clear();
-   scoresAssocies.clear();
+void Npc::resetObjectifs() noexcept {
+    objectifsPossibles.clear();
+    scoresAssocies.clear();
+    tileObjectif = getTileId();
+}
+void Npc::addObjectif(const int tileIDObjectif) noexcept {
+    objectifsPossibles.push_back(tileIDObjectif);
 }
 
-void Npc::addChemin(Chemin& chemin) noexcept {
-   cheminsPossibles.push_back(chemin);
-}
+//void Npc::resetChemins() noexcept {
+//   cheminsPossibles.clear();
+//   scoresAssocies.clear();
+//}
+//
+//void Npc::addChemin(Chemin& chemin) noexcept {
+//   cheminsPossibles.push_back(chemin);
+//}
 
 void Npc::addScore(ScoreType _score) noexcept {
    scoresAssocies.emplace_back(std::move(_score));
 }
 
-Chemin Npc::getCheminMinNonPris(const vector<int>& objectifsPris, const int tailleCheminMax) const noexcept {
-    Chemin cheminMin;
-    cheminMin.setInaccessible();
+int Npc::getObjectifMinNonPris(const vector<int>& objectifsPris, const int tailleCheminMax) const noexcept {
+    int objectifMin = -1;
     int distMin = tailleCheminMax;
 
-   for (int i = 0; i < cheminsPossibles.size(); ++i) {
-      Chemin cheminTrouve = cheminsPossibles[i];
-      // Si le chemin n'est pas deja pris et qu'il est plus court !
-      int destination = (cheminTrouve.empty()) ? tileId : cheminTrouve.destination(); // si le npc est deja arrive il reste la
-      if (cheminTrouve.isAccessible()
-         && cheminTrouve.distance() < distMin
-         && (objectifsPris.empty() || find(objectifsPris.begin(), objectifsPris.end(), destination) == objectifsPris.end())) {
-         cheminMin = cheminTrouve;
-         distMin = cheminTrouve.distance();
+   for (int i = 0; i < objectifsPossibles.size(); ++i) {
+      int objectifActuel = objectifsPossibles[i];
+
+      // Si il est plus proche
+      int distanceActuelle = distanceToTile(objectifActuel);
+      if (distanceActuelle < distMin) {
+
+          // Et si il n'était pas déjà pris
+          if (find(objectifsPris.begin(), objectifsPris.end(), objectifActuel) == objectifsPris.end()) {
+              objectifMin = objectifActuel;
+              distMin = distanceActuelle;
+          }
       }
    }
 
-    return cheminMin;
+   if (objectifMin == -1)
+       LOG("Attention on a pris un objectif inconnu ! dans getCheminMinNonPris !");
 
+    return objectifMin;
 }
 
 Scores::iterator Npc::chercherMeilleurScore(Scores& _scores) {
@@ -75,7 +88,7 @@ Scores::iterator Npc::chercherMeilleurScore(Scores& _scores) {
    });
 }
 
-int Npc::affecterMeilleurChemin(GameManager& gm) noexcept {
+int Npc::affecterMeilleurObjectif(GameManager& gm) noexcept {
    ProfilerDebug profiler{ GameManager::getLogger(), "affecterMeilleurChemin", false};
 
    if (scoresAssocies.empty()) {
@@ -89,10 +102,12 @@ int Npc::affecterMeilleurChemin(GameManager& gm) noexcept {
    auto bestIter = chercherMeilleurScore(scoresAssocies);
 
    // On affecte son chemin, mais il nous faut le calculer ! =)
-   chemin = gm.c.aStar(tileId, bestIter->tuileID, getId(), gm);
-   profiler << "Le Npc " << to_string(id) << " va rechercher la tile " << chemin.destination() << endl;
+   //chemin = gm.c.aStar(tileId, bestIter->tuileID, getId(), gm);
+   setTileObjectif(bestIter->tuileID);
+
+   profiler << "Le Npc " << to_string(id) << " va rechercher la tile " << bestIter->tuileID << endl;
     // On renvoie la destination
-    return chemin.destination();
+   return bestIter->tuileID;
 }
 
 void Npc::floodfill(GameManager& gm) {
@@ -203,12 +218,12 @@ int Npc::getTileId() const noexcept {
    return tileId;
 }
 
-int Npc::getTileObjectif() const noexcept {
-   return tileObjectif;
-}
-
 void Npc::setTileObjectif(const int idTile) noexcept {
    tileObjectif = idTile;
+}
+
+int Npc::getTileObjectif() const noexcept {
+    return tileObjectif;
 }
 
 Chemin& Npc::getChemin() noexcept {
@@ -217,6 +232,10 @@ Chemin& Npc::getChemin() noexcept {
 
 void Npc::setChemin(Chemin& _chemin) noexcept {
     chemin = _chemin;
+    if (chemin.empty())
+        setTileObjectif(getTileId());
+    else
+        setTileObjectif(chemin.destination());
 }
 
 Distances& Npc::getEnsembleAccessible() noexcept {

@@ -378,6 +378,11 @@ void GameManager::addNpc(Npc npc) {
 void GameManager::reaffecterObjectifsSelonDistance() {
     ProfilerDebug profiler{ GameManager::getLogger(), "REAFECTER OBJECTIFS SELON DISTANCE" };
     ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "reaffecterObjectifsSelonDistance" };
+
+    LOG("Objectif initiaux");
+    for (auto& npcPair : npcs) {
+        LOG("npc = " + to_string(npcPair.second.getId()) + " va en " + to_string(npcPair.second.getTileObjectif()));
+    }
     // Tant que l'on fait des modifications on continue ...
     bool continuer = true;
     int k = 0;
@@ -387,17 +392,21 @@ void GameManager::reaffecterObjectifsSelonDistance() {
 
         for (auto& npcPair : npcs) {
             Npc& npc = npcPair.second;
+            int objectifNpc = npc.getTileObjectif();
+
             for (auto& autreNpcPair : npcs) {
                 Npc& autreNpc = autreNpcPair.second;
-                int objectifActuelNpc = npc.getChemin().empty() ? npc.getTileId() : npc.getChemin().destination();
+                int objectifAutreNpc = autreNpc.getTileObjectif();
 
                 if (npc.getId() != autreNpc.getId() && permutationUtile(npc, autreNpc)) {
-                    int objectifAutreNpc = autreNpc.getChemin().empty() ? autreNpc.getTileId() : autreNpc.getChemin().destination();
                     profiler << "Npc " << npc.getId() << " et Npc " << autreNpc.getId() << " echangent leurs objectifs !";
-                    profiler << "Npc " << npc.getId() << " vers " << objectifAutreNpc << " et " << "Npc " << autreNpc.getId() << " vers " << objectifActuelNpc << std::endl;
+                    profiler << "Npc " << npc.getId() << " vers " << objectifAutreNpc << " et " << "Npc " << autreNpc.getId() << " vers " << objectifNpc << std::endl;
 
-                    npc.getChemin() = c.aStar(npc.getTileId(), objectifAutreNpc, npc.getId(), *this);
-                    autreNpc.getChemin() = c.aStar(autreNpc.getTileId(), objectifActuelNpc, autreNpc.getId(), *this);
+                    //npc.setChemin(c.aStar(npc.getTileId(), objectifAutreNpc, npc.getId(), *this));
+                    //autreNpc.setChemin(c.aStar(autreNpc.getTileId(), objectifNpc, autreNpc.getId(), *this));
+                    npc.setTileObjectif(objectifAutreNpc);
+                    autreNpc.setTileObjectif(objectifNpc);
+                    objectifNpc = npc.getTileObjectif();
 
                     continuer = true; // Et on devra continuer pour vérifier que cette intervertion n'en a pas entrainé de nouvelles !
                 }
@@ -406,6 +415,12 @@ void GameManager::reaffecterObjectifsSelonDistance() {
         if (++k > kmax)
             continuer = false;
     }
+
+    // Une fois que toutes les permutations ont étées effectuées, on peut enfin calculer les aStars !!! =)
+    for (auto& npcPair : npcs) {
+        Npc& npc = npcPair.second;
+        npc.setChemin(c.aStar(npc.getTileId(), npc.getTileObjectif(), npc.getId(), *this));
+    }
 }
 
 void GameManager::affecterContraintes() noexcept {
@@ -413,7 +428,7 @@ void GameManager::affecterContraintes() noexcept {
     ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "affecterContraintes" };
     for (auto pair : npcs) {
         Npc npc = pair.second;
-        profiler << "Npc " << npc.getId() << " veut aller en " << npc.getChemin().destination() << endl;
+        profiler << "Npc " << npc.getId() << " veut aller en " << npc.getTileObjectif() << endl;
     }
 
     // On va clean les contraintes non résolues qui trainent
@@ -484,9 +499,9 @@ void GameManager::refreshFloodfill() {
 }
 
 bool GameManager::permutationUtile(Npc& npc1, Npc& npc2) {
-   int objectifNpc1 = npc1.getChemin().empty() ? npc1.getTileId() : npc1.getChemin().destination();
-   int objectifNpc2 = npc2.getChemin().empty() ? npc2.getTileId() : npc2.getChemin().destination();
-   int tempsMaxChemins = max(npc1.getChemin().distance(), npc2.getChemin().distance());
+    int objectifNpc1 = npc1.getTileObjectif();
+    int objectifNpc2 = npc2.getTileObjectif();
+    int tempsMaxChemins = max(npc1.distanceToTile(objectifNpc1), npc2.distanceToTile(objectifNpc2));
 
    // Si l'interversion des objectifs est possible et benefique pour l'un deux et ne coute rien a l'autre (ou lui est aussi benefique)
    return npc1.isAccessibleTile(objectifNpc2) && npc2.isAccessibleTile(objectifNpc1) && (max(npc1.distanceToTile(objectifNpc2), npc2.distanceToTile(objectifNpc1)) < tempsMaxChemins);
@@ -495,5 +510,13 @@ bool GameManager::permutationUtile(Npc& npc1, Npc& npc2) {
 void GameManager::execute() noexcept { 
    ProfilerDebug profiler{ GameManager::getLogger(), "EXECUTE" }; 
    ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "execute" };
+
+   // On calcul où doivent se rendre les npcs
    behaviorTreeManager.execute(); 
+
+   // On fait des swaps si nécessaires + on calculs les aStars UNE SEULE FOIS !
+   reaffecterObjectifsSelonDistance();
+
+   // On affecte les contraintes, donc potentiellement d'autres aStars
+   affecterContraintes();
 };

@@ -35,7 +35,7 @@ BT_Noeud::ETAT_ELEMENT ScoreStrategie::execute() noexcept {
    bool founded = false;
    for (auto& pair : manager.getNpcs()) {
       Npc& npc = pair.second;
-      npc.resetChemins();
+      npc.resetObjectifs();
 
       // Calculer le score de chaque tile pour le npc
       // En même temps on calcul le chemin pour aller à cette tile
@@ -44,7 +44,7 @@ BT_Noeud::ETAT_ELEMENT ScoreStrategie::execute() noexcept {
           founded = true;
 
       // Choisir la meilleure tile pour ce npc et lui affecter son chemin
-      int tileChoisi = npc.affecterMeilleurChemin(manager);
+      int tileChoisi = npc.affecterMeilleurObjectif(manager);
 
       // Mettre à jour les tilesAVisiter
       tilesAVisiter.push_back(tileChoisi);

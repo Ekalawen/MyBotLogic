@@ -52,7 +52,7 @@ bool CheckingHiddenDoors::isAdajacentToWallToCheck(const int npcTileID) const no
 }
 
 void CheckingHiddenDoors::affecterCheminNpcPourCheckerDoors(Npc& npc) {
-    npc.resetChemins();
+    npc.resetObjectifs();
 
     // Calculer le score de chaque tile pour le npc
     // En même temps on calcul le chemin pour aller à cette tile
@@ -60,7 +60,7 @@ void CheckingHiddenDoors::affecterCheminNpcPourCheckerDoors(Npc& npc) {
     calculerScoresTilesPourNpc(npc);
 
     // Choisir la meilleure tile pour ce npc et lui affecter son chemin
-    int tileChoisi = npc.affecterMeilleurChemin(manager);
+    int tileChoisi = npc.affecterMeilleurObjectif(manager);
 }
 
 void CheckingHiddenDoors::calculerScoresTilesPourNpc(Npc& _npc) noexcept {
@@ -73,7 +73,7 @@ void CheckingHiddenDoors::calculerScoresTilesPourNpc(Npc& _npc) noexcept {
 
 void CheckingHiddenDoors::calculerScore1Tile(int _tileID, Carte& _carte, Npc& _npc) {
    MapTile tile = _carte.getTile(_tileID);
-  saveScore(tile, _npc);
+   saveScore(tile, _npc);
 }
 
 void CheckingHiddenDoors::saveScore(const MapTile& _tile, Npc& _npc) const noexcept {

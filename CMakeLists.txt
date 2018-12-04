@@ -65,6 +65,7 @@ SET( AIBOT_HEADERS
 	MyBotLogic/Porte.h
 	MyBotLogic/Activateur.h
 	MyBotLogic/Contrainte.h
+	MyBotLogic/Mur.h
 	MyBotLogic/BehaviorTree/BT_Noeud.h
 	MyBotLogic/BehaviorTree/BT_Composite.h
 	MyBotLogic/BehaviorTree/Composite/Selecteur.h
@@ -75,6 +76,8 @@ SET( AIBOT_HEADERS
 	MyBotLogic/Strategies/Expedition.h
 	MyBotLogic/Strategies/Exploitation.h
 	MyBotLogic/Strategies/Exploration.h
+	MyBotLogic/Strategies/LookingForHiddenDoors.h
+	MyBotLogic/Strategies/CheckingHiddenDoors.h
 	MyBotLogic/Strategies/ScoreStrategie.h
 	MyBotLogic/Tools/Minuteur.h
 	MyBotLogic/Tools/Profiler.h
@@ -102,11 +105,14 @@ SET( AIBOT_SRC
 	MyBotLogic/Porte.cpp
 	MyBotLogic/Activateur.cpp
 	MyBotLogic/Contrainte.cpp
+	MyBotLogic/Mur.cpp
 	MyBotLogic/BT_Tests/ObjectifsForAllNpcs.cpp
 	MyBotLogic/BT_Tests/CheminsForAllNpcs.cpp
 	MyBotLogic/Strategies/Expedition.cpp
 	MyBotLogic/Strategies/Exploitation.cpp
 	MyBotLogic/Strategies/Exploration.cpp
+	MyBotLogic/Strategies/LookingForHiddenDoors.cpp
+	MyBotLogic/Strategies/CheckingHiddenDoors.cpp
 	MyBotLogic/Strategies/ScoreStrategie.cpp
 	MyBotLogic/Tools/Minuteur.cpp
 	MyBotLogic/Tools/Profiler.cpp

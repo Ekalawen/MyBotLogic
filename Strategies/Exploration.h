@@ -18,7 +18,7 @@ public:
     float interet(const MapTile& tile) const noexcept;
 
     enum { COEF_DISTANCE_NPC_TILE = -12 }; // Il faut que ce soit négatif
-    enum { COEF_DISTANCE_TILE_AUTRE_TILES = 12 };
+    enum { COEF_DISTANCE_TILE_AUTRE_TILES = 1 };
     enum { COEF_INTERET = 1 };
     enum { COEF_INTERET_ACCESSIBLE = 2 };
     enum { COEF_INTERET_INACCESSIBLE_MAIS_VISIBLE = 1 };

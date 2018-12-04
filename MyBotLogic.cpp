@@ -80,8 +80,6 @@ MyBotLogic::MyBotLogic() :
 
    // On definit notre strategie en executant notre arbre de comportement
    manager.execute();
-   manager.reaffecterObjectifsSelonDistance();
-   manager.affecterContraintes();
 
    // On fait se deplacer chaque Npc vers son objectif associe =)
    manager.moveNpcs(_actionList);

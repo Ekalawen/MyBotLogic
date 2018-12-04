@@ -33,7 +33,8 @@ class Carte;
 class GameManager;
 class Npc {
 private:
-    vector<Chemin> cheminsPossibles; // Ceci est une variable temporaire permettant de stocker les chemins parmis lesquelles choisirs un objectif
+    vector<int> objectifsPossibles; // Ceci est une variable temporaire permettant de stocker les objectifs parmis lesquels choisir
+    //vector<Chemin> cheminsPossibles; // Ceci est une variable temporaire permettant de stocker les chemins parmis lesquelles choisirs un objectif
     Scores scoresAssocies; // Les scores associés aux tiles !
     Distances ensembleAccessible; // ensemble des tuiles auquel un npc à accés avec la distance
 
@@ -54,17 +55,19 @@ public:
 
     void move(const Tile::ETilePosition, Carte&) noexcept; // Permet de faire bouger notre npc dans notre modèle =)
 
-    void resetChemins() noexcept;
-    void addChemin(Chemin& chemin) noexcept;
+    void resetObjectifs() noexcept;
+    void addObjectif(const int tileIDObjectif) noexcept;
+    //void resetChemins() noexcept;
+    //void addChemin(Chemin& chemin) noexcept;
     void addScore(ScoreType score) noexcept;
-    Chemin getCheminMinNonPris(const vector<int>& _objectifsPris, const int _tailleCheminMax) const noexcept; // Permet de trouver le chemin le plus court qui ne soit pas déjà pris
-    int affecterMeilleurChemin(GameManager& gm) noexcept; // Affecte au npc le chemin avec le meilleur score et renvoie la destination de ce chemin !
+    int getObjectifMinNonPris(const vector<int>& objectifsPris, const int tailleCheminMax) const noexcept; // Permet de trouver l'objectif le plus court qui ne soit pas déjà pris
+    int affecterMeilleurObjectif(GameManager& gm) noexcept; // Affecte au npc le chemin avec le meilleur score et renvoie la destination de ce chemin !
     void floodfill(GameManager& gm); // Calcule le coût et l'ensemble des tiles accessibles pour un npcs, et MAJ ses attributs.
     Scores::iterator chercherMeilleurScore(Scores& _scores);
 
     int getId() const noexcept;
     int getTileId() const noexcept;
-    int getTileObjectif() const noexcept;
+    int getTileObjectif() const noexcept; // Permet de savoir où veut aller notre npc ! :)
     void setTileObjectif(const int idTile) noexcept;
     Chemin& getChemin() noexcept;
     void setChemin(Chemin& _chemin) noexcept;
