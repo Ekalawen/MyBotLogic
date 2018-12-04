@@ -26,6 +26,8 @@
 #include <memory>
 #include <string>
 #include <thread>
+#include <future>
+#include <functional>
 
 using std::make_unique;
 using std::stringstream;
@@ -47,8 +49,8 @@ void GameManager::Init(LevelInfo _info)
       NPCInfo npc = pair_npc.second;
       npcs[npc.npcID] = Npc(npc);
    }
-   threads.init();
-   threads.setGM(*this);
+   //threads.init();
+   //threads.setGM(*this);
 }
 
 void GameManager::InitializeBehaviorTree() noexcept {
@@ -489,14 +491,19 @@ void GameManager::refreshFloodfill() {
 
   // ThreadPool workers;
 
-   //Minuteur m{};
+   Minuteur m{(Minuteur::duree_t)SEUIL_TEMPS_FLOODFILL.count()};
+   m.start();
 
    tempsDebutThread = high_resolution_clock::now();
 
    for (auto &npc : npcs) {
 
        //threads.ajouter(std::bind(npc.second.floodfill, *this));
-       threads.ajouter([&npc, &gm = *this](GameManager& gm) {  npc.second.floodfill(gm); });
+       //threads.ajouter([&npc, &gm = *this](GameManager& gm) {  npc.second.floodfill(gm); });
+      workers.push_back(std::async([&npc](GameManager& gm) { 
+         npc.second.floodfill(gm); 
+      }
+      , std::ref(*this)));
 
       //npc.second.floodfill(c);
    /*   std::thread th{
@@ -513,11 +520,21 @@ void GameManager::refreshFloodfill() {
    //threads.joinAll();
    //verifier quil ny a plus de taches + verifier que aucun thread nest en train de rouler
 
-   threads.joinAll();
+   //threads.joinAll();
+   //for (auto &worker : workers) {
+   //   worker.wait();
+   //}
+   bool continuer = true;
+   while (continuer)
+   {
+      m.refresh();
+      continuer = !m.isFinished() 
+         && std::find_if(workers.begin(), workers.end(), [](std::future<void>& worker) { return worker.valid(); }) != workers.end(); 
+   }
+   //auto now = Minuteur::now();
 
-   auto now = high_resolution_clock::now();
-
-   enoughTimeForFloodFill = !(static_cast<milliseconds>((now - tempsDebutThread).count()) > SEUIL_TEMPS_FLOODFILL);
+   //enoughTimeForFloodFill = !(duration_cast<milliseconds>((now - tempsDebutThread)) > SEUIL_TEMPS_FLOODFILL);
+   enoughTimeForFloodFill = std::find_if(workers.begin(), workers.end(), [](std::future<void>& worker) { return worker.valid(); }) == workers.end();
 }
 
 bool GameManager::permutationUtile(Npc& npc1, Npc& npc2) {
@@ -530,25 +547,33 @@ bool GameManager::permutationUtile(Npc& npc1, Npc& npc2) {
 }
 
 void GameManager::lanceAllFloodRempliBetweenTour() {
-    for (auto &npc : npcs) {
+   //std::vector<std::future<void>> workers;
 
-        //threads.ajouter(std::bind(npc.second.floodfill, *this));
-        threads.ajouter([&npc, &gm = *this](GameManager& gm) {  npc.second.floodfill(gm); });
+    //for (auto &npc : npcs) {
 
-        //npc.second.floodfill(c);
-        /*   std::thread th{
-        [&npc](GameManager& gm) {
-        npc.second.floodfill(gm);
-        }
-        , std::ref(*this)
-        };
-        workers.addThread(std::move(th));*/
+    //    //threads.ajouter(std::bind(npc.second.floodfill, *this));
+    //    //threads.ajouter([&npc, &gm = *this](GameManager& gm) {  npc.second.floodfill(gm); });
 
-        // On en profite pour réinitialiser un attribut par npcs :)
-        npc.second.setIsCheckingDoor(false);
-    }
+    //    //npc.second.floodfill(c);
+    //    /*   std::thread th{
+    //    [&npc](GameManager& gm) {
+    //    npc.second.floodfill(gm);
+    //    }
+    //    , std::ref(*this)
+    //    };
+    //    workers.addThread(std::move(th));*/
 
-    isFloodFillDejaCalcule = true;
+    //   workers.push_back(std::async([&npc](GameManager& gm) {
+    //      npc.second.floodfill(gm);
+    //   }
+    //   , std::ref(*this)));
+
+    //    // On en profite pour réinitialiser un attribut par npcs :)
+    //    npc.second.setIsCheckingDoor(false);
+    //}
+
+    isFloodFillDejaCalcule = true; 
+    enoughTimeForFloodFill = true;
 }
 
 void GameManager::execute() noexcept { 

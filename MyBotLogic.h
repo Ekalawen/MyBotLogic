@@ -22,6 +22,8 @@ class MyBotLogic : public virtual BotLogicIF
 public:
     GameManager manager;
     std::string logpath;
+    time_point<steady_clock> tempsAvantServeur;
+    time_point<steady_clock> tempsApresServeur;
 
 	MyBotLogic();
 	virtual ~MyBotLogic();

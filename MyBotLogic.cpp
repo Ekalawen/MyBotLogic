@@ -62,6 +62,8 @@ MyBotLogic::MyBotLogic() :
    stringstream ss;
     ss << "Durée Initialisation = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms";
     LOG(ss.str());
+
+    tempsAvantServeur = Minuteur::now();
 }
 
 /*virtual*/ void MyBotLogic::OnGameStarted()
@@ -75,6 +77,10 @@ MyBotLogic::MyBotLogic() :
    ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "Tour" };
    profiler << "TURN =========================== " << _turnInfo.turnNb << endl;
    profilerRelease << "TURN =========================== " << _turnInfo.turnNb << endl;
+
+   tempsApresServeur = Minuteur::now();
+
+   profilerRelease << "Duree serveur : " << duration_cast<milliseconds>(tempsApresServeur - tempsAvantServeur).count() << " ms" << endl;
 
    if (!manager.isFloodFillDejaCalcule) {
        // On complete notre modele avec l'information qu'on vient de decouvrir !
@@ -95,6 +101,8 @@ MyBotLogic::MyBotLogic() :
        profilerRelease << "ON A PAS DU TEMPS " << endl;
        manager.lanceAllFloodRempliBetweenTour();
    }
+
+   tempsAvantServeur = Minuteur::now();
 }
 
 /*virtual*/ void MyBotLogic::Exit()

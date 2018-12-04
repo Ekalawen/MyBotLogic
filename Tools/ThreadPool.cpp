@@ -32,7 +32,7 @@ th_pool::~th_pool() {
 }
 
 void th_pool::joinAll() {
-    gm->cond.wait(mon_verrou);
+    //gm->cond.wait(mon_verrou);
     while (count != 0);
 }
 

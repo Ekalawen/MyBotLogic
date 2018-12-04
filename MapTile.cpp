@@ -233,7 +233,7 @@ bool MapTile::canPassDoor(const int tileVoisineId, const int npcActif, const int
     exit(0);
 }
 
-Contrainte MapTile::getContrainte(const int voisinId, const Carte& c) const noexcept {
+Contrainte MapTile::getContrainte(const int voisinId, const Carte& c) const {
     for (int porteId : portesAdjacentes) {
         Porte porte = c.getPorte(porteId);
         if (porte.getType() == Porte::A_SWITCH && porte.getEtat() == Object::ObjectState_Closed) {

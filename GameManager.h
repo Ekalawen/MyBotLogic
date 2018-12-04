@@ -10,10 +10,11 @@
 #include "TurnInfo.h"
 #include "MyBotLogic/Tools/Profiler.h"
 #include "BehaviorTree/Composite/Selecteur.h"
-#include "MyBotLogic/Tools/ThreadPool.h"
+//#include "MyBotLogic/Tools/ThreadPool.h"
 #include <map>
 #include <chrono>
 #include <condition_variable>
+#include <future>
 
 using std::map;
 using std::vector;
@@ -39,7 +40,7 @@ class GameManager {
 #define LOG(text) GameManager::getLogger().Log(text, true)
 #define LOG_NOEND(text) GameManager::getLogger().Log(text, false)
 #else
-#define LOG(text, autoEndLine) 0
+#define LOG(text) 0
 #define LOG_NOEND(text) 0
 #endif
 
@@ -56,12 +57,13 @@ public:
     Carte c;
     Selecteur behaviorTreeManager; // Arbre de comportement du GameManager pour déterminer la stratégie à suivre
     vector<int> objectifPris; // Permet de savoir quels sont les objectifs actuellement assignés à des npcs
-    th_pool threads;
-    std::condition_variable cond;
+    //th_pool threads;
+    //std::condition_variable cond;
     time_point<steady_clock> tempsDebutThread;
     const milliseconds SEUIL_TEMPS_FLOODFILL = 4ms;
     bool enoughTimeForFloodFill = false;
     bool isFloodFillDejaCalcule = false;
+    std::vector<std::future<void>> workers;
 
     GameManager() = default;
     void Init(LevelInfo);
