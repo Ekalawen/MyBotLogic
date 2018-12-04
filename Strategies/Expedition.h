@@ -14,7 +14,7 @@ class Npc;
 class GameManager;
 class Expedition : public ScoreStrategie {
 public:
-    void saveScore(const MapTile& tile, Npc& npc, const vector<int>& tilesAVisiter) const noexcept;
+    bool saveScore(const MapTile& tile, Npc& npc, const vector<int>& tilesAVisiter) const noexcept;
     float interet(const MapTile& tile) const noexcept;
 
     enum { COEF_DISTANCE_NPC_TILE = -12 }; // Il faut que ce soit négatif

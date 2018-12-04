@@ -10,6 +10,7 @@
 #include "ObjectInfo.h"
 #include "Porte.h"
 #include "Noeud.h"
+#include "Mur.h"
 using std::vector;
 using std::map;
 
@@ -26,10 +27,12 @@ class Carte {
 
     vector<unsigned int> objectifs;
 
-    map<unsigned int, ObjectInfo> murs;
+    map<unsigned int, Mur> murs;
     map<int, Porte> portes;
     map<unsigned int, ObjectInfo> fenetres;
     map<unsigned int, Activateur> activateurs;
+
+    vector<int> murCheckedId = {};
 
 public:
     Carte() = default;
@@ -66,7 +69,7 @@ public:
     const MapTile& getTile(const int id) const;
 
     vector<unsigned int> getObjectifs();
-    map<unsigned int, ObjectInfo> getMurs();
+    map<unsigned int, Mur> getMurs();
     map<int, Porte>& getPortes();
     Porte getPorte(const int id) const noexcept;
     Porte& getPorte(const int tileIdVoisine1, const int tileIdVoisine2);
@@ -76,6 +79,10 @@ public:
     bool isActivateurUnderTileId(const int tileId) const noexcept;
 
     bool objectExist(const int id) const noexcept; // Permet de savoir si un objet existe déjà ou pas
+    bool hasWallBetweenUnchecked(const int idTile1, const int idTile2) const noexcept; // Permet de savoir s'il existe un mur à checker entre deux tiles adjacentes
+    Mur& getMurInDirection(const int idTileDepart, Tile::ETilePosition direction) noexcept; // Permet de récupérer un mur à partir d'une case et d'une direction
+    void removeWall(const int idWall) noexcept; // Permet de supprimer un mur de la carte
+    void addMurCheckedId(const int idMur) noexcept;
 };
 
 

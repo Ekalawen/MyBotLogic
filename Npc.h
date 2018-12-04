@@ -44,6 +44,8 @@ private:
 
     //Distances distancesEnsembleAccessible;
 	bool estArrive; // indique si le npc a atteind son objectif
+    bool isCheckingDoor = false; // Permet de savoir si le npc doit checker une porte ou non !
+    Tile::ETilePosition doorCheckingDirection = Tile::CENTER; // La direction dans laquelle il doit checker !
 
 public:
 
@@ -71,6 +73,9 @@ public:
     int distanceToTile(const int tileId) const ;
     bool isArrived() const noexcept;
     void setArrived(const bool etat) noexcept;
+    void setIsCheckingDoor(bool etat, Tile::ETilePosition direction = Tile::CENTER);
+    bool getIsCheckingDoor() const noexcept;
+    Tile::ETilePosition getDirectionCheckingDoor() const noexcept;
 };
 
 #endif

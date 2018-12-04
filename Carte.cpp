@@ -402,10 +402,14 @@ void Carte::addObject(const ObjectInfo& object) noexcept {
                 tiles[voisin1].removeEtat(Etats::ACCESSIBLE, voisin2);
             if (isInMap(voisin2))
                 tiles[voisin2].removeEtat(Etats::ACCESSIBLE, voisin1);
-            // Mur
+        // Mur
         }
         else {
-            murs[object.objectID] = object;
+            murs[object.objectID] = Mur(object.objectID, object.tileID, object.position, object.objectTypes, *this);
+            // On vérifie s'il a déjà été checké !
+            if (find(murCheckedId.begin(), murCheckedId.end(), object.objectID) != murCheckedId.end()) {
+                murs[object.objectID].setHasBeenVerified();
+            }
             if (isInMap(voisin1)) {
                 tiles[voisin1].removeEtat(Etats::MYSTERIEUX, voisin2);
                 tiles[voisin1].removeEtat(Etats::ACCESSIBLE, voisin2);
@@ -522,7 +526,7 @@ vector<unsigned int> Carte::getObjectifs() {
     return objectifs;
 }
 
-map<unsigned int, ObjectInfo> Carte::getMurs() {
+map<unsigned int, Mur> Carte::getMurs() {
     return murs;
 }
 
@@ -535,6 +539,8 @@ Porte Carte::getPorte(const int id) const noexcept {
 }
 
 Porte& Carte::getPorte(const int tileIdVoisine1, const int tileIdVoisine2) {
+    if (tileIdVoisine1 == tileIdVoisine2)
+        LOG("Les deux tuiles voisines ne doivent pas être égale dans getPorte() !!");
     for (auto& pair : portes) {
         Porte& porte = pair.second;
         if (porte.isVoisine(tileIdVoisine1) && porte.isVoisine(tileIdVoisine2))
@@ -569,4 +575,65 @@ bool Carte::objectExist(const int objet) const noexcept {
         || portes.find(objet) != portes.end()
         || fenetres.find(objet) != fenetres.end()
         || activateurs.find(objet) != activateurs.end();
+}
+
+bool Carte::hasWallBetweenUnchecked(const int idTile1, const int idTile2) const noexcept {
+    for (auto pair : murs) {
+        Mur mur = pair.second;
+        if (!mur.hasBeenVerified() && mur.isBetween(idTile1, idTile2))
+            return true;
+    }
+    return false;
+}
+
+Mur& Carte::getMurInDirection(const int idTileDepart, Tile::ETilePosition direction) noexcept {
+    int tileArriveeID = getAdjacentTileAt(idTileDepart, direction);
+    for (auto& pair : murs) {
+        Mur& mur = pair.second;
+        if (mur.isBetween(idTileDepart, tileArriveeID))
+            return mur;
+    }
+    LOG("On a pas trouvé un mur => On est pas censé être ici !!!");
+}
+
+void Carte::removeWall(const int idWall) noexcept {
+    auto it = murs.find(idWall);
+    if (it == murs.end()) {
+        LOG("ON a pas trouvé le mur que l'on voulait supprimer !");
+        exit(0);
+    }
+    Mur mur = it->second;
+    
+    // On veut supprimer le mur de toutes les listes
+    murs.erase(it);
+    auto it2 = fenetres.find(idWall);
+    if(it2 != fenetres.end())
+        fenetres.erase(it2);
+    auto it3 = portes.find(idWall);
+    if(it3 != portes.end())
+        portes.erase(it3);
+
+    // On veut mettre à jour les voisins en leur rendant leur ancien état !
+    // Si il y a moins de 2 voisines, il n'y a rien à faire ! :D
+    if (mur.getTilesVoisines().size() == 2) {
+        int voisin1 = mur.getTilesVoisines()[0];
+        int voisin2 = mur.getTilesVoisines()[1];
+
+        // Rholala là c'est dur :'(
+        // Ah mais en fait non c'est facile !
+        // Si on a enlevé la seule liaison entre les 2 cases, alors elles sont forcément 
+        // Accessibles
+        tiles[voisin1].addEtat(Etats::ACCESSIBLE, voisin2);
+        tiles[voisin2].addEtat(Etats::ACCESSIBLE, voisin1);
+        // Visibles
+        tiles[voisin1].addEtat(Etats::VISIBLE, voisin2);
+        tiles[voisin2].addEtat(Etats::VISIBLE, voisin1);
+        // Non-mystérieuses !
+        tiles[voisin1].removeEtat(Etats::MYSTERIEUX, voisin2);
+        tiles[voisin2].removeEtat(Etats::MYSTERIEUX, voisin1);
+    }
+}
+
+void Carte::addMurCheckedId(const int idMur) noexcept {
+    murCheckedId.push_back(idMur);
 }

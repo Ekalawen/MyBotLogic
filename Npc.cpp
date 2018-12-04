@@ -81,7 +81,7 @@ int Npc::affecterMeilleurChemin(GameManager& gm) noexcept {
    if (scoresAssocies.empty()) {
       // Dans ce cas-la on reste sur place !
       chemin = Chemin{};
-      profiler << "Le Npc " << id << " n'a rien a rechercher et reste sur place !";
+      profiler << "Le Npc " << id << " n'a rien a rechercher et reste sur place !" << endl;
       return tileId;
    }
 
@@ -245,3 +245,16 @@ bool Npc::isArrived() const noexcept {
 void Npc::setArrived(const bool etat) noexcept {
    estArrive = etat;
 }
+
+void Npc::setIsCheckingDoor(bool etat, Tile::ETilePosition direction) {
+    isCheckingDoor = etat;
+    doorCheckingDirection = direction;
+}
+
+bool Npc::getIsCheckingDoor() const noexcept {
+    return isCheckingDoor;
+}
+Tile::ETilePosition Npc::getDirectionCheckingDoor() const noexcept {
+    return doorCheckingDirection;
+}
+

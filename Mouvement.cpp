@@ -34,11 +34,31 @@ Tile::ETilePosition Mouvement::getDirection() const noexcept {
     return direction;
 }
 
-void Mouvement::setActivateDoor() noexcept {
+void Mouvement::setActivateDoor(Tile::ETilePosition direction) noexcept {
     isActivateDoorMouvement = true;
+    directionActivateDoorMouvement = direction;
+}
+
+void Mouvement::setCheckingDoor(Tile::ETilePosition direction) noexcept {
+    isCheckingDoor = true;
+    directionCheckingDoor = direction;
 }
 
 void Mouvement::apply(vector<Action*>& actionList, map<int, Npc>& npcs, Carte& c) const noexcept {
+    // On vérifie si c'est un mouvement de checking de door
+    if (isCheckingDoor) {
+        // On envoie l'action de checker un mur
+        Mur& mur = c.getMurInDirection(getTileSource(), directionCheckingDoor);
+        actionList.push_back(new Interact(getNpcId(), mur.getId(), Interact::EInteraction::Interaction_SearchHiddenDoor));
+
+        stringstream ss; ss << "Le Npc " << getNpcId() << " a checker le mur " << mur.getId() << " !";
+        LOG(ss.str());
+
+        // On précise que l'on a ouvert ce mur dans notre modèle
+        mur.verify(c);
+        return;
+    }
+
     // On ne prend en compte notre mouvement que s'il compte
     if (!isActivateDoorMouvement) {
         if (isNotStopped()) {
@@ -59,7 +79,8 @@ void Mouvement::apply(vector<Action*>& actionList, map<int, Npc>& npcs, Carte& c
     } else {
         // Si notre mouvement est en fait un mouvement d'activation de porte ...
         // On récupère l'id de la porte
-        Porte& porte = c.getPorte(getTileSource(), getTileDestination());
+        int tileDestination = c.getAdjacentTileAt(getTileSource(), directionActivateDoorMouvement);
+        Porte& porte = c.getPorte(getTileSource(), tileDestination);
         // On ouvre la porte dans notre modèle
         porte.ouvrirPorte();
         // On envoie l'évènement d'ouverture de porte !

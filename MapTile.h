@@ -30,6 +30,7 @@ public:
     void setTileDecouverte(const TileInfo& _tile) noexcept;
     void presumerConnu() noexcept;
 
+    void addEtat(const Etats etat, const int id);
     void removeEtat(const Etats etat, const int id);
 	bool isVoisinAvecEtat(const Etats etat, const int id) const noexcept;
 

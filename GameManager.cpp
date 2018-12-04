@@ -11,6 +11,8 @@
 #include "Strategies/Expedition.h"
 #include "Strategies/Exploration.h"
 #include "Strategies/Exploitation.h"
+#include "Strategies/LookingForHiddenDoors.h"
+#include "Strategies/CheckingHiddenDoors.h"
 #include "MyBotLogic/Tools/Minuteur.h"
 #include "TurnInfo.h"
 #include "Chemin.h"
@@ -53,6 +55,8 @@ void GameManager::InitializeBehaviorTree() noexcept {
    unique_ptr<Exploitation> exploitation = make_unique<Exploitation>(*this);
    unique_ptr<ScoreStrategie> expedition = make_unique<Expedition>(*this, "Expedition");
    unique_ptr<ScoreStrategie> exploration = make_unique<Exploration>(*this, "Exploration");
+   unique_ptr<CheckingHiddenDoors> checkingHiddenDoors = make_unique<CheckingHiddenDoors>(*this);
+   //unique_ptr<ScoreStrategie> lookingForHiddenDoors = make_unique<LookingForHiddenDoors>(*this, "LookingForHiddenDoors");
 
    vector<unique_ptr<BT_Noeud>> vecSequ1{};
    vecSequ1.push_back(move(chemins));
@@ -72,6 +76,7 @@ void GameManager::InitializeBehaviorTree() noexcept {
    vector<unique_ptr<BT_Noeud>> vecBehaviorTree;
    vecBehaviorTree.push_back(move(sequenceur2));
    vecBehaviorTree.push_back(move(exploration));
+   vecBehaviorTree.push_back(move(checkingHiddenDoors));
    behaviorTreeManager = Selecteur(move(vecBehaviorTree));
 }
 
@@ -86,6 +91,17 @@ vector<Mouvement> GameManager::getAllMouvements() {
            << "chemin = " << npc.second.getChemin().toString() << std::endl
            << "case actuelle = " <<  npc.second.getTileId() << std::endl;
        
+        // On vérifie si le Npc doit checker un mur ou non
+        if (npc.second.getIsCheckingDoor()) {
+            // Alors on enregistre un mouvement statique
+            mouvements.push_back(Mouvement(npc.second.getId(), npc.second.getTileId(), npc.second.getTileId(), Tile::ETilePosition::CENTER));
+
+            // Et on lui précise qu'il s'agit d'un mouvement de checking de mur !
+            mouvements[mouvements.size() - 1].setCheckingDoor(npc.second.getDirectionCheckingDoor());
+
+            // Et on passe au npc suivant
+            continue;
+        }
 
         // Si le npc doit aller quelquepart !!!
         if (!npc.second.getChemin().empty()) {
@@ -101,7 +117,7 @@ vector<Mouvement> GameManager::getAllMouvements() {
                 // Alors on enregistre un mouvement statique
                 mouvements.push_back(Mouvement(npc.second.getId(), npc.second.getTileId(), npc.second.getTileId(), Tile::ETilePosition::CENTER));
                 // Et on lui précise qu'il s'agit d'un mouvement d'ouverture de porte et non de déplacement !
-                mouvements[mouvements.size() - 1].setActivateDoor();
+                mouvements[mouvements.size() - 1].setActivateDoor(direction);
 
             // Si il y a porte fermée à switch, il faut attendre
             } else if(c.getTile(npc.second.getTileId()).hasClosedDoor(caseCible, c)) {
@@ -460,6 +476,9 @@ void GameManager::refreshFloodfill() {
          , std::ref(*this)
       };
       workers.addThread(std::move(th));
+
+      // On en profite pour réinitialiser un attribut par npcs :)
+      npc.second.setIsCheckingDoor(false);
    }
    workers.joinAll();
 }

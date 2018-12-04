@@ -100,6 +100,16 @@ bool MapTile::isVoisinAvecEtat(const Etats etat, const int id) const noexcept {
    }) != voisins.end();
 }
 
+void MapTile::addEtat(const Etats etat, const int id) {
+   auto it = find_if(voisins.begin(), voisins.end(), [&id](const Voisin& v) {
+      return v.getTuileIndex() == id;
+   });
+
+   if (it != voisins.end()) {
+      it->setEtat(etat, true);
+   }
+}
+
 void MapTile::removeEtat(const Etats etat, const int id) {
    auto it = find_if(voisins.begin(), voisins.end(), [&id](const Voisin& v) {
       return v.getTuileIndex() == id;
