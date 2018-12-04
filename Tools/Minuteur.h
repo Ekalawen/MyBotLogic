@@ -10,7 +10,7 @@ using std::string;
 class Minuteur {
 public:
    using duree_t = unsigned int;
-   using time_point_t = chrono::high_resolution_clock::time_point;
+   using time_point_t = std::chrono::high_resolution_clock::time_point;
 public:
    static time_point_t now();
    static string nowStr();

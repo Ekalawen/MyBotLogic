@@ -55,7 +55,7 @@ MyBotLogic::MyBotLogic() :
    GameManager::setLogRelease(logpath, "MyLogRelease.log");
    manager.Init(_levelInfo);
    manager.InitializeBehaviorTree();
-   manager.refreshFloodfill();
+   //manager.refreshFloodfill();
    auto post = Minuteur::now();
     // On associe à chaque npc son objectif !
    //gm.associateNpcsWithObjectiv();
@@ -76,16 +76,25 @@ MyBotLogic::MyBotLogic() :
    profiler << "TURN =========================== " << _turnInfo.turnNb << endl;
    profilerRelease << "TURN =========================== " << _turnInfo.turnNb << endl;
 
-   // On complete notre modele avec l'information qu'on vient de decouvrir !
-   manager.updateModel(_turnInfo);
+   if (!manager.isFloodFillDejaCalcule) {
+       // On complete notre modele avec l'information qu'on vient de decouvrir !
+       manager.updateModel(_turnInfo);
+       profilerRelease << "ON A DU isFloodFillDejaCalcule " << endl;
+   }
 
-   // On definit notre strategie en executant notre arbre de comportement
-   manager.execute();
+   if (manager.enoughTimeForFloodFill) {
+       profilerRelease << "ON A DU TEMPS " << endl;
+       // On definit notre strategie en executant notre arbre de comportement
+       manager.execute();
 
-   // On fait se deplacer chaque Npc vers son objectif associe =)
-   manager.moveNpcs(_actionList);
+       // On fait se deplacer chaque Npc vers son objectif associe =)
+       manager.moveNpcs(_actionList);
 
-   manager.refreshFloodfill();
+   }
+   else {
+       profilerRelease << "ON A PAS DU TEMPS " << endl;
+       manager.lanceAllFloodRempliBetweenTour();
+   }
 }
 
 /*virtual*/ void MyBotLogic::Exit()

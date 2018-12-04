@@ -32,6 +32,8 @@ using std::stringstream;
 using std::endl;
 using std::max;
 using namespace std;
+using namespace std::chrono;
+
 
 // On initialise notre attribut statique ...
 Logger GameManager::logger{};
@@ -43,9 +45,10 @@ void GameManager::Init(LevelInfo _info)
    // On rï¿½cupï¿½re l'ensemble des npcs !
    for (auto pair_npc : _info.npcs) {
       NPCInfo npc = pair_npc.second;
-      npcs[npc.npcID] = Npc(npc, this);
+      npcs[npc.npcID] = Npc(npc);
    }
    threads.init();
+   threads.setGM(*this);
 }
 
 void GameManager::InitializeBehaviorTree() noexcept {
@@ -163,6 +166,8 @@ void GameManager::moveNpcs(vector<Action*>& actionList) noexcept {
       // On applique notre mouvement
       mouvement.apply(actionList, npcs, c);
    }
+
+   isFloodFillDejaCalcule = false;
 }
 
 vector<int> getIndicesMouvementsSurMemeCaseCible(vector<Mouvement>& _mouvements, int _caseCible) {
@@ -329,7 +334,7 @@ void GameManager::updateModel(const TurnInfo &_tile) noexcept {
   // threads.join();
 
    // Mettre a jour nos NPCs
-  // refreshFloodfill();
+   refreshFloodfill();
 }
 
 void GameManager::majPortesASwitch() noexcept {
@@ -484,9 +489,14 @@ void GameManager::refreshFloodfill() {
 
   // ThreadPool workers;
 
+   //Minuteur m{};
+
+   tempsDebutThread = high_resolution_clock::now();
+
    for (auto &npc : npcs) {
 
-       threads.ajouter([&npc]() {  npc.second.floodfill(); });
+       //threads.ajouter(std::bind(npc.second.floodfill, *this));
+       threads.ajouter([&npc, &gm = *this](GameManager& gm) {  npc.second.floodfill(gm); });
 
       //npc.second.floodfill(c);
    /*   std::thread th{
@@ -500,7 +510,14 @@ void GameManager::refreshFloodfill() {
       // On en profite pour réinitialiser un attribut par npcs :)
       npc.second.setIsCheckingDoor(false);
    }
-  // workers.joinAll();
+   //threads.joinAll();
+   //verifier quil ny a plus de taches + verifier que aucun thread nest en train de rouler
+
+   threads.joinAll();
+
+   auto now = high_resolution_clock::now();
+
+   enoughTimeForFloodFill = !(static_cast<milliseconds>((now - tempsDebutThread).count()) > SEUIL_TEMPS_FLOODFILL);
 }
 
 bool GameManager::permutationUtile(Npc& npc1, Npc& npc2) {
@@ -510,6 +527,28 @@ bool GameManager::permutationUtile(Npc& npc1, Npc& npc2) {
 
    // Si l'interversion des objectifs est possible et benefique pour l'un deux et ne coute rien a l'autre (ou lui est aussi benefique)
    return npc1.isAccessibleTile(objectifNpc2) && npc2.isAccessibleTile(objectifNpc1) && (max(npc1.distanceToTile(objectifNpc2), npc2.distanceToTile(objectifNpc1)) < tempsMaxChemins);
+}
+
+void GameManager::lanceAllFloodRempliBetweenTour() {
+    for (auto &npc : npcs) {
+
+        //threads.ajouter(std::bind(npc.second.floodfill, *this));
+        threads.ajouter([&npc, &gm = *this](GameManager& gm) {  npc.second.floodfill(gm); });
+
+        //npc.second.floodfill(c);
+        /*   std::thread th{
+        [&npc](GameManager& gm) {
+        npc.second.floodfill(gm);
+        }
+        , std::ref(*this)
+        };
+        workers.addThread(std::move(th));*/
+
+        // On en profite pour réinitialiser un attribut par npcs :)
+        npc.second.setIsCheckingDoor(false);
+    }
+
+    isFloodFillDejaCalcule = true;
 }
 
 void GameManager::execute() noexcept { 

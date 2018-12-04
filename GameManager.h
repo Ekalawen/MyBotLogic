@@ -10,12 +10,18 @@
 #include "TurnInfo.h"
 #include "MyBotLogic/Tools/Profiler.h"
 #include "BehaviorTree/Composite/Selecteur.h"
-#include "MyBotLogic/Tools/ThreadPool.cpp"
+#include "MyBotLogic/Tools/ThreadPool.h"
 #include <map>
+#include <chrono>
+#include <condition_variable>
 
 using std::map;
 using std::vector;
 using std::string;
+using std::chrono::steady_clock;
+using std::chrono::time_point;
+using std::chrono::milliseconds;
+using namespace std::chrono;
 
 class npc_inexistant {};
 class npc_deja_existant {};
@@ -43,14 +49,19 @@ class GameManager {
 #define LOG_RELEASE_NOEND(text) 0
 #endif
 // On veut TOUJOURS ecrire dans les logs du Release
-#define LOG_RELEASE(text) GameManager::getLoggerRelease().Log(text, true)
-#define LOG_RELEASE_NOEND(text) GameManager::getLoggerRelease().Log(text, false)
+//#define LOG_RELEASE(text) GameManager::getLoggerRelease().Log(text, true)
+//#define LOG_RELEASE_NOEND(text) GameManager::getLoggerRelease().Log(text, false)
 
 public:
     Carte c;
     Selecteur behaviorTreeManager; // Arbre de comportement du GameManager pour déterminer la stratégie à suivre
     vector<int> objectifPris; // Permet de savoir quels sont les objectifs actuellement assignés à des npcs
     th_pool threads;
+    std::condition_variable cond;
+    time_point<steady_clock> tempsDebutThread;
+    const milliseconds SEUIL_TEMPS_FLOODFILL = 4ms;
+    bool enoughTimeForFloodFill = false;
+    bool isFloodFillDejaCalcule = false;
 
     GameManager() = default;
     void Init(LevelInfo);
@@ -68,6 +79,7 @@ public:
     int getNpcIdAtTileId(int tileId);
     map<int, Npc>& getNpcs();
     void addNpc(Npc npc);
+    void lanceAllFloodRempliBetweenTour();
 
     //static void log(string str) noexcept { // Permet de débugger ! :D
     //    #ifndef _DEBUG
