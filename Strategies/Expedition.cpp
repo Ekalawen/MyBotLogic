@@ -1,6 +1,7 @@
 
 #include "Expedition.h"
 #include "MyBotLogic/MapTile.h"
+#include "../GameManager.h"
 
 #include <string>
 #include <vector>
@@ -19,7 +20,7 @@ Expedition::Expedition(GameManager& _manager, string _nom)
     // La distance moyenne de cette tile à tous les objectifs
     // La distance moyenne de cette tuile aux autres tuiles qui seront visités !
     // Le degré d'intèret de la tuile. 
-void Expedition::saveScore(const MapTile& _tile, Npc& _npc, const vector<int>& _tilesAVisiter) const noexcept {
+bool Expedition::saveScore(const MapTile& _tile, Npc& _npc, const vector<int>& _tilesAVisiter) const noexcept {
     // Précondition : tile.statut == CONNU
     float score = 0;
 
@@ -28,7 +29,7 @@ void Expedition::saveScore(const MapTile& _tile, Npc& _npc, const vector<int>& _
 
 	// On regarde l'intéret de cette tile
 	float interetTile = interet(_tile);
-    if (interetTile == 0) return; // Si pas d'intéret, la tile ne nous intéresse pas !
+    if (interetTile == 0) return false; // Si pas d'intéret, la tile ne nous intéresse pas !
 	score += interetTile * COEF_INTERET;
 
     // On enregistre le cout, cad la distance npc-tile
@@ -54,6 +55,7 @@ void Expedition::saveScore(const MapTile& _tile, Npc& _npc, const vector<int>& _
 
     // Il reste à affecter le score et le chemin au npc
     _npc.addScore({ _tile.getId(), score });
+    return true;
 }
 
 // L'intérét est définit par :

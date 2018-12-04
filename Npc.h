@@ -5,7 +5,6 @@
 #include "NPCInfo.h"
 #include "Chemin.h"
 #include "Carte.h"
-
 #include <vector>
 
 using std::vector;
@@ -31,6 +30,7 @@ using DistanceType = Score<int>;
 using Distances = vector<DistanceType>;
 
 class Carte;
+class GameManager;
 class Npc {
 private:
     vector<Chemin> cheminsPossibles; // Ceci est une variable temporaire permettant de stocker les chemins parmis lesquelles choisirs un objectif
@@ -44,6 +44,8 @@ private:
 
     //Distances distancesEnsembleAccessible;
 	bool estArrive; // indique si le npc a atteind son objectif
+    bool isCheckingDoor = false; // Permet de savoir si le npc doit checker une porte ou non !
+    Tile::ETilePosition doorCheckingDirection = Tile::CENTER; // La direction dans laquelle il doit checker !
 
 public:
 
@@ -56,8 +58,8 @@ public:
     void addChemin(Chemin& chemin) noexcept;
     void addScore(ScoreType score) noexcept;
     Chemin getCheminMinNonPris(const vector<int>& _objectifsPris, const int _tailleCheminMax) const noexcept; // Permet de trouver le chemin le plus court qui ne soit pas déjà pris
-    int affecterMeilleurChemin(const Carte& _carte) noexcept; // Affecte au npc le chemin avec le meilleur score et renvoie la destination de ce chemin !
-    void floodfill(const Carte&); // Calcule le coût et l'ensemble des tiles accessibles pour un npcs, et MAJ ses attributs.
+    int affecterMeilleurChemin(GameManager& gm) noexcept; // Affecte au npc le chemin avec le meilleur score et renvoie la destination de ce chemin !
+    void floodfill(GameManager& gm); // Calcule le coût et l'ensemble des tiles accessibles pour un npcs, et MAJ ses attributs.
     Scores::iterator chercherMeilleurScore(Scores& _scores);
 
     int getId() const noexcept;
@@ -65,11 +67,15 @@ public:
     int getTileObjectif() const noexcept;
     void setTileObjectif(const int idTile) noexcept;
     Chemin& getChemin() noexcept;
+    void setChemin(Chemin& _chemin) noexcept;
     Distances& getEnsembleAccessible() noexcept;
     bool isAccessibleTile(const int tileId) const noexcept;
     int distanceToTile(const int tileId) const ;
     bool isArrived() const noexcept;
     void setArrived(const bool etat) noexcept;
+    void setIsCheckingDoor(bool etat, Tile::ETilePosition direction = Tile::CENTER);
+    bool getIsCheckingDoor() const noexcept;
+    Tile::ETilePosition getDirectionCheckingDoor() const noexcept;
 };
 
 #endif

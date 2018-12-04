@@ -19,7 +19,7 @@ Exploration::Exploration(GameManager& _manager, string _nom)
     // La distance du npc à la tuile
     // La distance moyenne de cette tuile aux autres tuiles qui seront visités !
     // Le degré d'intéret de la tuile. 
-void Exploration::saveScore(const MapTile& _tile, Npc& _npc, const vector<int>& _tilesAVisiter) const noexcept {
+bool Exploration::saveScore(const MapTile& _tile, Npc& _npc, const vector<int>& _tilesAVisiter) const noexcept {
     float score = 0;
 
     // Si on a déjà visité cette case, son score est nul
@@ -31,7 +31,7 @@ void Exploration::saveScore(const MapTile& _tile, Npc& _npc, const vector<int>& 
     // On regarde l'intéret de cette tile
     float interetTile = interet(_tile);
     score += interetTile * COEF_INTERET;
-    if (interetTile == 0) return; // Si pas d'intéret, la tile ne nous intéresse pas !
+    if (interetTile == 0) return false; // Si pas d'intéret, la tile ne nous intéresse pas !
 
     // On regarde la distance moyenne de cette tuile aux autres tuiles déjà visités
     if (!_tilesAVisiter.empty()) {
@@ -45,6 +45,7 @@ void Exploration::saveScore(const MapTile& _tile, Npc& _npc, const vector<int>& 
 
     // Il reste à affecter le score et le chemin au npc
     _npc.addScore({ _tile.getId(), score });
+    return true;
 }
 
 // L'intérét est définit par :

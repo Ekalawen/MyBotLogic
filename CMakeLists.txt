@@ -63,6 +63,8 @@ SET( AIBOT_HEADERS
 	MyBotLogic/Voisin.h
 	MyBotLogic/Noeud.h
 	MyBotLogic/Porte.h
+	MyBotLogic/Activateur.h
+	MyBotLogic/Contrainte.h
 	MyBotLogic/BehaviorTree/BT_Noeud.h
 	MyBotLogic/BehaviorTree/BT_Composite.h
 	MyBotLogic/BehaviorTree/Composite/Selecteur.h
@@ -98,6 +100,8 @@ SET( AIBOT_SRC
 	MyBotLogic/Voisin.cpp
 	MyBotLogic/Noeud.cpp
 	MyBotLogic/Porte.cpp
+	MyBotLogic/Activateur.cpp
+	MyBotLogic/Contrainte.cpp
 	MyBotLogic/BT_Tests/ObjectifsForAllNpcs.cpp
 	MyBotLogic/BT_Tests/CheminsForAllNpcs.cpp
 	MyBotLogic/Strategies/Expedition.cpp

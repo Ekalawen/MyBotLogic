@@ -13,6 +13,7 @@
 #include <vector>
 #include <memory>
 
+using namespace std;
 using std::stringstream;
 using std::vector;
 using std::to_string;
@@ -66,7 +67,7 @@ Chemin Npc::getCheminMinNonPris(const vector<int>& objectifsPris, const int tail
 }
 
 Scores::iterator Npc::chercherMeilleurScore(Scores& _scores) {
-   ProfilerDebug profiler{ GameManager::getLogger(), "chercherMeilleurScore" };
+   ProfilerDebug profiler{ GameManager::getLogger(), "chercherMeilleurScore", false};
 
    return max_element(begin(_scores), end(_scores),
       [](const ScoreType& scoreDroite, const ScoreType& scoreGauche) {
@@ -74,13 +75,13 @@ Scores::iterator Npc::chercherMeilleurScore(Scores& _scores) {
    });
 }
 
-int Npc::affecterMeilleurChemin(const Carte&_carte) noexcept {
-   ProfilerDebug profiler{ GameManager::getLogger(), "affecterMeilleurChemin" };
+int Npc::affecterMeilleurChemin(GameManager& gm) noexcept {
+   ProfilerDebug profiler{ GameManager::getLogger(), "affecterMeilleurChemin", false};
 
    if (scoresAssocies.empty()) {
       // Dans ce cas-la on reste sur place !
       chemin = Chemin{};
-      profiler << "Le Npc " << id << " n'a rien a rechercher et reste sur place !";
+      profiler << "Le Npc " << id << " n'a rien a rechercher et reste sur place !" << endl;
       return tileId;
    }
 
@@ -88,43 +89,61 @@ int Npc::affecterMeilleurChemin(const Carte&_carte) noexcept {
    auto bestIter = chercherMeilleurScore(scoresAssocies);
 
    // On affecte son chemin, mais il nous faut le calculer ! =)
-   chemin = _carte.aStar(tileId, bestIter->tuileID);
+   chemin = gm.c.aStar(tileId, bestIter->tuileID, getId(), gm);
    profiler << "Le Npc " << to_string(id) << " va rechercher la tile " << chemin.destination() << endl;
     // On renvoie la destination
     return chemin.destination();
 }
 
-   
-void Npc::floodfill(const Carte& c) {
-   ProfilerDebug profiler{ GameManager::getLogger(), "floodfill NPC "+id };
+void Npc::floodfill(GameManager& gm) {
+   ProfilerDebug profiler{ GameManager::getLogger(), "floodfill NPC " + to_string(getId()) };
     ensembleAccessible.clear();
 
     vector<Noeud> fermees;
     vector<Noeud> ouverts;
 
-    ouverts.push_back(Noeud(c.getTile(tileId), 0));
+    ouverts.push_back(Noeud(gm.c.getTile(tileId), 0));
 
     while (!ouverts.empty()) {
         Noeud courant = ouverts[0];
         ouverts.erase(ouverts.begin());
 
-        for (int voisin : courant.tile.getVoisinsIDParEtat(ACCESSIBLE)) {
-            if (c.getTile(voisin).existe()) {
-                int cout = !c.getTile(courant.tile.getId()).hasDoorPoigneeVoisin(voisin, c) ? 1 : 2; // Si il y a une porte a poignee c'est 2 fois plus long !
-                Noeud nouveau{ c.getTile(voisin), courant.cout + cout };
-                auto itFermee = find(fermees.begin(), fermees.end(), nouveau);
-                auto itOuvert = find(ouverts.begin(), ouverts.end(), nouveau);
+        for (int voisin : courant.tile.getVoisinsIDParEtat(ACCESSIBLE)) { // Pour chaque voisins du noeud courant
+            if (gm.c.getTile(voisin).existe()) { // Si le voisin existe
+                MapTile& voisinTile = gm.c.getTile(courant.tile.getId());
 
-                if (itFermee == fermees.end() && itOuvert == ouverts.end()) {
-                    ouverts.push_back(nouveau);
-                } else if (itFermee != fermees.end() && itOuvert == ouverts.end()) {
-                    // Do nothing
-                } else if (itFermee == fermees.end() && itOuvert != ouverts.end()) {
-                   if ((*itOuvert).cout > nouveau.cout) {
-                      (*itOuvert) = nouveau;
-                   }
-                } else {
-                    GAME_MANAGER_LOG_DEBUG("Probleme dans le floodfill !");
+                // On gère les potentielles portes
+                bool doorOk = true;
+                int tempsAvantOuverture = 0;
+                vector<Contrainte> contraintes{};
+                if (voisinTile.hasDoor(voisin, gm.c)) {
+                    doorOk = voisinTile.canPassDoor(voisin, { getId() }, courant.tile.getId(), gm, tempsAvantOuverture, contraintes);
+                }
+
+                //if (!voisinTile.hasClosedDoorSwitch(voisin, gm.c) // On vérifie qu'il n'y a pas de porte à switch devant
+                //    || voisinTile.getContrainte(voisin, gm.c).isSolvableWithout(vector<int>{getId()}, gm, cout)) { // Où qu'elle n'est pas génante !
+
+                // Si toutes les contraintes avec les portes sont favorables
+                if(doorOk) {
+                    int cout = std::max(!gm.c.getTile(courant.tile.getId()).hasDoorPoigneeVoisin(voisin, gm.c) ? 1 : 2, tempsAvantOuverture); // Si il y a une porte à poignée c'est 2 fois plus long !
+                    Noeud nouveau{ gm.c.getTile(voisin), courant.cout + cout };
+                    auto itFermee = find(fermees.begin(), fermees.end(), nouveau);
+                    auto itOuvert = find(ouverts.begin(), ouverts.end(), nouveau);
+
+                    if (itFermee == fermees.end() && itOuvert == ouverts.end()) {
+                        ouverts.push_back(nouveau);
+                    }
+                    else if (itFermee != fermees.end() && itOuvert == ouverts.end()) {
+                        // Do nothing
+                    }
+                    else if (itFermee == fermees.end() && itOuvert != ouverts.end()) {
+                        if ((*itOuvert).cout > nouveau.cout) {
+                            (*itOuvert) = nouveau;
+                        }
+                    }
+                    else {
+                        LOG("Problème dans le floodfill !");
+                    }
                 }
             }
         }
@@ -196,6 +215,10 @@ Chemin& Npc::getChemin() noexcept {
    return chemin;
 }
 
+void Npc::setChemin(Chemin& _chemin) noexcept {
+    chemin = _chemin;
+}
+
 Distances& Npc::getEnsembleAccessible() noexcept {
    return ensembleAccessible;
 }
@@ -222,3 +245,16 @@ bool Npc::isArrived() const noexcept {
 void Npc::setArrived(const bool etat) noexcept {
    estArrive = etat;
 }
+
+void Npc::setIsCheckingDoor(bool etat, Tile::ETilePosition direction) {
+    isCheckingDoor = etat;
+    doorCheckingDirection = direction;
+}
+
+bool Npc::getIsCheckingDoor() const noexcept {
+    return isCheckingDoor;
+}
+Tile::ETilePosition Npc::getDirectionCheckingDoor() const noexcept {
+    return doorCheckingDirection;
+}
+

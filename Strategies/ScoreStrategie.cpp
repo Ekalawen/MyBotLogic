@@ -32,6 +32,7 @@ BT_Noeud::ETAT_ELEMENT ScoreStrategie::execute() noexcept {
    // L'ensemble des tiles que l'on va visiter
    vector<int> tilesAVisiter;
 
+   bool founded = false;
    for (auto& pair : manager.getNpcs()) {
       Npc& npc = pair.second;
       npc.resetChemins();
@@ -39,33 +40,42 @@ BT_Noeud::ETAT_ELEMENT ScoreStrategie::execute() noexcept {
       // Calculer le score de chaque tile pour le npc
       // En même temps on calcul le chemin pour aller à cette tile
       // On stocke ces deux informations dans l'attribut cheminsPossibles du Npc
-      calculerScoresTilesPourNpc(npc, tilesAVisiter);
+      if (calculerScoresTilesPourNpc(npc, tilesAVisiter))
+          founded = true;
 
       // Choisir la meilleure tile pour ce npc et lui affecter son chemin
-      int tileChoisi = npc.affecterMeilleurChemin(manager.c);
+      int tileChoisi = npc.affecterMeilleurChemin(manager);
 
       // Mettre à jour les tilesAVisiter
       tilesAVisiter.push_back(tileChoisi);
    }
 
-   return ETAT_ELEMENT::REUSSI;
+   if(founded)
+       return ETAT_ELEMENT::REUSSI;
+   else 
+       return ETAT_ELEMENT::ECHEC;
 }
 
-void ScoreStrategie::calculerScore1Tile(int _tileID, Carte& _carte, Npc& _npc, const vector<int>& _tilesAVisiter) {
+bool ScoreStrategie::calculerScore1Tile(int _tileID, Carte& _carte, Npc& _npc, const vector<int>& _tilesAVisiter) {
    MapTile tile = _carte.getTile(_tileID);
+   bool founded = false;
    // On ne considère la tile que si on ne la visite pas déjà !
-   if (tile.getStatut() == MapTile::Statut::CONNU && find(_tilesAVisiter.begin(), _tilesAVisiter.end(), tile.getId()) == _tilesAVisiter.end()) {
-      saveScore(tile, _npc, _tilesAVisiter);
+   if ((tile.getStatut() == MapTile::Statut::CONNU || tile.getStatut() == MapTile::Statut::PRESUME_CONNU) && find(_tilesAVisiter.begin(), _tilesAVisiter.end(), tile.getId()) == _tilesAVisiter.end()) {
+      founded = saveScore(tile, _npc, _tilesAVisiter);
    }
+   return founded;
 }
 
 // Calcul le score de chaque tiles et son chemin pour un npc
 // On prend en compte les tilesAVisiter des autres npcs pour que les tiles soient loins les unes des autres
-void ScoreStrategie::calculerScoresTilesPourNpc(Npc& _npc, const vector<int>& _tilesAVisiter) noexcept {
-   ProfilerDebug profiler{ GameManager::getLogger(), "calculerScoresTilesPourNpc" };
-   profiler << "Taille ensemble : " << _npc.getEnsembleAccessible().size();
+bool ScoreStrategie::calculerScoresTilesPourNpc(Npc& _npc, const vector<int>& _tilesAVisiter) noexcept {
+   ProfilerDebug profiler{ GameManager::getLogger(), "calculerScoresTilesPourNpc", false};
+   //profiler << "Taille ensemble : " << _npc.getEnsembleAccessible().size() << endl;
+   bool founded = false;
    for (auto score : _npc.getEnsembleAccessible()) { // parcours toutes les tiles découvertes par l'ensemble des npcs et qui sont accessibles
-      calculerScore1Tile(score.tuileID, manager.c, _npc, _tilesAVisiter);
+       if (calculerScore1Tile(score.tuileID, manager.c, _npc, _tilesAVisiter))
+           founded = true;
    }
+   return founded;
 }
 

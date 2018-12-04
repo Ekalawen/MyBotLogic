@@ -1,28 +1,25 @@
-#ifndef EXPLORATION_H
-#define EXPLORATION_H
+#ifndef LOOKING_FOR_HIDDEN_DOORS_H
+#define LOOKING_FOR_HIDDEN_DOORS_H
 
 #include "MyBotLogic/Strategies/ScoreStrategie.h"
 
 #include <vector>
 #include <string>
-
 using std::vector;
 using std::string;
 
 class MapTile;
 class Npc;
 class GameManager;
-class Exploration : public ScoreStrategie {
+class LookingForHiddenDoors : public ScoreStrategie {
 public:
     bool saveScore(const MapTile& tile, Npc& npc, const vector<int>& tilesAVisiter) const noexcept;
     float interet(const MapTile& tile) const noexcept;
 
-    enum { COEF_DISTANCE_NPC_TILE = -12 }; // Il faut que ce soit négatif
-    enum { COEF_DISTANCE_TILE_AUTRE_TILES = 12 };
+    enum { COEF_DISTANCE_NPC_TILE = -12 };
     enum { COEF_INTERET = 1 };
-    enum { COEF_INTERET_ACCESSIBLE = 2 };
-    enum { COEF_INTERET_INACCESSIBLE_MAIS_VISIBLE = 1 };
-    Exploration(GameManager&, string);
+    enum { COEF_NB_MURS_TILE = 1 };
+    LookingForHiddenDoors(GameManager&, string);
 };
 
 #endif

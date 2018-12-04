@@ -60,7 +60,7 @@ MyBotLogic::MyBotLogic() :
    //gm.associateNpcsWithObjectiv();
    stringstream ss;
     ss << "Durée Initialisation = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms";
-    GAME_MANAGER_LOG_DEBUG(ss.str());
+    LOG(ss.str());
 }
 
 /*virtual*/ void MyBotLogic::OnGameStarted()
@@ -70,9 +70,9 @@ MyBotLogic::MyBotLogic() :
 
 /*virtual*/ void MyBotLogic::FillActionList(TurnInfo& _turnInfo, vector<Action*>& _actionList)
 {
-   ProfilerDebug profiler{ GameManager::getLogger(), "FillActionList" };
+   ProfilerDebug profiler{ GameManager::getLogger(), "Tour" };
+   ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "Tour" };
    profiler << "TURN =========================== " << _turnInfo.turnNb << endl;
-   ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "FillActionList" };
    profilerRelease << "TURN =========================== " << _turnInfo.turnNb << endl;
 
    // On complete notre modele avec l'information qu'on vient de decouvrir !
@@ -80,6 +80,8 @@ MyBotLogic::MyBotLogic() :
 
    // On definit notre strategie en executant notre arbre de comportement
    manager.execute();
+   manager.reaffecterObjectifsSelonDistance();
+   manager.affecterContraintes();
 
    // On fait se deplacer chaque Npc vers son objectif associe =)
    manager.moveNpcs(_actionList);

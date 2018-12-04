@@ -2,17 +2,18 @@
 #define MAP_TILE_H
 
 #include "TileInfo.h"
-#include "MyBotLogic/Carte.h"
 #include "Voisin.h"
+#include "Contrainte.h"
 #include <vector>
 
 using std::vector;
 
-class Carte;
+class contrainte_inexistante {};
 
+class Carte;
 class MapTile {
 public:
-    enum Statut { INCONNU, CONNU, VISITE };
+    enum Statut { INCONNU, CONNU, VISITE, PRESUME_CONNU }; // Présumé_connu est utilisé pour les portes. On sait qu'il y a quelque chose derrière, mais on sait pas ce que c'est !
 
 private:
     int id;
@@ -27,7 +28,9 @@ public:
     MapTile(unsigned int id, Carte &m); // Appelé dés le début et uniquement là !
 
     void setTileDecouverte(const TileInfo& _tile) noexcept;
+    void presumerConnu() noexcept;
 
+    void addEtat(const Etats etat, const int id);
     void removeEtat(const Etats etat, const int id);
 	bool isVoisinAvecEtat(const Etats etat, const int id) const noexcept;
 
@@ -40,7 +43,12 @@ public:
     vector<Voisin> getVoisins() const noexcept;
     vector<int> getVoisinsId() const noexcept;
     vector<int> getVoisinsIDParEtat(const Etats etat) const noexcept;
-    bool hasDoorPoigneeVoisin(const int voisinId, const Carte& c) const noexcept; // Permet de savoir s'il y a une porte à poignée entre cette tile et sa voisine. Si la voisine n'existe pas, on lève une exception
+    bool hasDoorPoigneeVoisin(const int voisinId, const Carte& c) const noexcept; // Permet de savoir s'il y a une porte à poignée fermée entre cette tile et sa voisine.
+    bool hasDoor(const int voisinId, const Carte& c) const noexcept; // Permet de savoir s'il y a une porte
+    bool hasClosedDoor(const int voisinId, const Carte& c) const noexcept; // Permet de savoir s'il y a une porte fermée
+    bool hasClosedDoorSwitch(const int voisinId, const Carte& c) const noexcept; // Permet de savoir s'il y a une porte à switch fermée entre cette tile et sa voisine.
+    bool canPassDoor(const int tileVoisineId, const int npcActif, const int caseAvantPorte, GameManager& gm, int& tempsAvantOuverture, vector<Contrainte>& contraintesNecessaires) const noexcept;
+    Contrainte getContrainte(const int voisinId, const Carte& c) const noexcept; // Retourne la contrainte associée à ce voisin si elle existe !
     Statut getStatut() const noexcept;
     void setStatut(Statut new_statut);
     void addPorte(int porteId);

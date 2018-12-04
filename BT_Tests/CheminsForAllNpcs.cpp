@@ -2,6 +2,7 @@
 #include "../BehaviorTree/BT_Noeud.h"
 
 #include "MyBotLogic/Tools/Minuteur.h"
+#include "../GameManager.h"
 #include "MyBotLogic/Tools/Profiler.h"
 
 #include <sstream>

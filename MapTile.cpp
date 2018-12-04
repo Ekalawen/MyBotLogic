@@ -90,10 +90,24 @@ void MapTile::setTileDecouverte(const TileInfo& tile) noexcept {
    statut = CONNU;
 }
 
+void MapTile::presumerConnu() noexcept {
+    statut = PRESUME_CONNU;
+}
+
 bool MapTile::isVoisinAvecEtat(const Etats etat, const int id) const noexcept {
    return find_if(voisins.begin(), voisins.end(), [&](const Voisin& v) {
       return v.getTuileIndex() == id && v.estEtat(etat);
    }) != voisins.end();
+}
+
+void MapTile::addEtat(const Etats etat, const int id) {
+   auto it = find_if(voisins.begin(), voisins.end(), [&id](const Voisin& v) {
+      return v.getTuileIndex() == id;
+   });
+
+   if (it != voisins.end()) {
+      it->setEtat(etat, true);
+   }
 }
 
 void MapTile::removeEtat(const Etats etat, const int id) {
@@ -163,11 +177,70 @@ void MapTile::addPorte(int porteId) {
 }
 
 bool MapTile::hasDoorPoigneeVoisin(const int voisinId, const Carte& c) const noexcept {
-    for (auto porteId : portesAdjacentes) {
+    for (int porteId : portesAdjacentes) {
         Porte porte = c.getPorte(porteId);
         if (porte.getType() == Porte::A_POIGNEE && porte.getEtat() == Object::ObjectState_Closed) {
-            return porte.isVoisine(voisinId);
+            if (porte.isVoisine(voisinId))
+                return true;
+            // On ne veut pas renvoyer false ici
         }
     }
     return false;
+}
+
+bool MapTile::hasDoor(const int voisinId, const Carte& c) const noexcept {
+    for (int porteId : portesAdjacentes) {
+        Porte porte = c.getPorte(porteId);
+        if (porte.isVoisine(voisinId))
+            return true;
+        // On ne veut pas renvoyer false ici
+    }
+    return false; // Mais ici
+}
+
+bool MapTile::hasClosedDoor(const int voisinId, const Carte& c) const noexcept {
+    for (int porteId : portesAdjacentes) {
+        Porte porte = c.getPorte(porteId);
+        if (porte.getEtat() == Object::ObjectState_Closed) {
+            if (porte.isVoisine(voisinId))
+                return true;
+            // On ne veut pas renvoyer false ici
+        }
+    }
+    return false; // Mais ici
+}
+
+bool MapTile::hasClosedDoorSwitch(const int voisinId, const Carte& c) const noexcept {
+    for (int porteId : portesAdjacentes) {
+        Porte porte = c.getPorte(porteId);
+        if (porte.getType() == Porte::A_SWITCH && porte.getEtat() == Object::ObjectState_Closed) {
+            if (porte.isVoisine(voisinId))
+                return true;
+            // On ne veut pas renvoyer false ici
+        }
+    }
+    return false; // Mais ici
+}
+
+bool MapTile::canPassDoor(const int tileVoisineId, const int npcActif, const int caseAvantPorte, GameManager& gm, int& tempsAvantOuverture, vector<Contrainte>& contraintesNecessaires) const noexcept {
+    for (int porteId : portesAdjacentes) {
+        Porte porte = gm.c.getPorte(porteId);
+        // Si c'est la porte qui nous intéresse
+        if (porte.isVoisine(tileVoisineId))
+            return porte.canPassDoor(npcActif, caseAvantPorte, gm, tempsAvantOuverture, contraintesNecessaires);
+    }
+    LOG("Ce n'est pas normal que l'on soit ici !");
+    exit(0);
+}
+
+Contrainte MapTile::getContrainte(const int voisinId, const Carte& c) const noexcept {
+    for (int porteId : portesAdjacentes) {
+        Porte porte = c.getPorte(porteId);
+        if (porte.getType() == Porte::A_SWITCH && porte.getEtat() == Object::ObjectState_Closed) {
+            if (porte.isVoisine(voisinId)) {
+                return Contrainte{ getId(), voisinId, porte.getSwitchsTilesIds(c), c };
+            }
+        }
+    }
+    throw contrainte_inexistante{};
 }

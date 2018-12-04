@@ -2,7 +2,6 @@
 #define SCORE_STRATEGIE_H
 
 #include "MyBotLogic/BehaviorTree/BT_Feuille.h"
-#include "MyBotLogic/GameManager.h"
 
 #include <vector>
 #include <string>
@@ -10,17 +9,21 @@
 using std::vector;
 using std::string;
 
+class GameManager;
+class Npc;
+class Carte;
+class MapTile;
 class ScoreStrategie : public BT_Feuille {
 protected:
     GameManager &manager;
     string nom;
-    void calculerScoresTilesPourNpc(Npc& _npc, const vector<int>& _tilesAVisiter) noexcept;
-    void calculerScore1Tile(int _tileID, Carte& _carte, Npc& _npc, const vector<int>& _tilesAVisiter);
+    bool calculerScoresTilesPourNpc(Npc& _npc, const vector<int>& _tilesAVisiter) noexcept;
+    bool calculerScore1Tile(int _tileID, Carte& _carte, Npc& _npc, const vector<int>& _tilesAVisiter);
 
 public:
     ScoreStrategie(GameManager&, string nom);
     virtual ETAT_ELEMENT execute() noexcept override;
-    virtual void saveScore(const MapTile& _tile, Npc& _npc, const vector<int>& _tilesAVisiter) const noexcept = 0;
+    virtual bool saveScore(const MapTile& _tile, Npc& _npc, const vector<int>& _tilesAVisiter) const noexcept = 0;
 };
 
 #endif
