@@ -51,9 +51,16 @@ void GameManager::Init(LevelInfo _info)
       npcs[npc.npcID] = Npc(npc);
    }
 
-   int tempsPourLeResteMicroSeconds = (_info.turnDelay >= 10) ? static_cast<int>(static_cast<float>(_info.turnDelay)*2.f / 5.f*1000.f) : 2500;
-   SEUIL_TEMPS_FLOODFILL = microseconds(_info.turnDelay * 1000 - tempsPourLeResteMicroSeconds);
-   profilerRelease << "SEUIL TEMPS FLOOD us = " << SEUIL_TEMPS_FLOODFILL.count() << endl;
+   int dureeVideAction = 1;
+   int tempsAccorde = _info.turnDelay - dureeVideAction;
+
+   int tempsPourLeResteMicroSeconds = (tempsAccorde >= 10) ? static_cast<int>(static_cast<float>(tempsAccorde)*4.f / 10.f*1000.f) : 2500;
+   SEUIL_TEMPS_UPDATE_MODEL = microseconds(tempsAccorde * 1000 - tempsPourLeResteMicroSeconds);
+   profilerRelease << "SEUIL TEMPS FLOOD us = " << SEUIL_TEMPS_UPDATE_MODEL.count() << endl;
+
+   tempsPourLeResteMicroSeconds = (tempsAccorde >= 10) ? static_cast<int>(static_cast<float>(tempsAccorde)*1.f / 10.f*1000.f) : 500;
+   SEUIL_TEMPS_EXECUTE = microseconds(SEUIL_TEMPS_UPDATE_MODEL.count() - tempsPourLeResteMicroSeconds);
+   profilerRelease << "SEUIL TEMPS EXECUTE us = " << SEUIL_TEMPS_EXECUTE.count() << endl;
 
 }
 
@@ -329,6 +336,8 @@ void GameManager::updateModel(const TurnInfo &_tile) noexcept {
    ProfilerDebug profiler{ GameManager::getLogger(), "UPDATE MODEL" };
    ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "updateModel" };
 
+   debutUpdate = high_resolution_clock::now();
+
    // On essaye de rajouter les nouvelles tiles !
    addNewTiles(_tile);
 
@@ -503,8 +512,12 @@ void GameManager::refreshFloodfill() {
       // On en profite pour réinitialiser un attribut par npcs :)
       npc.second.setIsCheckingDoor(false);
    }
+
+   finUpdate = high_resolution_clock::now();
+
+   microseconds dureeAvantFloodfill = duration_cast<microseconds>(finUpdate - debutUpdate);
    //verifier quil ny a plus de taches + verifier que aucun thread nest en train de rouler
-   floodFillFinished(SEUIL_TEMPS_FLOODFILL);
+   floodFillFinished(SEUIL_TEMPS_UPDATE_MODEL - dureeAvantFloodfill);
 }
 
 bool GameManager::permutationUtile(Npc& npc1, Npc& npc2) {
@@ -520,18 +533,24 @@ void GameManager::execute() noexcept {
    ProfilerDebug profiler{ GameManager::getLogger(), "EXECUTE" };
    ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "execute" };
 
-   // On calcul où doivent se rendre les npcs
-   behaviorTreeManager.execute();
+   workerExecute = std::async([](GameManager& gm) {
+      // On calcul où doivent se rendre les npcs
+      gm.behaviorTreeManager.execute();
 
-   // On fait des swaps si nécessaires + on calculs les aStars UNE SEULE FOIS !
-   reaffecterObjectifsSelonDistance();
+      // On fait des swaps si nécessaires + on calculs les aStars UNE SEULE FOIS !
+      gm.reaffecterObjectifsSelonDistance();
 
-   // On affecte les contraintes, donc potentiellement d'autres aStars
-   affecterContraintes();
+      // On affecte les contraintes, donc potentiellement d'autres aStars
+      gm.affecterContraintes();
 
-   // Il faut réordonner les chemins entre les npcs !
-   // Cad que si deux Npcs peuvent échanger leurs objectifs et que cela diminue leurs chemins respectifs, alors il faut le faire !
-   reaffecterObjectifsSelonDistance();
+      // Il faut réordonner les chemins entre les npcs !
+      // Cad que si deux Npcs peuvent échanger leurs objectifs et que cela diminue leurs chemins respectifs, alors il faut le faire !
+      gm.reaffecterObjectifsSelonDistance();
+   }
+   , std::ref(*this)
+   );
+   
+   executeFinished(SEUIL_TEMPS_EXECUTE);
 };
 
 bool GameManager::floodFillFinished(microseconds _dureeRestant) {
@@ -545,7 +564,7 @@ bool GameManager::floodFillFinished(microseconds _dureeRestant) {
    return etatWait == future_status::ready;
 }
 
-bool GameManager::executeFinished(microseconds _dureeRestant = 0us) {
+bool GameManager::executeFinished(microseconds _dureeRestant) {
    future_status etatWait = future_status::ready;
    auto tempsAvant = Minuteur::now();
    etatWait = workerExecute.wait_for(_dureeRestant);

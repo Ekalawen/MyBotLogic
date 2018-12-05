@@ -80,26 +80,29 @@ MyBotLogic::MyBotLogic() :
 
    profilerRelease << "Duree serveur : " << duration_cast<milliseconds>(tempsApresServeur - tempsAvantServeur).count() << " ms" << endl;
 
-   if (!manager.isFloodFillDejaCalcule) {
+   if (manager.etatFloodFill == GameManager::FonctionEtat::PAS_COMMENCE
+      && manager.etatExecute == GameManager::FonctionEtat::PAS_COMMENCE) {
       // On complete notre modele avec l'information qu'on vient de decouvrir !
       manager.updateModel(_turnInfo);
-      profilerRelease << "ON A DU isFloodFillDejaCalcule " << endl;
    }
 
-   if (manager.floodFillFinished()) {
-      profilerRelease << "ON A DU TEMPS " << endl;
-      manager.isFloodFillDejaCalcule = false;
+   manager.etatFloodFill = (manager.floodFillFinished()) ? GameManager::FonctionEtat::CALCULE_PAS_UTILISE : GameManager::FonctionEtat::EN_COURS;
+
+   if (manager.etatFloodFill == GameManager::FonctionEtat::CALCULE_PAS_UTILISE
+      && manager.etatExecute == GameManager::FonctionEtat::PAS_COMMENCE) {
 
       // On definit notre strategie en executant notre arbre de comportement
-      //manager.execute();
-
-      // On fait se deplacer chaque Npc vers son objectif associe =)
-      manager.moveNpcs(_actionList);
-
+      manager.execute();
    }
-   else {
-      profilerRelease << "ON A PAS DU TEMPS " << endl;
-      manager.isFloodFillDejaCalcule = true;
+      
+   manager.etatExecute = (manager.executeFinished()) ? GameManager::FonctionEtat::CALCULE_PAS_UTILISE : GameManager::FonctionEtat::EN_COURS;
+
+   if (manager.etatFloodFill == GameManager::FonctionEtat::CALCULE_PAS_UTILISE
+      && manager.etatExecute == GameManager::FonctionEtat::CALCULE_PAS_UTILISE) {
+         // On fait se deplacer chaque Npc vers son objectif associe =)
+         manager.moveNpcs(_actionList);
+         manager.etatExecute = GameManager::FonctionEtat::PAS_COMMENCE;
+         manager.etatFloodFill = GameManager::FonctionEtat::PAS_COMMENCE;
    }
 
    tempsAvantServeur = Minuteur::now();
