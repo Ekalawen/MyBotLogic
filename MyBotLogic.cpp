@@ -107,10 +107,14 @@ MyBotLogic::MyBotLogic() :
 
    if (manager.etatFloodFill == GameManager::FonctionEtat::EN_COURS
       || manager.etatExecute == GameManager::FonctionEtat::EN_COURS) {
-      microseconds dureeSleep = manager.TEMPS_ACCORDE_TOUR - duration_cast<microseconds>(Minuteur::now() - tempsApresServeur) - 100us;
-      profilerRelease << "On va dormir pendant  " << dureeSleep.count() << " us" << endl;
-
-      while (duration_cast<microseconds>(Minuteur::now() - tempsApresServeur) < dureeSleep);
+       microseconds tempsDepuisDebutTour = duration_cast<microseconds>(Minuteur::now() - tempsApresServeur);
+       microseconds dureeSleep = manager.TEMPS_ACCORDE_TOUR + 500us;
+       if (tempsDepuisDebutTour < dureeSleep) {
+           auto tempsAvantSleep = Minuteur::now();
+           profilerRelease << "On voudrait dormir pendant " << (dureeSleep - tempsDepuisDebutTour).count() << " us" << endl;
+           while (duration_cast<microseconds>(Minuteur::now() - tempsApresServeur) < dureeSleep);
+           profilerRelease << "On a dormis pendant  " << duration_cast<microseconds>(Minuteur::now() - tempsAvantSleep).count() << " us" << endl;
+       }
    }
 
    tempsAvantServeur = Minuteur::now();

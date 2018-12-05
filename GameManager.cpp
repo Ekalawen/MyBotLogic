@@ -54,15 +54,13 @@ void GameManager::Init(LevelInfo _info)
    int dureeVideAction = 1; // en ms
    
    TEMPS_ACCORDE_TOUR = microseconds((_info.turnDelay - dureeVideAction)*1000);
+   profilerRelease << "TEMPS ACCORDE TOUR us = " << TEMPS_ACCORDE_TOUR.count() << endl;
 
-   int tempsPourLeResteMicroSeconds = (TEMPS_ACCORDE_TOUR.count() >= 10*1000) ? static_cast<int>(static_cast<float>(TEMPS_ACCORDE_TOUR.count())*4.f / 10.f) : 1500;
-   SEUIL_TEMPS_UPDATE_MODEL = microseconds(TEMPS_ACCORDE_TOUR.count() - tempsPourLeResteMicroSeconds);
-   profilerRelease << "SEUIL TEMPS FLOOD us = " << SEUIL_TEMPS_UPDATE_MODEL.count() << endl;
-
-   tempsPourLeResteMicroSeconds = (TEMPS_ACCORDE_TOUR.count() >= 10*1000) ? static_cast<int>(static_cast<float>(TEMPS_ACCORDE_TOUR.count())*1.f / 10.f) : 400;
-   SEUIL_TEMPS_EXECUTE = microseconds(SEUIL_TEMPS_UPDATE_MODEL.count() - tempsPourLeResteMicroSeconds);
+   SEUIL_TEMPS_EXECUTE = microseconds(static_cast<long long>(static_cast<float>(TEMPS_ACCORDE_TOUR.count()) * 2.5f / 10.f));
    profilerRelease << "SEUIL TEMPS EXECUTE us = " << SEUIL_TEMPS_EXECUTE.count() << endl;
 
+   SEUIL_TEMPS_UPDATE_MODEL = microseconds(static_cast<long long>(static_cast<float>(TEMPS_ACCORDE_TOUR.count()) * 5.5f / 10.f));
+   profilerRelease << "SEUIL TEMPS UPDATE MODEL us = " << SEUIL_TEMPS_UPDATE_MODEL.count() << endl;
 }
 
 void GameManager::InitializeBehaviorTree() noexcept {
