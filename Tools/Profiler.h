@@ -9,6 +9,7 @@
 #include <iostream>
 #include <iomanip>
 #include <memory>
+#include <chrono>
 
 using std::string;
 using std::stringstream;
@@ -43,9 +44,10 @@ private:
    Minuteur::time_point_t debut;
    Minuteur::time_point_t fin;
    bool afficheDuree;
+   std::chrono::microseconds dureeMethode;
 
 public:
-   Profiler(Logger& _logger, string _nomMethode, bool _afficheDuree = true, bool _keepRelease = false) : nomMethode{ _nomMethode }, logger{ &_logger }, afficheDuree{ _afficheDuree } {
+   Profiler(Logger& _logger, string _nomMethode, bool _afficheDuree = true, bool _keepRelease = false, std::chrono::microseconds _dureeMethode = 0us) : nomMethode{ _nomMethode }, logger{ &_logger }, afficheDuree{ _afficheDuree }, dureeMethode{ _dureeMethode } {
 #ifndef PROFILER_DEBUG
       if constexpr (keepRelease) {
 #endif // ! PROFILER_DEBUG
@@ -63,10 +65,10 @@ public:
 #endif // ! PROFILER_DEBUG
          if (afficheDuree) {
             fin = Minuteur::now();
-
-            ss << "Duree " << nomMethode << " : " << Minuteur::dureeMicroseconds(debut, fin) / 1000.f << "ms";
-
-            logger->Log(ss.str());
+            int dureeReel = Minuteur::dureeMicroseconds(debut, fin);
+            ss << "Duree " << nomMethode << " : " << dureeReel / 1000.f << "ms" << endl;
+            if(dureeReel > dureeMethode.count() && dureeMethode > 0us) ss << "Duree " << nomMethode << " : " << "ALERTE TROP LONG de " << ((dureeReel - dureeMethode.count()) / 1000.f) << "ms" << endl;
+            logger->Log(ss.str(), false);
             ss.str("");
 
          }

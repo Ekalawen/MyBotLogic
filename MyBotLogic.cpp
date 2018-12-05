@@ -72,7 +72,7 @@ MyBotLogic::MyBotLogic() :
 /*virtual*/ void MyBotLogic::FillActionList(TurnInfo& _turnInfo, vector<Action*>& _actionList)
 {
    ProfilerDebug profiler{ GameManager::getLogger(), "Tour" };
-   ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "Tour" };
+   ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "Tour", true, false, manager.TEMPS_ACCORDE_TOUR };
    profiler << "TURN =========================== " << _turnInfo.turnNb << endl;
    profilerRelease << "TURN =========================== " << _turnInfo.turnNb << endl;
 
@@ -108,7 +108,7 @@ MyBotLogic::MyBotLogic() :
    if (manager.etatFloodFill == GameManager::FonctionEtat::EN_COURS
       || manager.etatExecute == GameManager::FonctionEtat::EN_COURS) {
        microseconds tempsDepuisDebutTour = duration_cast<microseconds>(Minuteur::now() - tempsApresServeur);
-       microseconds dureeSleep = manager.TEMPS_ACCORDE_TOUR + 500us;
+       microseconds dureeSleep = manager.TEMPS_ACCORDE_TOUR;
        if (tempsDepuisDebutTour < dureeSleep) {
            auto tempsAvantSleep = Minuteur::now();
            profilerRelease << "On voudrait dormir pendant " << (dureeSleep - tempsDepuisDebutTour).count() << " us" << endl;

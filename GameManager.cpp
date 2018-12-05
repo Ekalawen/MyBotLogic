@@ -397,7 +397,7 @@ void GameManager::addNpc(Npc npc) {
 
 void GameManager::reaffecterObjectifsSelonDistance() {
    ProfilerDebug profiler{ GameManager::getLogger(), "REAFECTER OBJECTIFS SELON DISTANCE" };
-   ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "reaffecterObjectifsSelonDistance" };
+   //ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "reaffecterObjectifsSelonDistance" };
 
    LOG("Objectif initiaux");
    for (auto& npcPair : npcs) {
@@ -499,11 +499,12 @@ void GameManager::cleanContraintes() noexcept {
 
 void GameManager::refreshFloodfill() {
    ProfilerDebug profiler{ GameManager::getLogger(), "refreshFloodfill" };
-   ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "refreshFloodfill" };
+   //ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "refreshFloodfill" };
 
    for (auto &npc : npcs) {
 
-      workersFloodFill.push_back(std::async(std::launch::async, [&npc](GameManager& gm) {
+      workersFloodFill.push_back(std::async([&npc](GameManager& gm) {
+         //ProfilerRelease profilerRelease{ getLoggerRelease(), "Thread FloodFill npc " + to_string(npc.second.getId()) };
          npc.second.floodfill(gm);
       }
       , std::ref(*this)));
@@ -516,7 +517,7 @@ void GameManager::refreshFloodfill() {
 
    microseconds dureeAvantFloodfill = duration_cast<microseconds>(finUpdate - debutUpdate);
    //verifier quil ny a plus de taches + verifier que aucun thread nest en train de rouler
-   floodFillFinished(SEUIL_TEMPS_UPDATE_MODEL - dureeAvantFloodfill);
+   floodFillFinished(std::max(SEUIL_TEMPS_UPDATE_MODEL - dureeAvantFloodfill -500us, 0us));
 }
 
 bool GameManager::permutationUtile(Npc& npc1, Npc& npc2) {
@@ -532,7 +533,8 @@ void GameManager::execute() noexcept {
    ProfilerDebug profiler{ GameManager::getLogger(), "EXECUTE" };
    ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "execute" };
 
-   workerExecute = std::async(std::launch::async, [](GameManager& gm) {
+   workerExecute = std::async([](GameManager& gm) {
+      //ProfilerRelease profilerRelease{ getLoggerRelease(), "Thread Execute" };
       // On calcul où doivent se rendre les npcs
       gm.behaviorTreeManager.execute();
 
@@ -549,7 +551,7 @@ void GameManager::execute() noexcept {
    , std::ref(*this)
    );
    
-   executeFinished(SEUIL_TEMPS_EXECUTE);
+   executeFinished(std::max(SEUIL_TEMPS_EXECUTE - 500us, 0us));
 };
 
 bool GameManager::floodFillFinished(microseconds _dureeRestante) {
