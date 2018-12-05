@@ -4,6 +4,9 @@
 #include "BotLogicIF.h"
 #include "Logger.h"
 #include "MyBotLogic/GameManager.h"
+#include <thread>
+#include <condition_variable>
+#include <future>
 
 #ifdef _DEBUG
    #define BOT_LOGIC_DEBUG
@@ -24,6 +27,10 @@ public:
     std::string logpath;
     time_point<steady_clock> tempsAvantServeur;
     time_point<steady_clock> tempsApresServeur;
+    std::future<void> workerSleep; // Le précursseur !
+    std::vector<std::future<void>> workersFloodFill;
+    std::future<void> workerExecute;
+
 
 	MyBotLogic();
 	virtual ~MyBotLogic();

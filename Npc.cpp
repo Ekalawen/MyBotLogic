@@ -115,6 +115,7 @@ int Npc::affecterMeilleurObjectif(GameManager& gm) noexcept {
 
 void Npc::floodfill(GameManager& gm) {
    ProfilerDebug profiler{ GameManager::getLogger(), "floodfill NPC " + to_string(getId()) };
+   //ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "floodfill NPC " + to_string(getId()) , true, true};
     ensembleAccessible.clear();
 
     vector<Noeud> fermees;

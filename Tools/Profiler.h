@@ -122,7 +122,7 @@ public:
 template<bool keepRelease>
 class Profiler {
 public:
-   Profiler(Logger& _logger, string _nomMethode, bool _afficheDuree = true, bool _keepRelease = false) {}
+   Profiler(Logger& _logger, string _nomMethode, bool _afficheDuree = true, bool _keepRelease = false, std::chrono::microseconds _dureeMethode) {}
    ~Profiler() {}
 
    template<class T>

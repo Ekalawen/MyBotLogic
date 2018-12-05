@@ -9,9 +9,8 @@
 using std::vector;
 
 BT_Noeud::ETAT_ELEMENT CheckingHiddenDoors::execute() noexcept {
-    ProfilerRelease* pointeurProfiler = new ProfilerRelease( GameManager::getLoggerRelease(), "CheckingHiddenDoors", true, true );
+    ProfilerRelease pointeurProfiler{ GameManager::getLoggerRelease(), "CheckingHiddenDoors", true, true };
     ProfilerDebug profiler{ GameManager::getLogger(), string("CheckingHiddenDoors") };
-    LOG("HEY !");
 
     // Pour tous les npcs
     for (auto& pair : manager.getNpcs()) {

@@ -9,6 +9,9 @@
 
 #include "Windows.h"
 #include <sstream>
+#include <thread>
+#include <future>
+#include <functional>
 
 using std::stringstream;
 using std::endl;
@@ -83,19 +86,21 @@ MyBotLogic::MyBotLogic() :
    if (manager.etatFloodFill == GameManager::FonctionEtat::PAS_COMMENCE
       && manager.etatExecute == GameManager::FonctionEtat::PAS_COMMENCE) {
       // On complete notre modele avec l'information qu'on vient de decouvrir !
-      manager.updateModel(_turnInfo);
+      manager.updateModel(_turnInfo, *this);
    }
 
-   manager.etatFloodFill = (manager.floodFillFinished()) ? GameManager::FonctionEtat::CALCULE_PAS_UTILISE : GameManager::FonctionEtat::EN_COURS;
+   manager.etatFloodFill = (manager.floodFillFinished(*this)) ? GameManager::FonctionEtat::CALCULE_PAS_UTILISE : GameManager::FonctionEtat::EN_COURS;
 
    if (manager.etatFloodFill == GameManager::FonctionEtat::CALCULE_PAS_UTILISE
       && manager.etatExecute == GameManager::FonctionEtat::PAS_COMMENCE) {
 
       // On definit notre strategie en executant notre arbre de comportement
-      manager.execute();
+      manager.execute(*this);
    }
       
-   manager.etatExecute = (manager.executeFinished()) ? GameManager::FonctionEtat::CALCULE_PAS_UTILISE : GameManager::FonctionEtat::EN_COURS;
+   if (manager.etatFloodFill == GameManager::FonctionEtat::CALCULE_PAS_UTILISE) {
+       manager.etatExecute = (manager.executeFinished(*this)) ? GameManager::FonctionEtat::CALCULE_PAS_UTILISE : GameManager::FonctionEtat::EN_COURS;
+   }
 
    if (manager.etatFloodFill == GameManager::FonctionEtat::CALCULE_PAS_UTILISE
       && manager.etatExecute == GameManager::FonctionEtat::CALCULE_PAS_UTILISE) {
@@ -111,9 +116,9 @@ MyBotLogic::MyBotLogic() :
        microseconds dureeSleep = manager.TEMPS_ACCORDE_TOUR;
        if (tempsDepuisDebutTour < dureeSleep) {
            auto tempsAvantSleep = Minuteur::now();
-           profilerRelease << "On voudrait dormir pendant " << (dureeSleep - tempsDepuisDebutTour).count() << " us" << endl;
+           //profilerRelease << "On voudrait dormir pendant " << (dureeSleep - tempsDepuisDebutTour).count() << " us" << endl;
            while (duration_cast<microseconds>(Minuteur::now() - tempsApresServeur) < dureeSleep);
-           profilerRelease << "On a dormis pendant  " << duration_cast<microseconds>(Minuteur::now() - tempsAvantSleep).count() << " us" << endl;
+           //profilerRelease << "On a dormis pendant  " << duration_cast<microseconds>(Minuteur::now() - tempsAvantSleep).count() << " us" << endl;
        }
    }
 

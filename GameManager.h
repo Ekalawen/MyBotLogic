@@ -28,6 +28,7 @@ class npc_inexistant {};
 class npc_deja_existant {};
 
 struct TurnInfo;
+class MyBotLogic;
 class GameManager {
    static Logger logger, loggerRelease;
    map<int, Npc> npcs; // Les npcs sont stockés par leurs ids
@@ -67,8 +68,6 @@ public:
    microseconds SEUIL_TEMPS_EXECUTE;
    FonctionEtat etatFloodFill = PAS_COMMENCE;
    FonctionEtat etatExecute = PAS_COMMENCE;
-   std::vector<std::future<void>> workersFloodFill;
-   std::future<void> workerExecute;
    time_point<steady_clock> debutUpdate;
    time_point<steady_clock> finUpdate;
 
@@ -78,9 +77,9 @@ public:
    void reaffecterObjectifsSelonDistance(); // Réaffecte les objectifs des Npcs entre
    void ordonnerMouvements(vector<Mouvement>& mouvements) noexcept; // Permet d'ordonner les mouvements pour éviter les collisions et gérer les politesses de priorités =)
    void ordonnerMouvementsSelonSwitchs(vector<Mouvement>& _mouvements); // Permet de prioritariser les mouvements en rapports avec des switchs !
-   void updateModel(const TurnInfo&) noexcept; // Met à jour le modèle avec les informations que découvrent les NPCS
+   void updateModel(const TurnInfo&, MyBotLogic& myBotLogic) noexcept; // Met à jour le modèle avec les informations que découvrent les NPCS
    void InitializeBehaviorTree() noexcept; // Permet d'initialiser le BT
-   void execute() noexcept;
+   void execute(MyBotLogic& myBotLogic) noexcept;
    void affecterContraintes() noexcept; // Le but de cette fonction est de prendre en compte les contraintes pour que tous les Npcs puissent aller, à un moment donnée, à l'endroit où ils veulent aller
    void cleanContraintes() noexcept; // Permet de supprimer les contraintes non résolues
 
@@ -106,9 +105,9 @@ public:
    static Logger& getLoggerRelease() noexcept { // Permet d'initialiser le logger =)
       return loggerRelease;
    }
-   void refreshFloodfill();
-   bool floodFillFinished(microseconds dureeRestant = 0us);
-   bool executeFinished(microseconds dureeRestant = 0us);
+   void refreshFloodfill(MyBotLogic&);
+   bool floodFillFinished(MyBotLogic&, microseconds& dureeRestant = 0us);
+   bool executeFinished(MyBotLogic&, microseconds& dureeRestant = 0us);
 private:
    void addNewTiles(const TurnInfo& ti) noexcept;
    void addNewObjects(const TurnInfo& ti) noexcept;

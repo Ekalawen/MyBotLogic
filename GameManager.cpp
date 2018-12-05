@@ -18,6 +18,7 @@
 #include "Chemin.h"
 #include "MyBotLogic/Tools/Profiler.h"
 #include "MyBotLogic/Tools/ThreadPool.h"
+#include "MyBotLogic.h"
 
 #include <algorithm>
 #include <tuple>
@@ -96,7 +97,7 @@ void GameManager::InitializeBehaviorTree() noexcept {
 }
 
 vector<Mouvement> GameManager::getAllMouvements() {
-   // On va récupérer la liste des mouvements
+   // On va rï¿½cupï¿½rer la liste des mouvements
    vector<Mouvement> mouvements;
 
    // Pour tous les NPCs, s'il n'y a aucun autre Npc devant eux
@@ -106,12 +107,12 @@ vector<Mouvement> GameManager::getAllMouvements() {
          << "chemin = " << npc.second.getChemin().toString() << std::endl
          << "case actuelle = " << npc.second.getTileId() << std::endl;
 
-      // On vérifie si le Npc doit checker un mur ou non
+      // On vï¿½rifie si le Npc doit checker un mur ou non
       if (npc.second.getIsCheckingDoor()) {
          // Alors on enregistre un mouvement statique
          mouvements.push_back(Mouvement(npc.second.getId(), npc.second.getTileId(), npc.second.getTileId(), Tile::ETilePosition::CENTER));
 
-         // Et on lui précise qu'il s'agit d'un mouvement de checking de mur !
+         // Et on lui prï¿½cise qu'il s'agit d'un mouvement de checking de mur !
          mouvements[mouvements.size() - 1].setCheckingDoor(npc.second.getDirectionCheckingDoor());
 
          // Et on passe au npc suivant
@@ -120,21 +121,21 @@ vector<Mouvement> GameManager::getAllMouvements() {
 
       // Si le npc doit aller quelquepart !!!
       if (!npc.second.getChemin().empty()) {
-         // On récupère la case où il doit aller
+         // On rï¿½cupï¿½re la case oï¿½ il doit aller
          int caseCible = npc.second.getChemin().getFirst();
          ss << "case cible = " << caseCible << std::endl;
 
          Tile::ETilePosition direction = c.getDirection(npc.second.getTileId(), caseCible);
          ss << "direction = " << direction << std::endl;
 
-         // Si le mouvement est bloqué par une porte à poignée
+         // Si le mouvement est bloquï¿½ par une porte ï¿½ poignï¿½e
          if (c.getTile(npc.second.getTileId()).hasDoorPoigneeVoisin(caseCible, c)) {
             // Alors on enregistre un mouvement statique
             mouvements.push_back(Mouvement(npc.second.getId(), npc.second.getTileId(), npc.second.getTileId(), Tile::ETilePosition::CENTER));
-            // Et on lui précise qu'il s'agit d'un mouvement d'ouverture de porte et non de déplacement !
+            // Et on lui prï¿½cise qu'il s'agit d'un mouvement d'ouverture de porte et non de dï¿½placement !
             mouvements[mouvements.size() - 1].setActivateDoor(direction);
 
-            // Si il y a porte fermée à switch, il faut attendre
+            // Si il y a porte fermï¿½e ï¿½ switch, il faut attendre
          }
          else if (c.getTile(npc.second.getTileId()).hasClosedDoor(caseCible, c)) {
             // Alors on enregistre un mouvement statique
@@ -152,7 +153,7 @@ vector<Mouvement> GameManager::getAllMouvements() {
       }
       else {
          ss << "case cible = Ne Bouge Pas" << std::endl;
-         // Même si le Npc ne bouge pas, il a quand même un mouvement statique !
+         // Mï¿½me si le Npc ne bouge pas, il a quand mï¿½me un mouvement statique !
          mouvements.push_back(Mouvement(npc.second.getId(), npc.second.getTileId(), npc.second.getTileId(), Tile::ETilePosition::CENTER));
       }
 
@@ -164,9 +165,9 @@ vector<Mouvement> GameManager::getAllMouvements() {
 void GameManager::moveNpcs(vector<Action*>& actionList) noexcept {
    ProfilerDebug profiler{ getLogger(), "MOVE NPCS" };
    ProfilerRelease profilerRelease{ getLoggerRelease(), "moveNpcs" };
-   // Code déplace juste après l'execute, il faudra peut-être aussi le laisser ici, à voir !!! Finalement j'ai dû le laisser ici aussi, c'est nécessaire mais ça coûte !
-   //// Il faut réordonner les chemins entre les npcs !
-   //// Cad que si deux Npcs peuvent échanger leurs objectifs et que cela diminue leurs chemins respectifs, alors il faut le faire !
+   // Code dï¿½place juste aprï¿½s l'execute, il faudra peut-ï¿½tre aussi le laisser ici, ï¿½ voir !!! Finalement j'ai dï¿½ le laisser ici aussi, c'est nï¿½cessaire mais ï¿½a coï¿½te !
+   //// Il faut rï¿½ordonner les chemins entre les npcs !
+   //// Cad que si deux Npcs peuvent ï¿½changer leurs objectifs et que cela diminue leurs chemins respectifs, alors il faut le faire !
    //reaffecterObjectifsSelonDistance();
 
    // On recupere tous les mouvements
@@ -257,7 +258,7 @@ void GameManager::ordonnerMouvements(vector<Mouvement>& _mouvements) noexcept {
    // Ordonner les mouvements pour que ceux qui vont sur des switchs soient les premiers ! Et les derniers s'ils en sortent !
    ordonnerMouvementsSelonSwitchs(_mouvements);
 
-   // Si deux npcs veulent aller sur la même case, alors celui qui a le plus de chemin à faire passe, et tous les autres restent sur place !
+   // Si deux npcs veulent aller sur la mï¿½me case, alors celui qui a le plus de chemin ï¿½ faire passe, et tous les autres restent sur place !
    gererCollisionsMemeCaseCible(_mouvements);
 }
 
@@ -271,7 +272,7 @@ void GameManager::ordonnerMouvementsSelonSwitchs(vector<Mouvement>& mouvements) 
          mouvementsOrdonnes.push_back(mouvement);
    }
 
-   // Puis les mouvements qui sortent et entrent d'un switch, même si c'est pas parfait on fera avec !
+   // Puis les mouvements qui sortent et entrent d'un switch, mï¿½me si c'est pas parfait on fera avec !
    for (Mouvement mouvement : mouvements) {
       if (c.isActivateurUnderTileId(mouvement.getTileDestination())
          && c.isActivateurUnderTileId(mouvement.getTileSource()))
@@ -306,7 +307,7 @@ void GameManager::addNewTiles(const TurnInfo& _tile) noexcept {
       for (auto& npc : _tile.npcs) {
          // On regarde les tuiles qu'ils voyent
          for (auto& tileId : npc.second.visibleTiles) {
-            // Si ces tuiles n'ont pas été découvertes
+            // Si ces tuiles n'ont pas ï¿½tï¿½ dï¿½couvertes
             if (c.getTile(tileId).getStatut() == MapTile::INCONNU || c.getTile(tileId).getStatut() == MapTile::PRESUME_CONNU) {
                // On les setDecouverte
                c.addTile(_tile.tiles.at(tileId));
@@ -331,7 +332,7 @@ void GameManager::addNewObjects(const TurnInfo& _tile) noexcept {
    }
 }
 
-void GameManager::updateModel(const TurnInfo &_tile) noexcept {
+void GameManager::updateModel(const TurnInfo &_tile, MyBotLogic& myBotLogic) noexcept {
    ProfilerDebug profiler{ GameManager::getLogger(), "UPDATE MODEL" };
    ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "updateModel" };
 
@@ -343,17 +344,17 @@ void GameManager::updateModel(const TurnInfo &_tile) noexcept {
    // On essaye de rajouter les nouvelles tiles !
    addNewObjects(_tile);
 
-   // On met à jour les portes à switchs 
+   // On met ï¿½ jour les portes ï¿½ switchs 
    majPortesASwitch();
 
    // Mettre a jour nos NPCs
-   refreshFloodfill();
+   refreshFloodfill(myBotLogic);
 }
 
 void GameManager::majPortesASwitch() noexcept {
    ProfilerDebug profiler{ GameManager::getLogger(), "majPortesASwitch" };
 
-   // Pour chaque porte à switch, on regarde pour tous ses interrupteurs s'il y a un npc dessus
+   // Pour chaque porte ï¿½ switch, on regarde pour tous ses interrupteurs s'il y a un npc dessus
    for (auto& pair : c.getPortes()) {
       Porte& porte = pair.second;
       if (porte.getType() == Porte::A_SWITCH) {
@@ -428,7 +429,7 @@ void GameManager::reaffecterObjectifsSelonDistance() {
                autreNpc.setTileObjectif(objectifNpc);
                objectifNpc = npc.getTileObjectif();
 
-               continuer = true; // Et on devra continuer pour vérifier que cette intervertion n'en a pas entrainé de nouvelles !
+               continuer = true; // Et on devra continuer pour vï¿½rifier que cette intervertion n'en a pas entrainï¿½ de nouvelles !
             }
          }
       }
@@ -436,7 +437,7 @@ void GameManager::reaffecterObjectifsSelonDistance() {
          continuer = false;
    }
 
-   // Une fois que toutes les permutations ont étées effectuées, on peut enfin calculer les aStars !!! =)
+   // Une fois que toutes les permutations ont ï¿½tï¿½es effectuï¿½es, on peut enfin calculer les aStars !!! =)
    for (auto& npcPair : npcs) {
       Npc& npc = npcPair.second;
       npc.setChemin(c.aStar(npc.getTileId(), npc.getTileObjectif(), npc.getId(), *this));
@@ -451,11 +452,11 @@ void GameManager::affecterContraintes() noexcept {
       profiler << "Npc " << npc.getId() << " veut aller en " << npc.getTileObjectif() << endl;
    }
 
-   // On va clean les contraintes non résolues qui trainent
+   // On va clean les contraintes non rï¿½solues qui trainent
    cleanContraintes();
 
-   // On construit un vecteur trié des npcs dans l'ordre croissant de la longueur du chemin
-   // Comme ça le plus long écrase tous les autres ! Niark !
+   // On construit un vecteur triï¿½ des npcs dans l'ordre croissant de la longueur du chemin
+   // Comme ï¿½a le plus long ï¿½crase tous les autres ! Niark !
    vector<Npc*> npcsSelonTailleChemin{};
    for (auto& pair : npcs) {
       Npc* npc = &pair.second;
@@ -466,14 +467,14 @@ void GameManager::affecterContraintes() noexcept {
    });
 
    // Pour chaque chemin de nos Npcs, on regarde s'ils ont des contraintes, si oui on affecte ses contraintes
-   // On termine par le npc le plus loin comme ça il écrasera les autres !
+   // On termine par le npc le plus loin comme ï¿½a il ï¿½crasera les autres !
    for (Npc* npc : npcsSelonTailleChemin) {
       vector<int> npcAffectes = npc->getChemin().affecterContraintes(npc->getId(), *this);
    }
    //while (!npcsSelonTailleChemin.empty()) {
    //    Npc* npc = npcsSelonTailleChemin.back(); // On prend celui qui a le plus long chemin en premier
 
-   //    // Cette fonction affecte les chemins aux bonc npcs récursivement et les enlèves de la liste npcsSelonTailleChemin !
+   //    // Cette fonction affecte les chemins aux bonc npcs rï¿½cursivement et les enlï¿½ves de la liste npcsSelonTailleChemin !
    //    vector<int> npcAffectes = npc->getChemin().affecterContraintes(npc->getId(), *this);
 
    //    // On supprime les npcs affectes de notre liste
@@ -497,19 +498,18 @@ void GameManager::cleanContraintes() noexcept {
 }
 
 
-void GameManager::refreshFloodfill() {
+void GameManager::refreshFloodfill(MyBotLogic& myBotLogic) {
    ProfilerDebug profiler{ GameManager::getLogger(), "refreshFloodfill" };
    //ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "refreshFloodfill" };
 
    for (auto &npc : npcs) {
 
-      workersFloodFill.push_back(std::async([&npc](GameManager& gm) {
-         //ProfilerRelease profilerRelease{ getLoggerRelease(), "Thread FloodFill npc " + to_string(npc.second.getId()) };
+      myBotLogic.workersFloodFill.push_back(std::async(std::launch::async, [&npc](GameManager& gm) {
          npc.second.floodfill(gm);
       }
       , std::ref(*this)));
 
-      // On en profite pour réinitialiser un attribut par npcs :)
+      // On en profite pour rï¿½initialiser un attribut par npcs :)
       npc.second.setIsCheckingDoor(false);
    }
 
@@ -517,7 +517,7 @@ void GameManager::refreshFloodfill() {
 
    microseconds dureeAvantFloodfill = duration_cast<microseconds>(finUpdate - debutUpdate);
    //verifier quil ny a plus de taches + verifier que aucun thread nest en train de rouler
-   floodFillFinished(std::max(SEUIL_TEMPS_UPDATE_MODEL - dureeAvantFloodfill -500us, 0us));
+   floodFillFinished(myBotLogic, SEUIL_TEMPS_UPDATE_MODEL - dureeAvantFloodfill);
 }
 
 bool GameManager::permutationUtile(Npc& npc1, Npc& npc2) {
@@ -529,36 +529,36 @@ bool GameManager::permutationUtile(Npc& npc1, Npc& npc2) {
    return npc1.isAccessibleTile(objectifNpc2) && npc2.isAccessibleTile(objectifNpc1) && (max(npc1.distanceToTile(objectifNpc2), npc2.distanceToTile(objectifNpc1)) < tempsMaxChemins);
 }
 
-void GameManager::execute() noexcept {
+void GameManager::execute(MyBotLogic& myBotLogic) noexcept {
    ProfilerDebug profiler{ GameManager::getLogger(), "EXECUTE" };
    ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "execute" };
 
-   workerExecute = std::async([](GameManager& gm) {
+   myBotLogic.workerExecute = std::async(std::launch::async, [](GameManager& gm) {
       //ProfilerRelease profilerRelease{ getLoggerRelease(), "Thread Execute" };
-      // On calcul où doivent se rendre les npcs
+      // On calcul oï¿½ doivent se rendre les npcs
       gm.behaviorTreeManager.execute();
 
-      // On fait des swaps si nécessaires + on calculs les aStars UNE SEULE FOIS !
+      // On fait des swaps si nï¿½cessaires + on calculs les aStars UNE SEULE FOIS !
       gm.reaffecterObjectifsSelonDistance();
 
       // On affecte les contraintes, donc potentiellement d'autres aStars
       gm.affecterContraintes();
 
-      // Il faut réordonner les chemins entre les npcs !
-      // Cad que si deux Npcs peuvent échanger leurs objectifs et que cela diminue leurs chemins respectifs, alors il faut le faire !
+      // Il faut rï¿½ordonner les chemins entre les npcs !
+      // Cad que si deux Npcs peuvent ï¿½changer leurs objectifs et que cela diminue leurs chemins respectifs, alors il faut le faire !
       gm.reaffecterObjectifsSelonDistance();
    }
    , std::ref(*this)
    );
    
-   executeFinished(std::max(SEUIL_TEMPS_EXECUTE - 500us, 0us));
+   executeFinished(myBotLogic, SEUIL_TEMPS_EXECUTE);
 };
 
-bool GameManager::floodFillFinished(microseconds _dureeRestante) {
+bool GameManager::floodFillFinished(MyBotLogic& myBotLogic, microseconds& _dureeRestante) {
    future_status etatWait = future_status::ready;
-   for (auto &worker : workersFloodFill) {
+   for (auto &worker : myBotLogic.workersFloodFill) {
       auto tempsAvant = Minuteur::now();
-      etatWait = worker.wait_for(_dureeRestante);
+      etatWait = (etatWait == future_status::ready) ? worker.wait_for(_dureeRestante) : future_status::timeout;
       auto tempsApres = Minuteur::now();
       _dureeRestante -= duration_cast<microseconds>(tempsApres - tempsAvant);
       _dureeRestante = microseconds(std::max(0LL, _dureeRestante.count()));
@@ -566,8 +566,8 @@ bool GameManager::floodFillFinished(microseconds _dureeRestante) {
    return etatWait == future_status::ready;
 }
 
-bool GameManager::executeFinished(microseconds _dureeRestante) {
+bool GameManager::executeFinished(MyBotLogic& myBotLogic, microseconds& _dureeRestante) {
    future_status etatWait = future_status::ready;
-   etatWait = workerExecute.wait_for(_dureeRestante);
+   etatWait = myBotLogic.workerExecute.wait_for(_dureeRestante);
    return etatWait == future_status::ready;
 }
