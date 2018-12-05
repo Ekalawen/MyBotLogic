@@ -43,14 +43,18 @@ Logger GameManager::loggerRelease{};
 
 void GameManager::Init(LevelInfo _info)
 {
-    c = { Carte(_info) };
+   ProfilerRelease profilerRelease{ loggerRelease, "Init GameManager" };
+   c = { Carte(_info) };
    // On rï¿½cupï¿½re l'ensemble des npcs !
    for (auto pair_npc : _info.npcs) {
       NPCInfo npc = pair_npc.second;
       npcs[npc.npcID] = Npc(npc);
    }
-   //threads.init();
-   //threads.setGM(*this);
+
+   int tempsPourLeResteMicroSeconds = (_info.turnDelay >= 10) ? static_cast<int>(static_cast<float>(_info.turnDelay)*2.f / 5.f*1000.f) : 2500;
+   SEUIL_TEMPS_FLOODFILL = microseconds(_info.turnDelay * 1000 - tempsPourLeResteMicroSeconds);
+   profilerRelease << "SEUIL TEMPS FLOOD us = " << SEUIL_TEMPS_FLOODFILL.count() << endl;
+
 }
 
 void GameManager::InitializeBehaviorTree() noexcept {
@@ -86,75 +90,78 @@ void GameManager::InitializeBehaviorTree() noexcept {
 }
 
 vector<Mouvement> GameManager::getAllMouvements() {
-    // On va récupérer la liste des mouvements
-    vector<Mouvement> mouvements;
+   // On va récupérer la liste des mouvements
+   vector<Mouvement> mouvements;
 
-    // Pour tous les NPCs, s'il n'y a aucun autre Npc devant eux
-    for (auto& npc : npcs) {
-        stringstream ss;
-        ss << "NPC = " << npc.second.getId() << std::endl
-           << "chemin = " << npc.second.getChemin().toString() << std::endl
-           << "case actuelle = " <<  npc.second.getTileId() << std::endl;
-       
-        // On vérifie si le Npc doit checker un mur ou non
-        if (npc.second.getIsCheckingDoor()) {
+   // Pour tous les NPCs, s'il n'y a aucun autre Npc devant eux
+   for (auto& npc : npcs) {
+      stringstream ss;
+      ss << "NPC = " << npc.second.getId() << std::endl
+         << "chemin = " << npc.second.getChemin().toString() << std::endl
+         << "case actuelle = " << npc.second.getTileId() << std::endl;
+
+      // On vérifie si le Npc doit checker un mur ou non
+      if (npc.second.getIsCheckingDoor()) {
+         // Alors on enregistre un mouvement statique
+         mouvements.push_back(Mouvement(npc.second.getId(), npc.second.getTileId(), npc.second.getTileId(), Tile::ETilePosition::CENTER));
+
+         // Et on lui précise qu'il s'agit d'un mouvement de checking de mur !
+         mouvements[mouvements.size() - 1].setCheckingDoor(npc.second.getDirectionCheckingDoor());
+
+         // Et on passe au npc suivant
+         continue;
+      }
+
+      // Si le npc doit aller quelquepart !!!
+      if (!npc.second.getChemin().empty()) {
+         // On récupère la case où il doit aller
+         int caseCible = npc.second.getChemin().getFirst();
+         ss << "case cible = " << caseCible << std::endl;
+
+         Tile::ETilePosition direction = c.getDirection(npc.second.getTileId(), caseCible);
+         ss << "direction = " << direction << std::endl;
+
+         // Si le mouvement est bloqué par une porte à poignée
+         if (c.getTile(npc.second.getTileId()).hasDoorPoigneeVoisin(caseCible, c)) {
+            // Alors on enregistre un mouvement statique
+            mouvements.push_back(Mouvement(npc.second.getId(), npc.second.getTileId(), npc.second.getTileId(), Tile::ETilePosition::CENTER));
+            // Et on lui précise qu'il s'agit d'un mouvement d'ouverture de porte et non de déplacement !
+            mouvements[mouvements.size() - 1].setActivateDoor(direction);
+
+            // Si il y a porte fermée à switch, il faut attendre
+         }
+         else if (c.getTile(npc.second.getTileId()).hasClosedDoor(caseCible, c)) {
             // Alors on enregistre un mouvement statique
             mouvements.push_back(Mouvement(npc.second.getId(), npc.second.getTileId(), npc.second.getTileId(), Tile::ETilePosition::CENTER));
 
-            // Et on lui précise qu'il s'agit d'un mouvement de checking de mur !
-            mouvements[mouvements.size() - 1].setCheckingDoor(npc.second.getDirectionCheckingDoor());
-
-            // Et on passe au npc suivant
-            continue;
-        }
-
-        // Si le npc doit aller quelquepart !!!
-        if (!npc.second.getChemin().empty()) {
-            // On récupère la case où il doit aller
-            int caseCible = npc.second.getChemin().getFirst();
-            ss << "case cible = " << caseCible << std::endl;
-            
-            Tile::ETilePosition direction = c.getDirection(npc.second.getTileId(), caseCible);
-            ss << "direction = " << direction << std::endl;
-
-            // Si le mouvement est bloqué par une porte à poignée
-            if (c.getTile(npc.second.getTileId()).hasDoorPoigneeVoisin(caseCible, c)) {
-                // Alors on enregistre un mouvement statique
-                mouvements.push_back(Mouvement(npc.second.getId(), npc.second.getTileId(), npc.second.getTileId(), Tile::ETilePosition::CENTER));
-                // Et on lui précise qu'il s'agit d'un mouvement d'ouverture de porte et non de déplacement !
-                mouvements[mouvements.size() - 1].setActivateDoor(direction);
-
-            // Si il y a porte fermée à switch, il faut attendre
-            } else if(c.getTile(npc.second.getTileId()).hasClosedDoor(caseCible, c)) {
-                // Alors on enregistre un mouvement statique
-                mouvements.push_back(Mouvement(npc.second.getId(), npc.second.getTileId(), npc.second.getTileId(), Tile::ETilePosition::CENTER));
-
             // Si il n'y a pas de portes
-            } else {
+         }
+         else {
 
-                // On enregistre le mouvement
-                mouvements.push_back(Mouvement(npc.second.getId(), npc.second.getTileId(), caseCible, direction));
+            // On enregistre le mouvement
+            mouvements.push_back(Mouvement(npc.second.getId(), npc.second.getTileId(), caseCible, direction));
 
-                npc.second.getChemin().removeFirst(); // On peut supprimer le chemin
-            }
-        } else {
-            ss << "case cible = Ne Bouge Pas" << std::endl;
-            // Même si le Npc ne bouge pas, il a quand même un mouvement statique !
-            mouvements.push_back(Mouvement(npc.second.getId(), npc.second.getTileId(), npc.second.getTileId(), Tile::ETilePosition::CENTER));
-        }
+            npc.second.getChemin().removeFirst(); // On peut supprimer le chemin
+         }
+      }
+      else {
+         ss << "case cible = Ne Bouge Pas" << std::endl;
+         // Même si le Npc ne bouge pas, il a quand même un mouvement statique !
+         mouvements.push_back(Mouvement(npc.second.getId(), npc.second.getTileId(), npc.second.getTileId(), Tile::ETilePosition::CENTER));
+      }
 
-        LOG(ss.str());
-    }
-    return mouvements;
+      LOG(ss.str());
+   }
+   return mouvements;
 }
 
 void GameManager::moveNpcs(vector<Action*>& actionList) noexcept {
-    ProfilerDebug profiler{ getLogger(), "MOVE NPCS" };
-    ProfilerRelease profilerRelease{ getLoggerRelease(), "moveNpcs" };
-    // Code déplace juste après l'execute, il faudra peut-être aussi le laisser ici, à voir !!! Finalement j'ai dû le laisser ici aussi, c'est nécessaire mais ça coûte !
-    //// Il faut réordonner les chemins entre les npcs !
-    //// Cad que si deux Npcs peuvent échanger leurs objectifs et que cela diminue leurs chemins respectifs, alors il faut le faire !
-    reaffecterObjectifsSelonDistance();
+   ProfilerDebug profiler{ getLogger(), "MOVE NPCS" };
+   ProfilerRelease profilerRelease{ getLoggerRelease(), "moveNpcs" };
+   // Code déplace juste après l'execute, il faudra peut-être aussi le laisser ici, à voir !!! Finalement j'ai dû le laisser ici aussi, c'est nécessaire mais ça coûte !
+   //// Il faut réordonner les chemins entre les npcs !
+   //// Cad que si deux Npcs peuvent échanger leurs objectifs et que cela diminue leurs chemins respectifs, alors il faut le faire !
+   //reaffecterObjectifsSelonDistance();
 
    // On recupere tous les mouvements
    vector<Mouvement> mouvements = getAllMouvements();
@@ -168,8 +175,6 @@ void GameManager::moveNpcs(vector<Action*>& actionList) noexcept {
       // On applique notre mouvement
       mouvement.apply(actionList, npcs, c);
    }
-
-   isFloodFillDejaCalcule = false;
 }
 
 vector<int> getIndicesMouvementsSurMemeCaseCible(vector<Mouvement>& _mouvements, int _caseCible) {
@@ -243,46 +248,46 @@ void GameManager::gererCollisionsMemeCaseCible(vector<Mouvement>& _mouvements) {
 }
 
 void GameManager::ordonnerMouvements(vector<Mouvement>& _mouvements) noexcept {
-    // Ordonner les mouvements pour que ceux qui vont sur des switchs soient les premiers ! Et les derniers s'ils en sortent !
-    ordonnerMouvementsSelonSwitchs(_mouvements);
+   // Ordonner les mouvements pour que ceux qui vont sur des switchs soient les premiers ! Et les derniers s'ils en sortent !
+   ordonnerMouvementsSelonSwitchs(_mouvements);
 
-    // Si deux npcs veulent aller sur la même case, alors celui qui a le plus de chemin à faire passe, et tous les autres restent sur place !
-    gererCollisionsMemeCaseCible(_mouvements);
+   // Si deux npcs veulent aller sur la même case, alors celui qui a le plus de chemin à faire passe, et tous les autres restent sur place !
+   gererCollisionsMemeCaseCible(_mouvements);
 }
 
 void GameManager::ordonnerMouvementsSelonSwitchs(vector<Mouvement>& mouvements) {
-    vector<Mouvement> mouvementsOrdonnes{};
+   vector<Mouvement> mouvementsOrdonnes{};
 
-    // On range d'abord les mouvements qui vont sur un switch et qui n'en viennent pas
-    for (Mouvement mouvement : mouvements) {
-        if (c.isActivateurUnderTileId(mouvement.getTileDestination())
-            && !c.isActivateurUnderTileId(mouvement.getTileSource()))
-            mouvementsOrdonnes.push_back(mouvement);
-    }
+   // On range d'abord les mouvements qui vont sur un switch et qui n'en viennent pas
+   for (Mouvement mouvement : mouvements) {
+      if (c.isActivateurUnderTileId(mouvement.getTileDestination())
+         && !c.isActivateurUnderTileId(mouvement.getTileSource()))
+         mouvementsOrdonnes.push_back(mouvement);
+   }
 
-    // Puis les mouvements qui sortent et entrent d'un switch, même si c'est pas parfait on fera avec !
-    for (Mouvement mouvement : mouvements) {
-        if (c.isActivateurUnderTileId(mouvement.getTileDestination())
-            && c.isActivateurUnderTileId(mouvement.getTileSource()))
-            mouvementsOrdonnes.push_back(mouvement);
-    }
+   // Puis les mouvements qui sortent et entrent d'un switch, même si c'est pas parfait on fera avec !
+   for (Mouvement mouvement : mouvements) {
+      if (c.isActivateurUnderTileId(mouvement.getTileDestination())
+         && c.isActivateurUnderTileId(mouvement.getTileSource()))
+         mouvementsOrdonnes.push_back(mouvement);
+   }
 
-    // Puis les mouvements qui n'ont pas de rapport avec un switch
-    for (Mouvement mouvement : mouvements) {
-        if (!c.isActivateurUnderTileId(mouvement.getTileDestination())
-            && !c.isActivateurUnderTileId(mouvement.getTileSource()))
-            mouvementsOrdonnes.push_back(mouvement);
-    }
+   // Puis les mouvements qui n'ont pas de rapport avec un switch
+   for (Mouvement mouvement : mouvements) {
+      if (!c.isActivateurUnderTileId(mouvement.getTileDestination())
+         && !c.isActivateurUnderTileId(mouvement.getTileSource()))
+         mouvementsOrdonnes.push_back(mouvement);
+   }
 
-    // Puis les mouvements qui sortent d'un switch et qui ne vont pas sur un switch
-    for (Mouvement mouvement : mouvements) {
-        if (!c.isActivateurUnderTileId(mouvement.getTileDestination())
-            && c.isActivateurUnderTileId(mouvement.getTileSource()))
-            mouvementsOrdonnes.push_back(mouvement);
-    }
+   // Puis les mouvements qui sortent d'un switch et qui ne vont pas sur un switch
+   for (Mouvement mouvement : mouvements) {
+      if (!c.isActivateurUnderTileId(mouvement.getTileDestination())
+         && c.isActivateurUnderTileId(mouvement.getTileSource()))
+         mouvementsOrdonnes.push_back(mouvement);
+   }
 
-    // Puis on affecte !
-    mouvements = mouvementsOrdonnes;
+   // Puis on affecte !
+   mouvements = mouvementsOrdonnes;
 }
 
 
@@ -333,33 +338,31 @@ void GameManager::updateModel(const TurnInfo &_tile) noexcept {
    // On met à jour les portes à switchs 
    majPortesASwitch();
 
-  // threads.join();
-
    // Mettre a jour nos NPCs
    refreshFloodfill();
 }
 
 void GameManager::majPortesASwitch() noexcept {
-    ProfilerDebug profiler{ GameManager::getLogger(), "majPortesASwitch" };
+   ProfilerDebug profiler{ GameManager::getLogger(), "majPortesASwitch" };
 
-    // Pour chaque porte à switch, on regarde pour tous ses interrupteurs s'il y a un npc dessus
-    for (auto& pair : c.getPortes()) {
-        Porte& porte = pair.second;
-        if (porte.getType() == Porte::A_SWITCH) {
-            bool isOpen = false;
-            for (int tileSwitchId : porte.getSwitchsTilesIds(c)) {
-                for (auto pair2 : npcs) {
-                    Npc npc = pair2.second;
-                    if (npc.getTileId() == tileSwitchId) {
-                        porte.ouvrirPorte();
-                        isOpen = true;
-                    }
-                }
+   // Pour chaque porte à switch, on regarde pour tous ses interrupteurs s'il y a un npc dessus
+   for (auto& pair : c.getPortes()) {
+      Porte& porte = pair.second;
+      if (porte.getType() == Porte::A_SWITCH) {
+         bool isOpen = false;
+         for (int tileSwitchId : porte.getSwitchsTilesIds(c)) {
+            for (auto pair2 : npcs) {
+               Npc npc = pair2.second;
+               if (npc.getTileId() == tileSwitchId) {
+                  porte.ouvrirPorte();
+                  isOpen = true;
+               }
             }
-            if (!isOpen)
-                porte.fermerPorte();
-        }
-    }
+         }
+         if (!isOpen)
+            porte.fermerPorte();
+      }
+   }
 }
 
 Npc& GameManager::getNpcById(int _id) {
@@ -368,12 +371,12 @@ Npc& GameManager::getNpcById(int _id) {
    return npcs[_id];
 }
 int GameManager::getNpcIdAtTileId(int tileId) {
-    for (auto pair : npcs) {
-        Npc npc = pair.second;
-        if (npc.getTileId() == tileId)
-            return npc.getId();
-    }
-    LOG("Mauvaise utilisation de la fonction getNpcIdAtTileId() !");
+   for (auto pair : npcs) {
+      Npc npc = pair.second;
+      if (npc.getTileId() == tileId)
+         return npc.getId();
+   }
+   LOG("Mauvaise utilisation de la fonction getNpcIdAtTileId() !");
 }
 map<int, Npc>& GameManager::getNpcs() {
    return npcs;
@@ -385,207 +388,168 @@ void GameManager::addNpc(Npc npc) {
 }
 
 void GameManager::reaffecterObjectifsSelonDistance() {
-    ProfilerDebug profiler{ GameManager::getLogger(), "REAFECTER OBJECTIFS SELON DISTANCE" };
-    ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "reaffecterObjectifsSelonDistance" };
+   ProfilerDebug profiler{ GameManager::getLogger(), "REAFECTER OBJECTIFS SELON DISTANCE" };
+   ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "reaffecterObjectifsSelonDistance" };
 
-    LOG("Objectif initiaux");
-    for (auto& npcPair : npcs) {
-        LOG("npc = " + to_string(npcPair.second.getId()) + " va en " + to_string(npcPair.second.getTileObjectif()));
-    }
-    // Tant que l'on fait des modifications on continue ...
-    bool continuer = true;
-    int k = 0;
-    int kmax = 20;
-    while (continuer) {
-        continuer = false;
+   LOG("Objectif initiaux");
+   for (auto& npcPair : npcs) {
+      LOG("npc = " + to_string(npcPair.second.getId()) + " va en " + to_string(npcPair.second.getTileObjectif()));
+   }
+   // Tant que l'on fait des modifications on continue ...
+   bool continuer = true;
+   int k = 0;
+   int kmax = 20;
+   while (continuer) {
+      continuer = false;
 
-        for (auto& npcPair : npcs) {
-            Npc& npc = npcPair.second;
-            int objectifNpc = npc.getTileObjectif();
+      for (auto& npcPair : npcs) {
+         Npc& npc = npcPair.second;
+         int objectifNpc = npc.getTileObjectif();
 
-            for (auto& autreNpcPair : npcs) {
-                Npc& autreNpc = autreNpcPair.second;
-                int objectifAutreNpc = autreNpc.getTileObjectif();
+         for (auto& autreNpcPair : npcs) {
+            Npc& autreNpc = autreNpcPair.second;
+            int objectifAutreNpc = autreNpc.getTileObjectif();
 
-                if (npc.getId() != autreNpc.getId() && permutationUtile(npc, autreNpc)) {
-                    profiler << "Npc " << npc.getId() << " et Npc " << autreNpc.getId() << " echangent leurs objectifs !";
-                    profiler << "Npc " << npc.getId() << " vers " << objectifAutreNpc << " et " << "Npc " << autreNpc.getId() << " vers " << objectifNpc << std::endl;
+            if (npc.getId() != autreNpc.getId() && permutationUtile(npc, autreNpc)) {
+               profiler << "Npc " << npc.getId() << " et Npc " << autreNpc.getId() << " echangent leurs objectifs !";
+               profiler << "Npc " << npc.getId() << " vers " << objectifAutreNpc << " et " << "Npc " << autreNpc.getId() << " vers " << objectifNpc << std::endl;
 
-                    //npc.setChemin(c.aStar(npc.getTileId(), objectifAutreNpc, npc.getId(), *this));
-                    //autreNpc.setChemin(c.aStar(autreNpc.getTileId(), objectifNpc, autreNpc.getId(), *this));
-                    npc.setTileObjectif(objectifAutreNpc);
-                    autreNpc.setTileObjectif(objectifNpc);
-                    objectifNpc = npc.getTileObjectif();
+               //npc.setChemin(c.aStar(npc.getTileId(), objectifAutreNpc, npc.getId(), *this));
+               //autreNpc.setChemin(c.aStar(autreNpc.getTileId(), objectifNpc, autreNpc.getId(), *this));
+               npc.setTileObjectif(objectifAutreNpc);
+               autreNpc.setTileObjectif(objectifNpc);
+               objectifNpc = npc.getTileObjectif();
 
-                    continuer = true; // Et on devra continuer pour vérifier que cette intervertion n'en a pas entrainé de nouvelles !
-                }
+               continuer = true; // Et on devra continuer pour vérifier que cette intervertion n'en a pas entrainé de nouvelles !
             }
-        }
-        if (++k > kmax)
-            continuer = false;
-    }
+         }
+      }
+      if (++k > kmax)
+         continuer = false;
+   }
 
-    // Une fois que toutes les permutations ont étées effectuées, on peut enfin calculer les aStars !!! =)
-    for (auto& npcPair : npcs) {
-        Npc& npc = npcPair.second;
-        npc.setChemin(c.aStar(npc.getTileId(), npc.getTileObjectif(), npc.getId(), *this));
-    }
+   // Une fois que toutes les permutations ont étées effectuées, on peut enfin calculer les aStars !!! =)
+   for (auto& npcPair : npcs) {
+      Npc& npc = npcPair.second;
+      npc.setChemin(c.aStar(npc.getTileId(), npc.getTileObjectif(), npc.getId(), *this));
+   }
 }
 
 void GameManager::affecterContraintes() noexcept {
-    ProfilerDebug profiler{ GameManager::getLogger(), "AFFECTER CONTRAINTES" };
-    ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "affecterContraintes" };
-    for (auto pair : npcs) {
-        Npc npc = pair.second;
-        profiler << "Npc " << npc.getId() << " veut aller en " << npc.getTileObjectif() << endl;
-    }
+   ProfilerDebug profiler{ GameManager::getLogger(), "AFFECTER CONTRAINTES" };
+   ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "affecterContraintes" };
+   for (auto pair : npcs) {
+      Npc npc = pair.second;
+      profiler << "Npc " << npc.getId() << " veut aller en " << npc.getTileObjectif() << endl;
+   }
 
-    // On va clean les contraintes non résolues qui trainent
-    cleanContraintes();
+   // On va clean les contraintes non résolues qui trainent
+   cleanContraintes();
 
-    // On construit un vecteur trié des npcs dans l'ordre croissant de la longueur du chemin
-    // Comme ça le plus long écrase tous les autres ! Niark !
-    vector<Npc*> npcsSelonTailleChemin{};
-    for (auto& pair : npcs) {
-        Npc* npc = &pair.second;
-        npcsSelonTailleChemin.push_back(npc);
-    }
-    sort(npcsSelonTailleChemin.begin(), npcsSelonTailleChemin.end(), [](Npc* a, Npc* b) {
-        return a->getChemin().distance() < b->getChemin().distance();
-    });
+   // On construit un vecteur trié des npcs dans l'ordre croissant de la longueur du chemin
+   // Comme ça le plus long écrase tous les autres ! Niark !
+   vector<Npc*> npcsSelonTailleChemin{};
+   for (auto& pair : npcs) {
+      Npc* npc = &pair.second;
+      npcsSelonTailleChemin.push_back(npc);
+   }
+   sort(npcsSelonTailleChemin.begin(), npcsSelonTailleChemin.end(), [](Npc* a, Npc* b) {
+      return a->getChemin().distance() < b->getChemin().distance();
+   });
 
-    // Pour chaque chemin de nos Npcs, on regarde s'ils ont des contraintes, si oui on affecte ses contraintes
-    // On termine par le npc le plus loin comme ça il écrasera les autres !
-    for (Npc* npc : npcsSelonTailleChemin) {
-        vector<int> npcAffectes = npc->getChemin().affecterContraintes(npc->getId(), *this);
-    }
-    //while (!npcsSelonTailleChemin.empty()) {
-    //    Npc* npc = npcsSelonTailleChemin.back(); // On prend celui qui a le plus long chemin en premier
+   // Pour chaque chemin de nos Npcs, on regarde s'ils ont des contraintes, si oui on affecte ses contraintes
+   // On termine par le npc le plus loin comme ça il écrasera les autres !
+   for (Npc* npc : npcsSelonTailleChemin) {
+      vector<int> npcAffectes = npc->getChemin().affecterContraintes(npc->getId(), *this);
+   }
+   //while (!npcsSelonTailleChemin.empty()) {
+   //    Npc* npc = npcsSelonTailleChemin.back(); // On prend celui qui a le plus long chemin en premier
 
-    //    // Cette fonction affecte les chemins aux bonc npcs récursivement et les enlèves de la liste npcsSelonTailleChemin !
-    //    vector<int> npcAffectes = npc->getChemin().affecterContraintes(npc->getId(), *this);
+   //    // Cette fonction affecte les chemins aux bonc npcs récursivement et les enlèves de la liste npcsSelonTailleChemin !
+   //    vector<int> npcAffectes = npc->getChemin().affecterContraintes(npc->getId(), *this);
 
-    //    // On supprime les npcs affectes de notre liste
-    //    for (int npcId : npcAffectes) {
-    //        auto it = find_if(npcsSelonTailleChemin.begin(), npcsSelonTailleChemin.end(), [npcId](Npc* npc) {
-    //            return npc->getId() == npcId;
-    //        });
-    //        if (it != npcsSelonTailleChemin.end())
-    //            npcsSelonTailleChemin.erase(it);
-    //        else
-    //            LOG("Erreur pas normal ! x)");
-    //    }
-    //}
+   //    // On supprime les npcs affectes de notre liste
+   //    for (int npcId : npcAffectes) {
+   //        auto it = find_if(npcsSelonTailleChemin.begin(), npcsSelonTailleChemin.end(), [npcId](Npc* npc) {
+   //            return npc->getId() == npcId;
+   //        });
+   //        if (it != npcsSelonTailleChemin.end())
+   //            npcsSelonTailleChemin.erase(it);
+   //        else
+   //            LOG("Erreur pas normal ! x)");
+   //    }
+   //}
 }
 
 void GameManager::cleanContraintes() noexcept {
-    for (auto& pair : npcs) {
-        Npc& npc = pair.second;
-        npc.getChemin().cleanContraintes();
-    }
+   for (auto& pair : npcs) {
+      Npc& npc = pair.second;
+      npc.getChemin().cleanContraintes();
+   }
 }
 
 
 void GameManager::refreshFloodfill() {
    ProfilerDebug profiler{ GameManager::getLogger(), "refreshFloodfill" };
-
-  // ThreadPool workers;
-
-   Minuteur m{(Minuteur::duree_t)SEUIL_TEMPS_FLOODFILL.count()};
-   m.start();
-
-   tempsDebutThread = high_resolution_clock::now();
+   ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "refreshFloodfill" };
 
    for (auto &npc : npcs) {
 
-       //threads.ajouter(std::bind(npc.second.floodfill, *this));
-       //threads.ajouter([&npc, &gm = *this](GameManager& gm) {  npc.second.floodfill(gm); });
-      workers.push_back(std::async([&npc](GameManager& gm) { 
-         npc.second.floodfill(gm); 
+      workersFloodFill.push_back(std::async([&npc](GameManager& gm) {
+         npc.second.floodfill(gm);
       }
       , std::ref(*this)));
-
-      //npc.second.floodfill(c);
-   /*   std::thread th{
-         [&npc](GameManager& gm) {
-            npc.second.floodfill(gm);
-         }
-         , std::ref(*this)
-      };
-      workers.addThread(std::move(th));*/
 
       // On en profite pour réinitialiser un attribut par npcs :)
       npc.second.setIsCheckingDoor(false);
    }
-   //threads.joinAll();
    //verifier quil ny a plus de taches + verifier que aucun thread nest en train de rouler
-
-   //threads.joinAll();
-   //for (auto &worker : workers) {
-   //   worker.wait();
-   //}
-   bool continuer = true;
-   while (continuer)
-   {
-      m.refresh();
-      continuer = !m.isFinished() 
-         && std::find_if(workers.begin(), workers.end(), [](std::future<void>& worker) { return worker.valid(); }) != workers.end(); 
-   }
-   //auto now = Minuteur::now();
-
-   //enoughTimeForFloodFill = !(duration_cast<milliseconds>((now - tempsDebutThread)) > SEUIL_TEMPS_FLOODFILL);
-   enoughTimeForFloodFill = std::find_if(workers.begin(), workers.end(), [](std::future<void>& worker) { return worker.valid(); }) == workers.end();
+   floodFillFinished(SEUIL_TEMPS_FLOODFILL);
 }
 
 bool GameManager::permutationUtile(Npc& npc1, Npc& npc2) {
-    int objectifNpc1 = npc1.getTileObjectif();
-    int objectifNpc2 = npc2.getTileObjectif();
-    int tempsMaxChemins = max(npc1.distanceToTile(objectifNpc1), npc2.distanceToTile(objectifNpc2));
+   int objectifNpc1 = npc1.getTileObjectif();
+   int objectifNpc2 = npc2.getTileObjectif();
+   int tempsMaxChemins = max(npc1.distanceToTile(objectifNpc1), npc2.distanceToTile(objectifNpc2));
 
    // Si l'interversion des objectifs est possible et benefique pour l'un deux et ne coute rien a l'autre (ou lui est aussi benefique)
    return npc1.isAccessibleTile(objectifNpc2) && npc2.isAccessibleTile(objectifNpc1) && (max(npc1.distanceToTile(objectifNpc2), npc2.distanceToTile(objectifNpc1)) < tempsMaxChemins);
 }
 
-void GameManager::lanceAllFloodRempliBetweenTour() {
-   //std::vector<std::future<void>> workers;
-
-    //for (auto &npc : npcs) {
-
-    //    //threads.ajouter(std::bind(npc.second.floodfill, *this));
-    //    //threads.ajouter([&npc, &gm = *this](GameManager& gm) {  npc.second.floodfill(gm); });
-
-    //    //npc.second.floodfill(c);
-    //    /*   std::thread th{
-    //    [&npc](GameManager& gm) {
-    //    npc.second.floodfill(gm);
-    //    }
-    //    , std::ref(*this)
-    //    };
-    //    workers.addThread(std::move(th));*/
-
-    //   workers.push_back(std::async([&npc](GameManager& gm) {
-    //      npc.second.floodfill(gm);
-    //   }
-    //   , std::ref(*this)));
-
-    //    // On en profite pour réinitialiser un attribut par npcs :)
-    //    npc.second.setIsCheckingDoor(false);
-    //}
-
-    isFloodFillDejaCalcule = true; 
-    enoughTimeForFloodFill = true;
-}
-
-void GameManager::execute() noexcept { 
-   ProfilerDebug profiler{ GameManager::getLogger(), "EXECUTE" }; 
+void GameManager::execute() noexcept {
+   ProfilerDebug profiler{ GameManager::getLogger(), "EXECUTE" };
    ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "execute" };
 
    // On calcul où doivent se rendre les npcs
-   behaviorTreeManager.execute(); 
+   behaviorTreeManager.execute();
 
    // On fait des swaps si nécessaires + on calculs les aStars UNE SEULE FOIS !
    reaffecterObjectifsSelonDistance();
 
    // On affecte les contraintes, donc potentiellement d'autres aStars
    affecterContraintes();
+
+   // Il faut réordonner les chemins entre les npcs !
+   // Cad que si deux Npcs peuvent échanger leurs objectifs et que cela diminue leurs chemins respectifs, alors il faut le faire !
+   reaffecterObjectifsSelonDistance();
 };
+
+bool GameManager::floodFillFinished(microseconds _dureeRestant) {
+   future_status etatWait = future_status::ready;
+   for (auto &worker : workersFloodFill) {
+      auto tempsAvant = Minuteur::now();
+      etatWait = worker.wait_for(_dureeRestant);
+      auto tempsApres = Minuteur::now();
+      _dureeRestant -= duration_cast<microseconds>(tempsApres - tempsAvant);
+   }
+   return etatWait == future_status::ready;
+}
+
+bool GameManager::executeFinished(microseconds _dureeRestant = 0us) {
+   future_status etatWait = future_status::ready;
+   auto tempsAvant = Minuteur::now();
+   etatWait = workerExecute.wait_for(_dureeRestant);
+   auto tempsApres = Minuteur::now();
+   _dureeRestant -= duration_cast<microseconds>(tempsApres - tempsAvant);
+   return etatWait == future_status::ready;
+}

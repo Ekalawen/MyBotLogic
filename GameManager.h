@@ -10,7 +10,7 @@
 #include "TurnInfo.h"
 #include "MyBotLogic/Tools/Profiler.h"
 #include "BehaviorTree/Composite/Selecteur.h"
-//#include "MyBotLogic/Tools/ThreadPool.h"
+
 #include <map>
 #include <chrono>
 #include <condition_variable>
@@ -57,13 +57,10 @@ public:
     Carte c;
     Selecteur behaviorTreeManager; // Arbre de comportement du GameManager pour déterminer la stratégie à suivre
     vector<int> objectifPris; // Permet de savoir quels sont les objectifs actuellement assignés à des npcs
-    //th_pool threads;
-    //std::condition_variable cond;
-    time_point<steady_clock> tempsDebutThread;
-    const milliseconds SEUIL_TEMPS_FLOODFILL = 4ms;
-    bool enoughTimeForFloodFill = false;
+    microseconds SEUIL_TEMPS_FLOODFILL;
     bool isFloodFillDejaCalcule = false;
-    std::vector<std::future<void>> workers;
+    std::vector<std::future<void>> workersFloodFill;
+    std::future<void> workerExecute;
 
     GameManager() = default;
     void Init(LevelInfo);
@@ -81,19 +78,6 @@ public:
     int getNpcIdAtTileId(int tileId);
     map<int, Npc>& getNpcs();
     void addNpc(Npc npc);
-    void lanceAllFloodRempliBetweenTour();
-
-    //static void log(string str) noexcept { // Permet de débugger ! :D
-    //    #ifndef _DEBUG
-    //        return;
-    //    #endif
-    //    #ifdef _DEBUG
-    //        logger.Log(str);
-    //    #endif
-    //}
-    //static void logRelease(string _str) noexcept { // Permet de débugger ! :D
-    //    loggerRelease.Log(_str);
-    //}
 
     static void setLog(string path, string fileName) noexcept { // Permet d'initialiser le logger =)
         #ifndef _DEBUG
@@ -113,6 +97,8 @@ public:
        return loggerRelease;
     }
     void refreshFloodfill();
+    bool floodFillFinished(microseconds dureeRestant = 0us);
+    bool executeFinished(microseconds dureeRestant = 0us);
 private:
     void addNewTiles(const TurnInfo& ti) noexcept;
     void addNewObjects(const TurnInfo& ti) noexcept;

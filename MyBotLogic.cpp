@@ -47,7 +47,7 @@ MyBotLogic::MyBotLogic() :
 
 /*virtual*/ void MyBotLogic::Init(LevelInfo& _levelInfo)
 {
-    // On crée notre modèle du jeu en cours !
+   // On crée notre modèle du jeu en cours !
 
    auto pre = Minuteur::now();
    // Le logger
@@ -55,15 +55,13 @@ MyBotLogic::MyBotLogic() :
    GameManager::setLogRelease(logpath, "MyLogRelease.log");
    manager.Init(_levelInfo);
    manager.InitializeBehaviorTree();
-   //manager.refreshFloodfill();
    auto post = Minuteur::now();
-    // On associe à chaque npc son objectif !
-   //gm.associateNpcsWithObjectiv();
+   // On associe à chaque npc son objectif !
    stringstream ss;
-    ss << "Durée Initialisation = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms";
-    LOG(ss.str());
+   ss << "Durée Initialisation = " << Minuteur::dureeMicroseconds(pre, post) / 1000.f << "ms";
+   LOG(ss.str());
 
-    tempsAvantServeur = Minuteur::now();
+   tempsAvantServeur = Minuteur::now();
 }
 
 /*virtual*/ void MyBotLogic::OnGameStarted()
@@ -83,23 +81,25 @@ MyBotLogic::MyBotLogic() :
    profilerRelease << "Duree serveur : " << duration_cast<milliseconds>(tempsApresServeur - tempsAvantServeur).count() << " ms" << endl;
 
    if (!manager.isFloodFillDejaCalcule) {
-       // On complete notre modele avec l'information qu'on vient de decouvrir !
-       manager.updateModel(_turnInfo);
-       profilerRelease << "ON A DU isFloodFillDejaCalcule " << endl;
+      // On complete notre modele avec l'information qu'on vient de decouvrir !
+      manager.updateModel(_turnInfo);
+      profilerRelease << "ON A DU isFloodFillDejaCalcule " << endl;
    }
 
-   if (manager.enoughTimeForFloodFill) {
-       profilerRelease << "ON A DU TEMPS " << endl;
-       // On definit notre strategie en executant notre arbre de comportement
-       manager.execute();
+   if (manager.floodFillFinished()) {
+      profilerRelease << "ON A DU TEMPS " << endl;
+      manager.isFloodFillDejaCalcule = false;
 
-       // On fait se deplacer chaque Npc vers son objectif associe =)
-       manager.moveNpcs(_actionList);
+      // On definit notre strategie en executant notre arbre de comportement
+      //manager.execute();
+
+      // On fait se deplacer chaque Npc vers son objectif associe =)
+      manager.moveNpcs(_actionList);
 
    }
    else {
-       profilerRelease << "ON A PAS DU TEMPS " << endl;
-       manager.lanceAllFloodRempliBetweenTour();
+      profilerRelease << "ON A PAS DU TEMPS " << endl;
+      manager.isFloodFillDejaCalcule = true;
    }
 
    tempsAvantServeur = Minuteur::now();

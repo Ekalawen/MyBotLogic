@@ -115,7 +115,6 @@ int Npc::affecterMeilleurObjectif(GameManager& gm) noexcept {
 
 void Npc::floodfill(GameManager& gm) {
    ProfilerDebug profiler{ GameManager::getLogger(), "floodfill NPC " + to_string(getId()) };
-   ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "floodfill NPC " + to_string(getId()) };
     ensembleAccessible.clear();
 
     vector<Noeud> fermees;
@@ -127,13 +126,6 @@ void Npc::floodfill(GameManager& gm) {
         Noeud courant = ouverts[0];
         ouverts.erase(ouverts.begin());
         auto now = high_resolution_clock::now();
-
-        // on sort de la boucle si on n'a plus de temps #yolo
-        //if (duration_cast<milliseconds>((now - gm.tempsDebutThread)) > gm.SEUIL_TEMPS_FLOODFILL) {
-            //--gm.threads.count;
-            //gm.cond.notify_all();
-        //    return;
-        //}
 
         for (int voisin : courant.tile.getVoisinsIDParEtat(ACCESSIBLE)) { // Pour chaque voisins du noeud courant
             if (gm.c.getTile(voisin).existe()) { // Si le voisin existe
