@@ -62,6 +62,7 @@ public:
    Carte c;
    Selecteur behaviorTreeManager; // Arbre de comportement du GameManager pour déterminer la stratégie à suivre
    vector<int> objectifPris; // Permet de savoir quels sont les objectifs actuellement assignés à des npcs
+   microseconds TEMPS_ACCORDE_TOUR;
    microseconds SEUIL_TEMPS_UPDATE_MODEL;
    microseconds SEUIL_TEMPS_EXECUTE;
    FonctionEtat etatFloodFill = PAS_COMMENCE;

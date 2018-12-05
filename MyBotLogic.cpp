@@ -105,6 +105,14 @@ MyBotLogic::MyBotLogic() :
          manager.etatFloodFill = GameManager::FonctionEtat::PAS_COMMENCE;
    }
 
+   if (manager.etatFloodFill == GameManager::FonctionEtat::EN_COURS
+      || manager.etatExecute == GameManager::FonctionEtat::EN_COURS) {
+      microseconds dureeSleep = manager.TEMPS_ACCORDE_TOUR - duration_cast<microseconds>(Minuteur::now() - tempsApresServeur) - 100us;
+      profilerRelease << "On va dormir pendant  " << dureeSleep.count() << " us" << endl;
+
+      while (duration_cast<microseconds>(Minuteur::now() - tempsApresServeur) < dureeSleep);
+   }
+
    tempsAvantServeur = Minuteur::now();
 }
 

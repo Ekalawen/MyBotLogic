@@ -51,14 +51,15 @@ void GameManager::Init(LevelInfo _info)
       npcs[npc.npcID] = Npc(npc);
    }
 
-   int dureeVideAction = 1;
-   int tempsAccorde = _info.turnDelay - dureeVideAction;
+   int dureeVideAction = 1; // en ms
+   
+   TEMPS_ACCORDE_TOUR = microseconds((_info.turnDelay - dureeVideAction)*1000);
 
-   int tempsPourLeResteMicroSeconds = (tempsAccorde >= 10) ? static_cast<int>(static_cast<float>(tempsAccorde)*4.f / 10.f*1000.f) : 2500;
-   SEUIL_TEMPS_UPDATE_MODEL = microseconds(tempsAccorde * 1000 - tempsPourLeResteMicroSeconds);
+   int tempsPourLeResteMicroSeconds = (TEMPS_ACCORDE_TOUR.count() >= 10*1000) ? static_cast<int>(static_cast<float>(TEMPS_ACCORDE_TOUR.count())*4.f / 10.f) : 2500;
+   SEUIL_TEMPS_UPDATE_MODEL = microseconds(TEMPS_ACCORDE_TOUR.count() - tempsPourLeResteMicroSeconds);
    profilerRelease << "SEUIL TEMPS FLOOD us = " << SEUIL_TEMPS_UPDATE_MODEL.count() << endl;
 
-   tempsPourLeResteMicroSeconds = (tempsAccorde >= 10) ? static_cast<int>(static_cast<float>(tempsAccorde)*1.f / 10.f*1000.f) : 500;
+   tempsPourLeResteMicroSeconds = (TEMPS_ACCORDE_TOUR.count() >= 10*1000) ? static_cast<int>(static_cast<float>(TEMPS_ACCORDE_TOUR.count())*1.f / 10.f) : 500;
    SEUIL_TEMPS_EXECUTE = microseconds(SEUIL_TEMPS_UPDATE_MODEL.count() - tempsPourLeResteMicroSeconds);
    profilerRelease << "SEUIL TEMPS EXECUTE us = " << SEUIL_TEMPS_EXECUTE.count() << endl;
 
