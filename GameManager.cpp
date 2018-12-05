@@ -55,11 +55,11 @@ void GameManager::Init(LevelInfo _info)
    
    TEMPS_ACCORDE_TOUR = microseconds((_info.turnDelay - dureeVideAction)*1000);
 
-   int tempsPourLeResteMicroSeconds = (TEMPS_ACCORDE_TOUR.count() >= 10*1000) ? static_cast<int>(static_cast<float>(TEMPS_ACCORDE_TOUR.count())*4.f / 10.f) : 2500;
+   int tempsPourLeResteMicroSeconds = (TEMPS_ACCORDE_TOUR.count() >= 10*1000) ? static_cast<int>(static_cast<float>(TEMPS_ACCORDE_TOUR.count())*4.f / 10.f) : 1500;
    SEUIL_TEMPS_UPDATE_MODEL = microseconds(TEMPS_ACCORDE_TOUR.count() - tempsPourLeResteMicroSeconds);
    profilerRelease << "SEUIL TEMPS FLOOD us = " << SEUIL_TEMPS_UPDATE_MODEL.count() << endl;
 
-   tempsPourLeResteMicroSeconds = (TEMPS_ACCORDE_TOUR.count() >= 10*1000) ? static_cast<int>(static_cast<float>(TEMPS_ACCORDE_TOUR.count())*1.f / 10.f) : 500;
+   tempsPourLeResteMicroSeconds = (TEMPS_ACCORDE_TOUR.count() >= 10*1000) ? static_cast<int>(static_cast<float>(TEMPS_ACCORDE_TOUR.count())*1.f / 10.f) : 400;
    SEUIL_TEMPS_EXECUTE = microseconds(SEUIL_TEMPS_UPDATE_MODEL.count() - tempsPourLeResteMicroSeconds);
    profilerRelease << "SEUIL TEMPS EXECUTE us = " << SEUIL_TEMPS_EXECUTE.count() << endl;
 
@@ -505,7 +505,7 @@ void GameManager::refreshFloodfill() {
 
    for (auto &npc : npcs) {
 
-      workersFloodFill.push_back(std::async([&npc](GameManager& gm) {
+      workersFloodFill.push_back(std::async(std::launch::async, [&npc](GameManager& gm) {
          npc.second.floodfill(gm);
       }
       , std::ref(*this)));
@@ -534,7 +534,7 @@ void GameManager::execute() noexcept {
    ProfilerDebug profiler{ GameManager::getLogger(), "EXECUTE" };
    ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "execute" };
 
-   workerExecute = std::async([](GameManager& gm) {
+   workerExecute = std::async(std::launch::async, [](GameManager& gm) {
       // On calcul où doivent se rendre les npcs
       gm.behaviorTreeManager.execute();
 
@@ -554,22 +554,20 @@ void GameManager::execute() noexcept {
    executeFinished(SEUIL_TEMPS_EXECUTE);
 };
 
-bool GameManager::floodFillFinished(microseconds _dureeRestant) {
+bool GameManager::floodFillFinished(microseconds _dureeRestante) {
    future_status etatWait = future_status::ready;
    for (auto &worker : workersFloodFill) {
       auto tempsAvant = Minuteur::now();
-      etatWait = worker.wait_for(_dureeRestant);
+      etatWait = worker.wait_for(_dureeRestante);
       auto tempsApres = Minuteur::now();
-      _dureeRestant -= duration_cast<microseconds>(tempsApres - tempsAvant);
+      _dureeRestante -= duration_cast<microseconds>(tempsApres - tempsAvant);
+      _dureeRestante = microseconds(std::max(0LL, _dureeRestante.count()));
    }
    return etatWait == future_status::ready;
 }
 
-bool GameManager::executeFinished(microseconds _dureeRestant) {
+bool GameManager::executeFinished(microseconds _dureeRestante) {
    future_status etatWait = future_status::ready;
-   auto tempsAvant = Minuteur::now();
-   etatWait = workerExecute.wait_for(_dureeRestant);
-   auto tempsApres = Minuteur::now();
-   _dureeRestant -= duration_cast<microseconds>(tempsApres - tempsAvant);
+   etatWait = workerExecute.wait_for(_dureeRestante);
    return etatWait == future_status::ready;
 }
