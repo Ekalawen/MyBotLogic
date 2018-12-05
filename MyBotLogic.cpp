@@ -12,6 +12,7 @@
 #include <thread>
 #include <future>
 #include <functional>
+#include <fstream>
 
 using std::stringstream;
 using std::endl;
@@ -20,7 +21,6 @@ using std::to_string;
 MyBotLogic::MyBotLogic() :
    logpath{ "" }
 {
-   //Write Code Here
 }
 
 /*virtual*/ MyBotLogic::~MyBotLogic()
@@ -74,8 +74,8 @@ MyBotLogic::MyBotLogic() :
 
 /*virtual*/ void MyBotLogic::FillActionList(TurnInfo& _turnInfo, vector<Action*>& _actionList)
 {
-   ProfilerDebug profiler{ GameManager::getLogger(), "Tour" };
-   ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "Tour", true, false, manager.TEMPS_ACCORDE_TOUR };
+   ProfilerDebug profiler{ GameManager::getLogger(), "Tour", GameManager::getLoggerJSON(), GameManager::getTempsDebutProgramme() };
+   ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "Tour", GameManager::getLoggerJSON(), GameManager::getTempsDebutProgramme(), true, false, manager.TEMPS_ACCORDE_TOUR };
    profiler << "TURN =========================== " << _turnInfo.turnNb << endl;
    profilerRelease << "TURN =========================== " << _turnInfo.turnNb << endl;
 
@@ -125,7 +125,25 @@ MyBotLogic::MyBotLogic() :
    tempsAvantServeur = Minuteur::now();
 }
 
+#ifndef BOT_LOGIC_DEBUG
+//#define VERSION_LIVRAISION 
+#endif // !BOT_LOGIC_DEBUG
+
+
 /*virtual*/ void MyBotLogic::Exit()
 {
-   //Write Code Here
+#ifndef VERSION_LIVRAISION
+   {
+      std::ofstream jsonFile;
+      jsonFile.open(logpath + "\\" + "jsonFile.txt");
+      jsonFile << "[" << std::endl;
+      for (int i = 0; i < GameManager::getLoggerJSON().size(); i++) {
+         jsonFile << GameManager::getLoggerJSON()[i];
+         string virgule = (i < GameManager::getLoggerJSON().size() - 1) ? ",": " ";
+         jsonFile << virgule << std::endl;
+      }
+      jsonFile << "]";
+      jsonFile.close();
+   }
+#endif // !VERSION_LIVRAISION
 }

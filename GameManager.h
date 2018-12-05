@@ -29,8 +29,12 @@ class npc_deja_existant {};
 
 struct TurnInfo;
 class MyBotLogic;
+
 class GameManager {
    static Logger logger, loggerRelease;
+   //pour le profilling graphique
+   static Minuteur::time_point_t tempsDebutProgramme;
+   static std::vector<string> loggerJSON; // vecteur car il sera ecrit a la destruction de MyBotLogic
    map<int, Npc> npcs; // Les npcs sont stockés par leurs ids
 
 #ifdef _DEBUG
@@ -105,6 +109,14 @@ public:
    static Logger& getLoggerRelease() noexcept { // Permet d'initialiser le logger =)
       return loggerRelease;
    }
+
+   static std::vector<string>& getLoggerJSON() noexcept { // Permet d'initialiser le logger =)
+      return loggerJSON;
+   }
+   static Minuteur::time_point_t getTempsDebutProgramme() noexcept { // Permet d'initialiser le logger =)
+      return tempsDebutProgramme;
+   }
+
    void refreshFloodfill(MyBotLogic&);
    bool floodFillFinished(MyBotLogic&, microseconds& dureeRestant = 0us);
    bool executeFinished(MyBotLogic&, microseconds& dureeRestant = 0us);

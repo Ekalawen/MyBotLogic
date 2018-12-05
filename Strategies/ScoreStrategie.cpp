@@ -21,7 +21,7 @@ ScoreStrategie::ScoreStrategie(GameManager& _manager, string _nom)
 }
 
 BT_Noeud::ETAT_ELEMENT ScoreStrategie::execute() noexcept {
-   ProfilerDebug profiler{ GameManager::getLogger(), string("ScoreStrategie::execute") };
+   ProfilerDebug profiler{ GameManager::getLogger(), string("ScoreStrategie::execute"), GameManager::getLoggerJSON(), GameManager::getTempsDebutProgramme() };
    profiler << nom << endl;
 
    // On ne sait pas où se trouvent les objectifs !
@@ -69,7 +69,7 @@ bool ScoreStrategie::calculerScore1Tile(int _tileID, Carte& _carte, Npc& _npc, c
 // Calcul le score de chaque tiles et son chemin pour un npc
 // On prend en compte les tilesAVisiter des autres npcs pour que les tiles soient loins les unes des autres
 bool ScoreStrategie::calculerScoresTilesPourNpc(Npc& _npc, const vector<int>& _tilesAVisiter) noexcept {
-   ProfilerDebug profiler{ GameManager::getLogger(), "calculerScoresTilesPourNpc", false};
+   ProfilerDebug profiler{ GameManager::getLogger(), "calculerScoresTilesPourNpc", GameManager::getLoggerJSON(), GameManager::getTempsDebutProgramme(), false};
    //profiler << "Taille ensemble : " << _npc.getEnsembleAccessible().size() << endl;
    bool founded = false;
    for (auto score : _npc.getEnsembleAccessible()) { // parcours toutes les tiles découvertes par l'ensemble des npcs et qui sont accessibles

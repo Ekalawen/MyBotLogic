@@ -3,6 +3,7 @@
 
 #include "MyBotLogic/Tools/Minuteur.h"
 #include "Logger.h"
+#include "MyBotLogic/GameManager.h"
 
 #include <string>
 #include <sstream>
@@ -10,6 +11,7 @@
 #include <iomanip>
 #include <memory>
 #include <chrono>
+#include <thread>
 
 using std::string;
 using std::stringstream;
@@ -35,6 +37,8 @@ using std::endl;
 
 #ifndef VERSION_LIVRAISON
 
+class GameManager;
+
 template<bool keepRelease>
 class Profiler {
 private:
@@ -43,18 +47,20 @@ private:
    stringstream ss{};
    Minuteur::time_point_t debut;
    Minuteur::time_point_t fin;
+   Minuteur::time_point_t tempsDebutProgramme;
    bool afficheDuree;
    std::chrono::microseconds dureeMethode;
+   std::vector<string>* elemsJSON;
 
 public:
-   Profiler(Logger& _logger, string _nomMethode, bool _afficheDuree = true, bool _keepRelease = false, std::chrono::microseconds _dureeMethode = 0us) : nomMethode{ _nomMethode }, logger{ &_logger }, afficheDuree{ _afficheDuree }, dureeMethode{ _dureeMethode } {
+   Profiler(Logger& _logger, string _nomMethode, std::vector<string>& _elemsJSON, Minuteur::time_point_t _tempsDebutProgramme, bool _afficheDuree = true, bool _keepRelease = false, std::chrono::microseconds _dureeMethode = 0us) : nomMethode{ _nomMethode }, logger{ &_logger }, elemsJSON{ &_elemsJSON }, tempsDebutProgramme{ _tempsDebutProgramme }, afficheDuree{ _afficheDuree }, dureeMethode{ _dureeMethode } {
 #ifndef PROFILER_DEBUG
       if constexpr (keepRelease) {
 #endif // ! PROFILER_DEBUG
-      ss.str("");
-      if (afficheDuree) {
-         debut = Minuteur::now();
-      }
+         ss.str("");
+         if (afficheDuree) {
+            debut = Minuteur::now();
+         }
 #ifndef PROFILER_DEBUG
       }
 #endif // ! PROFILER_DEBUG
@@ -67,15 +73,33 @@ public:
             fin = Minuteur::now();
             int dureeReel = Minuteur::dureeMicroseconds(debut, fin);
             ss << "Duree " << nomMethode << " : " << dureeReel / 1000.f << "ms" << endl;
-            if(dureeReel > dureeMethode.count() && dureeMethode > 0us) ss << "Duree " << nomMethode << " : " << "ALERTE TROP LONG de " << ((dureeReel - dureeMethode.count()) / 1000.f) << "ms" << endl;
+            if (dureeReel > dureeMethode.count() && dureeMethode > 0us) ss << "Duree " << nomMethode << " : " << "ALERTE TROP LONG de " << ((dureeReel - dureeMethode.count()) / 1000.f) << "ms" << endl;
             logger->Log(ss.str(), false);
             ss.str("");
 
+            ss << "{"
+               << "\"name\": " << "\"" << nomMethode << "\","
+               << "\"pid\": " << "\"" << std::this_thread::get_id() << "\","
+               << "\"ts\": " << "\"" << duration_cast<microseconds>(debut- tempsDebutProgramme).count() << "\","
+               << "\"ph\": " << "\"B\""
+               << "}";
+            elemsJSON->push_back(ss.str());
+            ss.str("");
+
+            ss << "{"
+               << "\"name\": " << "\"" << nomMethode << "\","
+               << "\"pid\": " << "\"" << std::this_thread::get_id() << "\","
+               << "\"ts\": " << "\"" << duration_cast<microseconds>(fin - tempsDebutProgramme).count() << "\","
+               << "\"ph\": " << "\"E\""
+               << "}";
+            elemsJSON->push_back(ss.str());
+            ss.str("");
          }
-#ifndef PROFILER_DEBUG
+
       }
-#endif // ! PROFILER_DEBUG
+#ifndef PROFILER_DEBUG
    }
+#endif // ! PROFILER_DEBUG
 
 private:
    void log(bool _bAutoNewLine = true) {
@@ -83,18 +107,17 @@ private:
       ss.str("");
    }
 public:
-
    template<class T>
    Profiler& operator<< (T&& message) {
 #ifndef PROFILER_DEBUG
       if constexpr (keepRelease) {
 #endif // ! PROFILER_DEBUG
-      ss << message;
+         ss << message;
 
-      PROFILER_LOG_ENDL(false);
+         PROFILER_LOG_ENDL(false);
 
 #ifndef PROFILER_DEBUG
-   }
+      }
 #endif // ! PROFILER_DEBUG
       return *this;
    }
@@ -102,12 +125,12 @@ public:
 #ifndef PROFILER_DEBUG
       if constexpr (keepRelease) {
 #endif // ! PROFILER_DEBUG
-      ss << pf;
+         ss << pf;
 
-      PROFILER_LOG_ENDL(false);
+         PROFILER_LOG_ENDL(false);
 
 #ifndef PROFILER_DEBUG
-   }
+      }
 #endif // ! PROFILER_DEBUG
       return *this;
    }
@@ -122,7 +145,7 @@ public:
 template<bool keepRelease>
 class Profiler {
 public:
-   Profiler(Logger& _logger, string _nomMethode, bool _afficheDuree = true, bool _keepRelease = false, std::chrono::microseconds _dureeMethode) {}
+   Profiler(Logger& _logger, string _nomMethode, std::vector<string>& _elemsJSON, Minuteur::time_point_t _tempsDebutProgramme, bool _afficheDuree = true, bool _keepRelease = false, std::chrono::microseconds _dureeMethode = 0us) {}
    ~Profiler() {}
 
    template<class T>

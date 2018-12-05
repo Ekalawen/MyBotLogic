@@ -9,8 +9,8 @@
 using std::vector;
 
 BT_Noeud::ETAT_ELEMENT CheckingHiddenDoors::execute() noexcept {
-    ProfilerRelease pointeurProfiler{ GameManager::getLoggerRelease(), "CheckingHiddenDoors", true, true };
-    ProfilerDebug profiler{ GameManager::getLogger(), string("CheckingHiddenDoors") };
+    ProfilerRelease pointeurProfiler{ GameManager::getLoggerRelease(), "CheckingHiddenDoors", GameManager::getLoggerJSON(), GameManager::getTempsDebutProgramme(), true, true };
+    ProfilerDebug profiler{ GameManager::getLogger(), string("CheckingHiddenDoors"), GameManager::getLoggerJSON(), GameManager::getTempsDebutProgramme() };
 
     // Pour tous les npcs
     for (auto& pair : manager.getNpcs()) {
@@ -63,7 +63,7 @@ void CheckingHiddenDoors::affecterCheminNpcPourCheckerDoors(Npc& npc) {
 }
 
 void CheckingHiddenDoors::calculerScoresTilesPourNpc(Npc& _npc) noexcept {
-   ProfilerDebug profiler{ GameManager::getLogger(), "calculerScoresTilesPourNpc", false};
+   ProfilerDebug profiler{ GameManager::getLogger(), "calculerScoresTilesPourNpc", GameManager::getLoggerJSON(), GameManager::getTempsDebutProgramme(), false};
    //profiler << "Taille ensemble : " << _npc.getEnsembleAccessible().size() << endl;
    for (auto score : _npc.getEnsembleAccessible()) { // parcours toutes les tiles découvertes par l'ensemble des npcs et qui sont accessibles
       calculerScore1Tile(score.tuileID, manager.c, _npc);

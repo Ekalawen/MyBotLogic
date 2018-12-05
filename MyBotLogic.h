@@ -4,6 +4,8 @@
 #include "BotLogicIF.h"
 #include "Logger.h"
 #include "MyBotLogic/GameManager.h"
+#include "MyBotLogic/Tools/Minuteur.h"
+
 #include <thread>
 #include <condition_variable>
 #include <future>
@@ -18,6 +20,7 @@
    #define BOT_LOGIC_LOG(logger, text, autoEndLine) 0
 #endif
 
+class Minuteur;
 //Custom BotLogic where the AIBot decision making algorithms should be implemented.
 //This class must be instantiated in main.cpp.
 class MyBotLogic : public virtual BotLogicIF
@@ -30,7 +33,6 @@ public:
     std::future<void> workerSleep; // Le précursseur !
     std::vector<std::future<void>> workersFloodFill;
     std::future<void> workerExecute;
-
 
 	MyBotLogic();
 	virtual ~MyBotLogic();
