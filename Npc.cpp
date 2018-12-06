@@ -83,7 +83,7 @@ int Npc::getObjectifMinNonPris(const vector<int>& objectifsPris, const int taill
 }
 
 Scores::iterator Npc::chercherMeilleurScore(Scores& _scores) {
-   ProfilerDebug profiler{ GameManager::getLogger(), "chercherMeilleurScore", GameManager::getLoggerJSON(), GameManager::getTempsDebutProgramme(), false};
+   ProfilerDebug profiler{ GameManager::getLogger(), "chercherMeilleurScore", GameManager::getLoggerJSON(), GameManager::getMutex(), GameManager::getTempsDebutProgramme(), false};
 
    return max_element(begin(_scores), end(_scores),
       [](const ScoreType& scoreDroite, const ScoreType& scoreGauche) {
@@ -92,7 +92,7 @@ Scores::iterator Npc::chercherMeilleurScore(Scores& _scores) {
 }
 
 int Npc::affecterMeilleurObjectif(GameManager& gm) noexcept {
-   ProfilerDebug profiler{ GameManager::getLogger(), "affecterMeilleurChemin", GameManager::getLoggerJSON(), GameManager::getTempsDebutProgramme(), false};
+   ProfilerDebug profiler{ GameManager::getLogger(), "affecterMeilleurChemin", GameManager::getLoggerJSON(), GameManager::getMutex(), GameManager::getTempsDebutProgramme(), false};
 
    if (scoresAssocies.empty()) {
       // Dans ce cas-la on reste sur place !
@@ -114,7 +114,7 @@ int Npc::affecterMeilleurObjectif(GameManager& gm) noexcept {
 }
 
 void Npc::floodfill(GameManager& gm) {
-   ProfilerDebug profiler{ GameManager::getLogger(), "floodfill NPC " + to_string(getId()), GameManager::getLoggerJSON(), GameManager::getTempsDebutProgramme() };
+   ProfilerDebug profiler{ GameManager::getLogger(), "floodfill NPC " + to_string(getId()), GameManager::getLoggerJSON(), GameManager::getMutex(), GameManager::getTempsDebutProgramme() };
    //ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "floodfill NPC " + to_string(getId()) , true, true};
     ensembleAccessible.clear();
 

@@ -14,7 +14,7 @@ using std::endl;
 
 // Vérifier si un objectif est accessible pour tous nos NPCs
 BT_Noeud::ETAT_ELEMENT CheminsForAllNpcs::execute() noexcept {
-   ProfilerDebug profiler{ GameManager::getLogger(), "CheminsForAllNpcs::execute", GameManager::getLoggerJSON(), GameManager::getTempsDebutProgramme() };
+   ProfilerDebug profiler{ GameManager::getLogger(), "CheminsForAllNpcs::execute", GameManager::getLoggerJSON(), GameManager::getMutex(), GameManager::getTempsDebutProgramme() };
    
    // Indices des objectfs découverts
    vector<unsigned int> objectifNonDonne = gm.c.getObjectifs();

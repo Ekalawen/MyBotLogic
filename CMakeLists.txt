@@ -82,6 +82,7 @@ SET( AIBOT_HEADERS
 	MyBotLogic/Tools/Minuteur.h
 	MyBotLogic/Tools/Profiler.h
 	MyBotLogic/Tools/ThreadPool.h
+	MyBotLogic/Tools/VersionLivraison.h
 )
 
 SET( AIBOT_SRC 

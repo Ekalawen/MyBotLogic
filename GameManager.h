@@ -15,6 +15,7 @@
 #include <chrono>
 #include <condition_variable>
 #include <future>
+#include <mutex>
 
 using std::map;
 using std::vector;
@@ -35,6 +36,8 @@ class GameManager {
    //pour le profilling graphique
    static Minuteur::time_point_t tempsDebutProgramme;
    static std::vector<string> loggerJSON; // vecteur car il sera ecrit a la destruction de MyBotLogic
+   static std::mutex mutex;
+
    map<int, Npc> npcs; // Les npcs sont stockés par leurs ids
 
 #ifdef _DEBUG
@@ -112,6 +115,9 @@ public:
 
    static std::vector<string>& getLoggerJSON() noexcept { // Permet d'initialiser le logger =)
       return loggerJSON;
+   }
+   static std::mutex& getMutex() noexcept { // Permet d'initialiser le logger =)
+      return mutex;
    }
    static Minuteur::time_point_t getTempsDebutProgramme() noexcept { // Permet d'initialiser le logger =)
       return tempsDebutProgramme;

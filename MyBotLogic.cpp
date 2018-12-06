@@ -6,6 +6,7 @@
 
 #include "MyBotLogic/Tools/Minuteur.h"
 #include "MyBotLogic/Tools/Profiler.h"
+#include "MyBotLogic/Tools/VersionLivraison.h"
 
 #include "Windows.h"
 #include <sstream>
@@ -74,8 +75,8 @@ MyBotLogic::MyBotLogic() :
 
 /*virtual*/ void MyBotLogic::FillActionList(TurnInfo& _turnInfo, vector<Action*>& _actionList)
 {
-   ProfilerDebug profiler{ GameManager::getLogger(), "Tour", GameManager::getLoggerJSON(), GameManager::getTempsDebutProgramme() };
-   ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "Tour", GameManager::getLoggerJSON(), GameManager::getTempsDebutProgramme(), true, false, manager.TEMPS_ACCORDE_TOUR };
+   ProfilerDebug profiler{ GameManager::getLogger(), "Tour", GameManager::getLoggerJSON(), GameManager::getMutex(), GameManager::getTempsDebutProgramme() };
+   ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "Tour", GameManager::getLoggerJSON(), GameManager::getMutex(), GameManager::getTempsDebutProgramme(), true, false, manager.TEMPS_ACCORDE_TOUR };
    profiler << "TURN =========================== " << _turnInfo.turnNb << endl;
    profilerRelease << "TURN =========================== " << _turnInfo.turnNb << endl;
 
@@ -115,7 +116,7 @@ MyBotLogic::MyBotLogic() :
        microseconds tempsDepuisDebutTour = duration_cast<microseconds>(Minuteur::now() - tempsApresServeur);
        microseconds dureeSleep = manager.TEMPS_ACCORDE_TOUR;
        if (tempsDepuisDebutTour < dureeSleep) {
-           auto tempsAvantSleep = Minuteur::now();
+           //auto tempsAvantSleep = Minuteur::now();
            //profilerRelease << "On voudrait dormir pendant " << (dureeSleep - tempsDepuisDebutTour).count() << " us" << endl;
            while (duration_cast<microseconds>(Minuteur::now() - tempsApresServeur) < dureeSleep);
            //profilerRelease << "On a dormis pendant  " << duration_cast<microseconds>(Minuteur::now() - tempsAvantSleep).count() << " us" << endl;
@@ -125,14 +126,9 @@ MyBotLogic::MyBotLogic() :
    tempsAvantServeur = Minuteur::now();
 }
 
-#ifndef BOT_LOGIC_DEBUG
-//#define VERSION_LIVRAISION 
-#endif // !BOT_LOGIC_DEBUG
-
-
 /*virtual*/ void MyBotLogic::Exit()
 {
-#ifndef VERSION_LIVRAISION
+#ifndef VERSION_LIVRAISON
    {
       std::ofstream jsonFile;
       jsonFile.open(logpath + "\\" + "jsonFile.txt");
@@ -145,5 +141,5 @@ MyBotLogic::MyBotLogic() :
       jsonFile << "]";
       jsonFile.close();
    }
-#endif // !VERSION_LIVRAISION
+#endif // !VERSION_LIVRAISON
 }

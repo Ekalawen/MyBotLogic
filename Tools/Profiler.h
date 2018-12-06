@@ -4,6 +4,7 @@
 #include "MyBotLogic/Tools/Minuteur.h"
 #include "Logger.h"
 #include "MyBotLogic/GameManager.h"
+#include "MyBotLogic/Tools/VersionLivraison.h"
 
 #include <string>
 #include <sstream>
@@ -12,6 +13,7 @@
 #include <memory>
 #include <chrono>
 #include <thread>
+#include <mutex>
 
 using std::string;
 using std::stringstream;
@@ -31,10 +33,6 @@ using std::endl;
 #define PROFILER_LOG() 0
 #endif
 
-#ifndef PROFILER_DEBUG
-//#define VERSION_LIVRAISON
-#endif
-
 #ifndef VERSION_LIVRAISON
 
 class GameManager;
@@ -51,9 +49,10 @@ private:
    bool afficheDuree;
    std::chrono::microseconds dureeMethode;
    std::vector<string>* elemsJSON;
+   std::mutex* mutex;
 
 public:
-   Profiler(Logger& _logger, string _nomMethode, std::vector<string>& _elemsJSON, Minuteur::time_point_t _tempsDebutProgramme, bool _afficheDuree = true, bool _keepRelease = false, std::chrono::microseconds _dureeMethode = 0us) : nomMethode{ _nomMethode }, logger{ &_logger }, elemsJSON{ &_elemsJSON }, tempsDebutProgramme{ _tempsDebutProgramme }, afficheDuree{ _afficheDuree }, dureeMethode{ _dureeMethode } {
+   Profiler(Logger& _logger, string _nomMethode, std::vector<string>& _elemsJSON, std::mutex& _mutex, Minuteur::time_point_t _tempsDebutProgramme, bool _afficheDuree = true, bool _keepRelease = false, std::chrono::microseconds _dureeMethode = 0us) : nomMethode{ _nomMethode }, logger{ &_logger }, elemsJSON{ &_elemsJSON }, mutex{ &_mutex }, tempsDebutProgramme{ _tempsDebutProgramme }, afficheDuree{ _afficheDuree }, dureeMethode{ _dureeMethode } {
 #ifndef PROFILER_DEBUG
       if constexpr (keepRelease) {
 #endif // ! PROFILER_DEBUG
@@ -74,8 +73,9 @@ public:
             int dureeReel = Minuteur::dureeMicroseconds(debut, fin);
             ss << "Duree " << nomMethode << " : " << dureeReel / 1000.f << "ms" << endl;
             if (dureeReel > dureeMethode.count() && dureeMethode > 0us) ss << "Duree " << nomMethode << " : " << "ALERTE TROP LONG de " << ((dureeReel - dureeMethode.count()) / 1000.f) << "ms" << endl;
-            logger->Log(ss.str(), false);
-            ss.str("");
+            mutex->lock();
+            log(false);
+            mutex->unlock();
 
             ss << "{"
                << "\"name\": " << "\"" << nomMethode << "\","
@@ -83,7 +83,9 @@ public:
                << "\"ts\": " << "\"" << duration_cast<microseconds>(debut- tempsDebutProgramme).count() << "\","
                << "\"ph\": " << "\"B\""
                << "}";
+            mutex->lock();
             elemsJSON->push_back(ss.str());
+            mutex->unlock();
             ss.str("");
 
             ss << "{"
@@ -92,7 +94,9 @@ public:
                << "\"ts\": " << "\"" << duration_cast<microseconds>(fin - tempsDebutProgramme).count() << "\","
                << "\"ph\": " << "\"E\""
                << "}";
+            mutex->lock();
             elemsJSON->push_back(ss.str());
+            mutex->unlock();
             ss.str("");
          }
 
@@ -145,7 +149,7 @@ public:
 template<bool keepRelease>
 class Profiler {
 public:
-   Profiler(Logger& _logger, string _nomMethode, std::vector<string>& _elemsJSON, Minuteur::time_point_t _tempsDebutProgramme, bool _afficheDuree = true, bool _keepRelease = false, std::chrono::microseconds _dureeMethode = 0us) {}
+   Profiler(Logger& _logger, string _nomMethode, std::vector<string>& _elemsJSON, std::mutex& _mutex, Minuteur::time_point_t _tempsDebutProgramme, bool _afficheDuree = true, bool _keepRelease = false, std::chrono::microseconds _dureeMethode = 0us) {}
    ~Profiler() {}
 
    template<class T>

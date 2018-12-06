@@ -42,12 +42,13 @@ Logger GameManager::logger{};
 Logger GameManager::loggerRelease{};
 std::vector<string> GameManager::loggerJSON{};
 Minuteur::time_point_t GameManager::tempsDebutProgramme{};
+std::mutex GameManager::mutex{};
 
 void GameManager::Init(LevelInfo _info)
 {
    tempsDebutProgramme = Minuteur::now();
 
-   ProfilerRelease profilerRelease{ loggerRelease, "Init GameManager", GameManager::getLoggerJSON(), GameManager::getTempsDebutProgramme() };
+   ProfilerRelease profilerRelease{ loggerRelease, "Init GameManager", GameManager::getLoggerJSON(), mutex, GameManager::getTempsDebutProgramme() };
    c = { Carte(_info) };
    // On r�cup�re l'ensemble des npcs !
    for (auto pair_npc : _info.npcs) {
@@ -166,8 +167,8 @@ vector<Mouvement> GameManager::getAllMouvements() {
 }
 
 void GameManager::moveNpcs(vector<Action*>& actionList) noexcept {
-   ProfilerDebug profiler{ getLogger(), "MOVE NPCS", GameManager::getLoggerJSON(), GameManager::getTempsDebutProgramme() };
-   ProfilerRelease profilerRelease{ getLoggerRelease(), "moveNpcs", GameManager::getLoggerJSON(), GameManager::getTempsDebutProgramme() };
+   ProfilerDebug profiler{ getLogger(), "MOVE NPCS", GameManager::getLoggerJSON(), mutex, GameManager::getTempsDebutProgramme() };
+   ProfilerRelease profilerRelease{ getLoggerRelease(), "moveNpcs", GameManager::getLoggerJSON(), mutex, GameManager::getTempsDebutProgramme() };
    // Code d�place juste apr�s l'execute, il faudra peut-�tre aussi le laisser ici, � voir !!! Finalement j'ai d� le laisser ici aussi, c'est n�cessaire mais �a co�te !
    //// Il faut r�ordonner les chemins entre les npcs !
    //// Cad que si deux Npcs peuvent �changer leurs objectifs et que cela diminue leurs chemins respectifs, alors il faut le faire !
@@ -303,7 +304,7 @@ void GameManager::ordonnerMouvementsSelonSwitchs(vector<Mouvement>& mouvements) 
 
 void GameManager::addNewTiles(const TurnInfo& _tile) noexcept {
 
-   ProfilerDebug profiler{ GameManager::getLogger(), "addNewTiles", GameManager::getLoggerJSON(), GameManager::getTempsDebutProgramme() };
+   ProfilerDebug profiler{ GameManager::getLogger(), "addNewTiles", GameManager::getLoggerJSON(), mutex, GameManager::getTempsDebutProgramme() };
 
    if (c.getNbTilesDecouvertes() < c.getNbTiles()) {
       // pour tous les npcs
@@ -322,7 +323,7 @@ void GameManager::addNewTiles(const TurnInfo& _tile) noexcept {
 
 void GameManager::addNewObjects(const TurnInfo& _tile) noexcept {
 
-   ProfilerDebug profiler{ GameManager::getLogger(), "addNewObjects", GameManager::getLoggerJSON(), GameManager::getTempsDebutProgramme() };
+   ProfilerDebug profiler{ GameManager::getLogger(), "addNewObjects", GameManager::getLoggerJSON(), mutex, GameManager::getTempsDebutProgramme() };
 
    // Tous les objets visibles par tous les npcs ...
    for (auto npc : _tile.npcs) {
@@ -336,8 +337,8 @@ void GameManager::addNewObjects(const TurnInfo& _tile) noexcept {
 }
 
 void GameManager::updateModel(const TurnInfo &_tile, MyBotLogic& myBotLogic) noexcept {
-   ProfilerDebug profiler{ GameManager::getLogger(), "UPDATE MODEL", GameManager::getLoggerJSON(), GameManager::getTempsDebutProgramme() };
-   ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "updateModel", GameManager::getLoggerJSON(), GameManager::getTempsDebutProgramme() };
+   ProfilerDebug profiler{ GameManager::getLogger(), "UPDATE MODEL", GameManager::getLoggerJSON(), mutex, GameManager::getTempsDebutProgramme() };
+   ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "updateModel", GameManager::getLoggerJSON(), mutex, GameManager::getTempsDebutProgramme() };
 
    debutUpdate = high_resolution_clock::now();
 
@@ -355,7 +356,7 @@ void GameManager::updateModel(const TurnInfo &_tile, MyBotLogic& myBotLogic) noe
 }
 
 void GameManager::majPortesASwitch() noexcept {
-   ProfilerDebug profiler{ GameManager::getLogger(), "majPortesASwitch", GameManager::getLoggerJSON(), GameManager::getTempsDebutProgramme() };
+   ProfilerDebug profiler{ GameManager::getLogger(), "majPortesASwitch", GameManager::getLoggerJSON(), mutex, GameManager::getTempsDebutProgramme() };
 
    // Pour chaque porte � switch, on regarde pour tous ses interrupteurs s'il y a un npc dessus
    for (auto& pair : c.getPortes()) {
@@ -400,7 +401,7 @@ void GameManager::addNpc(Npc npc) {
 }
 
 void GameManager::reaffecterObjectifsSelonDistance() {
-   ProfilerDebug profiler{ GameManager::getLogger(), "REAFECTER OBJECTIFS SELON DISTANCE", GameManager::getLoggerJSON(), GameManager::getTempsDebutProgramme() };
+   ProfilerDebug profiler{ GameManager::getLogger(), "REAFECTER OBJECTIFS SELON DISTANCE", GameManager::getLoggerJSON(), mutex, GameManager::getTempsDebutProgramme() };
    //ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "reaffecterObjectifsSelonDistance" };
 
    LOG("Objectif initiaux");
@@ -448,8 +449,8 @@ void GameManager::reaffecterObjectifsSelonDistance() {
 }
 
 void GameManager::affecterContraintes() noexcept {
-   ProfilerDebug profiler{ GameManager::getLogger(), "AFFECTER CONTRAINTES", GameManager::getLoggerJSON(), GameManager::getTempsDebutProgramme() };
-   ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "affecterContraintes", GameManager::getLoggerJSON(), GameManager::getTempsDebutProgramme() };
+   ProfilerDebug profiler{ GameManager::getLogger(), "AFFECTER CONTRAINTES", GameManager::getLoggerJSON(), mutex, GameManager::getTempsDebutProgramme() };
+   //ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "affecterContraintes", GameManager::getLoggerJSON(), GameManager::getTempsDebutProgramme() };
    for (auto pair : npcs) {
       Npc npc = pair.second;
       profiler << "Npc " << npc.getId() << " veut aller en " << npc.getTileObjectif() << endl;
@@ -502,12 +503,13 @@ void GameManager::cleanContraintes() noexcept {
 
 
 void GameManager::refreshFloodfill(MyBotLogic& myBotLogic) {
-   ProfilerDebug profiler{ GameManager::getLogger(), "refreshFloodfill", GameManager::getLoggerJSON(), GameManager::getTempsDebutProgramme() };
-   //ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "refreshFloodfill" };
+   ProfilerDebug profiler{ GameManager::getLogger(), "refreshFloodfill", GameManager::getLoggerJSON(), mutex, GameManager::getTempsDebutProgramme() };
+   //ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "refreshFloodfill", GameManager::getLoggerJSON(), GameManager::getTempsDebutProgramme() };
 
    for (auto &npc : npcs) {
 
       myBotLogic.workersFloodFill.push_back(std::async(std::launch::async, [&npc](GameManager& gm) {
+         ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "Thread Floodfill NPC "+std::to_string(npc.second.getId()), GameManager::getLoggerJSON(), mutex, GameManager::getTempsDebutProgramme() };
          npc.second.floodfill(gm);
       }
       , std::ref(*this)));
@@ -533,11 +535,12 @@ bool GameManager::permutationUtile(Npc& npc1, Npc& npc2) {
 }
 
 void GameManager::execute(MyBotLogic& myBotLogic) noexcept {
-   ProfilerDebug profiler{ GameManager::getLogger(), "EXECUTE", GameManager::getLoggerJSON(), GameManager::getTempsDebutProgramme() };
-   ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "execute", GameManager::getLoggerJSON(), GameManager::getTempsDebutProgramme() };
+   ProfilerDebug profiler{ GameManager::getLogger(), "EXECUTE", GameManager::getLoggerJSON(), mutex, GameManager::getTempsDebutProgramme() };
+   ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "execute", GameManager::getLoggerJSON(), mutex, GameManager::getTempsDebutProgramme() };
 
    myBotLogic.workerExecute = std::async(std::launch::async, [](GameManager& gm) {
-      //ProfilerRelease profilerRelease{ getLoggerRelease(), "Thread Execute" };
+      ProfilerRelease profilerRelease{ GameManager::getLoggerRelease(), "Thread Execute ", GameManager::getLoggerJSON(), mutex, GameManager::getTempsDebutProgramme() };
+
       // On calcul o� doivent se rendre les npcs
       gm.behaviorTreeManager.execute();
 
